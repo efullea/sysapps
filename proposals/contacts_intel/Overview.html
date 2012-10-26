@@ -1,0 +1,401 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd"><html lang="en"><head>
+
+<meta content="text/html; charset=utf-8" http-equiv="content-type">
+<title>Web Contacts API Specification</title>
+<style type="text/css">
+   pre.idl { border:solid thin; background:#eee; color:#000; padding:0.5em }
+   pre.idl :link, pre.idl :visited { color:inherit; background:transparent }
+   pre code { color:inherit; background:transparent }
+   div.example { margin-left:1em; padding-left:1em; border-left:double; color:#222; background:#fcfcfc }
+   .note { margin-left:2em; font-weight:bold; font-style:italic; color:#008000 }
+   p.note::before { content:"Note: " }
+   .XXX { padding:.5em; border:solid #f00 }
+   p.XXX::before { content:"Issue: " }
+   dl.switch { padding-left:2em }
+   dl.switch > dt { text-indent:-1.5em }
+   dl.switch > dt:before { content:'\21AA'; padding:0 0.5em 0 0; display:inline-block; width:1em; text-align:right; line-height:0.5em }
+   dl.domintro { color: green; margin: 2em 0 2em 2em; padding: 0.5em 1em; border: none; background: #DDFFDD; }
+   dl.domintro dt, dl.domintro dt * { color: black; text-decoration: none; }
+   dl.domintro dd { margin: 0.5em 0 1em 2em; padding: 0; }
+   dl.domintro dd p { margin: 0.5em 0; }
+   dl.domintro:before { display: table; margin: -1em -0.5em -0.5em auto; width: auto; content: 'This box is non-normative. Implementation requirements are given below this box.'; color: red; border: solid 2px; background: white; padding: 0 0.25em; }
+   em.ct { text-transform:lowercase; font-variant:small-caps; font-style:normal }
+   dfn { font-weight:bold; font-style:normal }
+   code { color:orangered }
+   code :link, code :visited { color:inherit }
+   hr:not(.top) { display:block; background:none; border:none; padding:0; margin:2em 0; height:auto }
+   table { border-collapse:collapse; border-style:hidden hidden none hidden }
+   table thead { border-bottom:solid }
+   table tbody th:first-child { border-left:solid }
+   table td, table th { border-left:solid; border-right:solid; border-bottom:solid thin; vertical-align:top; padding:0.2em }
+</style>
+<link href="http://www.w3.org/StyleSheets/TR/W3C-ED" rel="stylesheet">
+
+<body class="draft">
+
+<div class="head">
+	<h1>Web Contacts API Specification</h1>
+	
+	<h2 class="no-num no-toc" id="editor-draft-26-october-2012">Editor Draft &mdash; 26 October 2012</h2>
+	
+	<dl>
+		<dt>This version:
+		<dd><!--begin-link--><a href="http://example.com/">http://example.com/</a><!--end-link-->
+
+		<dt class="dontpublish">Participate:</dt>
+		<dd class="dontpublish"><a href="mailto:public-sysapps@w3.org?subject=[contacts-api]%20">public-sysapps@w3.org</a> (<a href="http://lists.w3.org/Archives/Public/public-sysapps/">archives</a>)
+		<dd class="dontpublish"><a href="https://www.w3.org/Bugs/Public/enter_bug.cgi?product=SysAppsWG&amp;component=Contacts%20API">File a bug</a>
+		
+		<dt>Latest version:
+		<dd><!--begin-link--><a href="http://example.com/">http://example.com/</a><!--end-link-->
+		
+		<dt>Previous versions:
+		<dd><!--begin-link--><a href="http://example.com/">http://example.com/</a><!--end-link-->
+		
+		<dt>Editors:
+		<dd class="vcard">
+			<span class="fn">Christophe Dumez</span>,
+			<span class="org"><a href="http://www.intel.com/">Intel Corporation</a></span>,
+			<span class="email"><a href="mailto:christophe.dumez@intel.com">christophe.dumez@intel.com</a></span>
+	</dl>
+	
+        <div class="w3conly">
+<!--begin-copyright-->
+<p class="copyright"><a href="http://www.w3.org/Consortium/Legal/ipr-notice#Copyright">Copyright</a> &copy; 2012 <a href="http://www.w3.org/"><abbr title="World Wide Web Consortium">W3C</abbr></a><sup>&reg;</sup> (<a href="http://www.csail.mit.edu/"><abbr title="Massachusetts Institute of Technology">MIT</abbr></a>, <a href="http://www.ercim.eu/"><abbr title="European Research Consortium for Informatics and Mathematics">ERCIM</abbr></a>, <a href="http://www.keio.ac.jp/">Keio</a>), All Rights Reserved. W3C <a href="http://www.w3.org/Consortium/Legal/ipr-notice#Legal_Disclaimer">liability</a>, <a href="http://www.w3.org/Consortium/Legal/ipr-notice#W3C_Trademarks">trademark</a> and <a href="http://www.w3.org/Consortium/Legal/copyright-documents">document use</a> rules apply.</p>
+<!--end-copyright--></div>
+</div>
+
+<h2 class="no-num no-toc" id="specabstract">Abstract</h2>
+
+<p>This specification defines a System Level API which offers a simple interface to manage contacts. A typical use case
+of the Web Contacts API is the implementation of an 'AddressBook' application.
+
+<h2 class="no-num no-toc" id="toc">Table of Contents</h2>
+
+
+<!--begin-toc-->
+<ol class="toc">
+ <li><a href="#introduction"><span class="secno">1 </span>Introduction</a></li>
+ <li><a href="#conformance"><span class="secno">2 </span>Conformance</a></li>
+ <li><a href="#terminology"><span class="secno">3 </span>Terminology</a></li>
+ <li><a href="#web-contacts-api"><span class="secno">4 </span>Web Contacts API</a>
+  <ol class="toc">
+   <li><a href="#interface-navigator"><span class="secno">4.1 </span>Interface <code title="">Navigator</code></a></li>
+   <li><a href="#interface-contactmanager"><span class="secno">4.2 </span>Interface <code title="">ContactManager</code></a></li>
+   <li><a href="#interface-contact"><span class="secno">4.3 </span>Interface <code title="">Contact</code></a></li>
+   <li><a href="#interface-contactproperties"><span class="secno">4.4 </span>Interface <code title="">ContactProperties</code></a></li>
+   <li><a href="#interface-contactfield"><span class="secno">4.5 </span>Interface <code title="">ContactField</code></a></li>
+   <li><a href="#interface-contactaddress"><span class="secno">4.6 </span>Interface <code title="">ContactAddress</code></a></li>
+   <li><a href="#interface-contactrequest"><span class="secno">4.7 </span>Interface <code title="">ContactRequest</code></a></li>
+   <li><a href="#interface-contactchangeevent"><span class="secno">4.8 </span>Interface <code title="">ContactChangeEvent</code></a></ol></li>
+ <li><a href="#contact-filtering"><span class="secno">5 </span>Contact filtering</a>
+  <ol class="toc">
+   <li><a href="#interface-abstractfilter"><span class="secno">5.1 </span>Interface <code title="">AbstractFilter</code></a></li>
+   <li><a href="#interface-compositefilter"><span class="secno">5.2 </span>Interface <code title="">CompositeFilter</code></a></li>
+   <li><a href="#interface-attributefilter"><span class="secno">5.3 </span>Interface <code title="">AttributeFilter</code></a></li>
+   <li><a href="#dictionary-filteroptions"><span class="secno">5.4 </span>Dictionary <code title="">FilterOptions</code></a></ol></li>
+ <li><a class="no-num" href="#references">References</a></li>
+ <li><a class="no-num" href="#acknowledgments">Acknowledgements</a></ol>
+<!--end-toc-->
+
+<h2 id="introduction"><span class="secno">1 </span>Introduction</h2>
+
+<p>The Contacts API allows applications to provide the functionality of a usual address book, thus allowing the display and management (create, edit, remove, etc.) of contacts.
+
+An example of use is provided below:
+<div class="example">
+<pre>var contact = new Contact();
+contact.givenName = 'John'
+contact.familyName = 'Doe'
+var mobilephone = new contactField();
+mobilephone.value = '+34698765432'
+mobilephone.type[0] = 'PREF'
+contact.telephone[0] = mobilephone
+var request = navigator.contacts.save(contact);
+request.onsuccess = function() { 
+    window.console.log('Contact saved!'); 
+}
+request.onerror = function(e) {
+    window.console.error(e);
+}
+</pre>
+</div>
+
+<h2 id="conformance"><span class="secno">2 </span>Conformance</h2>
+
+<p>This specification defines conformance criteria that apply to a single product: the <dfn id="ua">user agent</dfn> that implements
+the interfaces that it contains.
+
+<p>Implementations that use ECMAScript to implement the APIs defined in this specification MUST implement them
+in a manner consistent with the ECMAScript Bindings defined in the Web IDL specification <a href="#refsWEBIDL">[WEBIDL]</a>, as this specification
+uses that specification and terminology.
+
+<h2 id="terminology"><span class="secno">3 </span>Terminology</h2>
+
+<p>The <code><a href="http://dev.w3.org/html5/spec/webappapis.html#eventhandler"> EventHandler</a></code>
+interface represents a callback used for event handlers as defined in <a href="#refsHTML5">[HTML5]</a>.
+
+<p>The concepts <dfn id="queue-a-task"><a href="http://dev.w3.org/html5/spec/webappapis.html#queue-a-task">
+queue a task</a></dfn> and <dfn id="fire-a-simple-event"><a href="http://dev.w3.org/html5/spec/webappapis.html#fire-a-simple-event">
+fire a simple event</a></dfn> are defined in <a href="#refsHTML5">[HTML5]</a>.
+
+<p>The terms <dfn id="event-handler"><a href="http://dev.w3.org/html5/spec/webappapis.html#event-handlers"> event handler</a></dfn>
+and <dfn id="event-handler-event-types"><a href="http://dev.w3.org/html5/spec/webappapis.html#event-handler-event-type"> event handler event types</a></dfn>
+are defined in <a href="#refsHTML5">[HTML5]</a>.
+
+<h2 id="web-contacts-api"><span class="secno">4 </span>Web Contacts API</h2>
+
+<h3 id="interface-navigator"><span class="secno">4.1 </span>Interface <code title="">Navigator</code></h3>
+<pre class="idl">partial interface Navigator {
+  readonly attribute <a href="#contactmanager">ContactManager</a> <a href="#navigator-contacts" title="Navigator-contacts">contacts</a>;
+}</pre>
+
+<p>The <dfn id="navigator-contacts" title="Navigator-contacts"><code>contacts</code></dfn> attribute must return the object through which the contacts functionality can be accessed.
+
+<h3 id="interface-contactmanager"><span class="secno">4.2 </span>Interface <code title="">ContactManager</code></h3>
+
+<pre class="idl">[NoInterfaceObject]
+interface <dfn id="contactmanager">ContactManager</dfn> : <a class="external" href="http://dom.spec.whatwg.org/#eventtarget">EventTarget</a> {
+  <a href="#contactrequest">ContactRequest</a> <a href="#contactmanager-find" title="ContactManager-find">find</a>(optional <a href="#abstractfilter">AbstractFilter</a> <var title="">filter</var>, optional <a href="#filteroptions">FilterOptions</a> options)
+  <a href="#contactrequest">ContactRequest</a> <a href="#contactmanager-clear" title="ContactManager-clear">clear</a>();
+  <a href="#contactrequest">ContactRequest</a> <a href="#contactmanager-save" title="ContactManager-save">save</a>(<a href="#contact">Contact</a> <var title="">contact</var>);
+  <a href="#contactrequest">ContactRequest</a> <a href="#contactmanager-remove" title="ContactManager-remove">remove</a>(<a href="#contact">Contact</a> <var title="">contact</var>);
+};</pre>
+
+<p>The <dfn id="contactmanager-find" title="ContactManager-find"><code>find([<var>filter</var>, <var>options</var>])</code></dfn> method is used to retrieve contacts from the address book that match the given filter. The filter may be an <a href="#attributefilter"><code>AttributeFilter</code></a> to filter based on a contact attribute or a <a href="#compositefilter"><code>CompositeFilter</code></a> to create a more complex filter based on several contact attributes.
+<p>The <dfn id="contactmanager-clear" title="ContactManager-clear"><code>clear()</code></dfn> method is used to remove all contacts in the address book.
+<p>The <dfn id="contactmanager-save" title="ContactManager-save"><code>save(<var>contact</var>)</code></dfn> method is used to save a contact in the address book. If a contact with the same identifier already exists in the address book, it will be updated.
+<p>The <dfn id="contactmanager-remove" title="ContactManager-remove"><code>remove(<var>contact</var>)</code></dfn> method is used to remove a given contact from the address book.
+
+<h3 id="interface-contact"><span class="secno">4.3 </span>Interface <code title="">Contact</code></h3>
+<p>The <a href="#contact"><code>Contact</code></a> interface captures the properties of a contact object. Most properties included in this interface have a corresponding definition in <a href="#refsRFC6350">[RFC6350]</a> (aka vCard 4.0), thereby allowing the API to be supported across implementations supporting this contact format.
+
+<pre class="idl">[Constructor(optional <a href="#contactproperties">ContactProperties</a> <var title="">properties</var>)]
+interface <dfn id="contact">Contact</dfn> : <a href="#contactproperties">ContactProperties</a> {
+  readonly attribute DOMString <a href="#contact-id" title="Contact-id">id</a>;
+  readonly attribute boolean <a href="#contact-readonly" title="Contact-readOnly">readOnly</a>;
+  readonly attribute Date? <a href="#contact-lastupdated" title="Contact-lastUpdated">lastUpdated</a>;
+};</pre>
+
+<p>The <dfn id="contact-id" title="Contact-id"><code>id</code></dfn> attribute must return a globally unique identifier for the given <a href="#contact"><code>Contact</code></a> object.
+An implementation must maintain this globally unique identifier when a <a href="#contact"><code>Contact</code></a> is added to an address book.
+
+<p>The <dfn id="contact-readonly" title="Contact-readOnly"><code>readOnly</code></dfn> attribute must return true if the <a href="#contact"><code>Contact</code></a> cannot be saved to the address book.
+
+<p>The <dfn id="contact-lastupdated" title="Contact-lastUpdated"><code>lastUpdated</code></dfn> attribute must return the date and time when the <a href="#contact"><code>Contact</code></a> was last updated.
+
+<h3 id="interface-contactproperties"><span class="secno">4.4 </span>Interface <code title="">ContactProperties</code></h3>
+<pre class="idl">enum <dfn id="contactgender">ContactGender</dfn> { "male", "female", "none", "unknown" };
+
+[NoInterfaceObject]
+interface <dfn id="contactproperties">ContactProperties</dfn> {
+  attribute DOMString <a href="#contactproperties-displayname" title="ContactProperties-displayName">displayName</a>;
+  attribute DOMString <a href="#contactproperties-honorificprefix" title="ContactProperties-honorificPrefix">honorificPrefix</a>;
+  attribute DOMString <a href="#contactproperties-givenname" title="ContactProperties-givenName">givenName</a>;
+  attribute DOMString <a href="#contactproperties-additionalname" title="ContactProperties-additionalName">additionalName</a>;
+  attribute DOMString <a href="#contactproperties-familyname" title="ContactProperties-familyName">familyName</a>;
+  attribute DOMString <a href="#contactproperties-honorificsuffix" title="ContactProperties-honorificSuffix">honorificSuffix</a>;
+  attribute DOMString[] <a href="#contactproperties-nickname" title="ContactProperties-nickname">nickname</a>;
+  attribute <a href="#contactfield">ContactField</a>[] <a href="#contactproperties-email" title="ContactProperties-email">email</a>;
+  attribute DOMString[] <a href="#contactproperties-photo" title="ContactProperties-photo">photo</a>;
+  attribute <a href="#contactfield">ContactField</a>[] <a href="#contactproperties-url" title="ContactProperties-url">url</a>;
+  attribute DOMString[] <a href="#contactproperties-category" title="ContactProperties-category">category</a>;
+  attribute <a href="#contactaddress">ContactAddress</a>[] <a href="#contactproperties-address" title="ContactProperties-address">address</a>;
+  attribute <a href="#contactfield">ContactField</a>[] <a href="#contactproperties-telephone" title="ContactProperties-telephone">telephone</a>;
+  attribute DOMString[] <a href="#contactproperties-organization" title="ContactProperties-organization">organization</a>;
+  attribute DOMString[] <a href="#contactproperties-jobtitle" title="ContactProperties-jobTitle">jobTitle</a>;
+  attribute Date <a href="#contactproperties-birthday" title="ContactProperties-birthday">birthday</a>;
+  attribute DOMString[] <a href="#contactproperties-note" title="ContactProperties-note">note</a>;
+  attribute <a href="#contactfield">ContactField</a>[] <a href="#contactproperties-impp" title="ContactProperties-impp">impp</a>;
+  attribute Date <a href="#contactproperties-anniversary" title="ContactProperties-anniversary">anniversary</a>;
+  attribute <a href="#contactgender">ContactGender</a> <a href="#contactproperties-gender" title="ContactProperties-gender">gender</a>;
+  attribute DOMString <a href="#contactproperties-relationship" title="ContactProperties-relationship">relationship</a>;
+  attribute DOMString <a href="#contactproperties-phoneticgivenname" title="ContactProperties-phoneticGivenName">phoneticGivenName</a>;
+  attribute DOMString <a href="#contactproperties-phoneticfamilyname" title="ContactProperties-phoneticFamilyName">phoneticFamilyName</a>;
+  attribute boolean <a href="#contactproperties-favorite" title="ContactProperties-favorite">favorite</a>;
+  attribute DOMString <a href="#contactproperties-ringtone" title="ContactProperties-ringTone">ringTone</a>;
+};</pre>
+
+<p>The <dfn id="contactproperties-displayname" title="ContactProperties-displayName"><code>displayName</code></dfn> is the user-friendly name that is used for this <a href="#contact"><code>Contact</code></a>.
+<p>The <dfn id="contactproperties-honorificprefix" title="ContactProperties-honorificPrefix"><code>honorificPrefix</code></dfn> is the honorific prefix that is used for this <a href="#contact"><code>Contact</code></a>.
+<p>The <dfn id="contactproperties-givenname" title="ContactProperties-givenName"><code>givenName</code></dfn> is the first name that is used for this <a href="#contact"><code>Contact</code></a>.
+<p>The <dfn id="contactproperties-additionalname" title="ContactProperties-additionalName"><code>additionalName</code></dfn> is the additional name that is used for this <a href="#contact"><code>Contact</code></a> (e.g. a middle name).
+<p>The <dfn id="contactproperties-familyname" title="ContactProperties-familyName"><code>familyName</code></dfn> is the last name that is used for this <a href="#contact"><code>Contact</code></a>.
+<p>The <dfn id="contactproperties-honorificsuffix" title="ContactProperties-honorificSuffix"><code>honorificSuffix</code></dfn> is the honorific prefix that is used for this <a href="#contact"><code>Contact</code></a>.
+<p>The <dfn id="contactproperties-nickname" title="ContactProperties-nickname"><code>nickname</code></dfn> is an array of nicknames that are used for this <a href="#contact"><code>Contact</code></a>.
+<p>The <dfn id="contactproperties-email" title="ContactProperties-email"><code>email</code></dfn> is an array of email addresses that are used for this <a href="#contact"><code>Contact</code></a>.
+<p>The <dfn id="contactproperties-photo" title="ContactProperties-photo"><code>photo</code></dfn> is an array of photos URIs that are used for this <a href="#contact"><code>Contact</code></a>. <code>data:</code> URIs may be be used.
+<p>The <dfn id="contactproperties-url" title="ContactProperties-url"><code>url</code></dfn> is an array of URLs that are used for this <a href="#contact"><code>Contact</code></a>. Examples for individuals include personal web sites, blogs, and social networking site identifiers.
+<p>The <dfn id="contactproperties-category" title="ContactProperties-category"><code>category</code></dfn> is an array of categories that this <a href="#contact"><code>Contact</code></a> belongs to.
+<p>The <dfn id="contactproperties-address" title="ContactProperties-address"><code>address</code></dfn> is an array of addresses that are used for this <a href="#contact"><code>Contact</code></a>.
+<p>The <dfn id="contactproperties-telephone" title="ContactProperties-telephone"><code>telephone</code></dfn> is an array of telephone numbers that are used for this <a href="#contact"><code>Contact</code></a>.
+<p>The <dfn id="contactproperties-organization" title="ContactProperties-organization"><code>organization</code></dfn> is an array of organization names that this <a href="#contact"><code>Contact</code></a> belongs to.
+<p>The <dfn id="contactproperties-jobtitle" title="ContactProperties-jobTitle"><code>jobTitle</code></dfn> is an array of job titles for this <a href="#contact"><code>Contact</code></a>.
+<p>The <dfn id="contactproperties-birthday" title="ContactProperties-birthday"><code>birthday</code></dfn> is the birthday date that is used for this <a href="#contact"><code>Contact</code></a>.
+<p>The <dfn id="contactproperties-note" title="ContactProperties-note"><code>note</code></dfn> is an array of free-form notes that are used for this <a href="#contact"><code>Contact</code></a>.
+<p>The <dfn id="contactproperties-impp" title="ContactProperties-impp"><code>impp</code></dfn> is an array of URIs for instant messaging and presence protocol communications for this <a href="#contact"><code>Contact</code></a> (e.g. <code>"xmpp:alice@example.com"</code>).
+<p>The <dfn id="contactproperties-anniversary" title="ContactProperties-anniversary"><code>anniversary</code></dfn> is the anniversary date (e.g. wedding anniversary) that is used for this <a href="#contact"><code>Contact</code></a>.
+<p>The <dfn id="contactproperties-gender" title="ContactProperties-gender"><code>gender</code></dfn> is the gender for this <a href="#contact"><code>Contact</code></a>. It may be <code>"male"</code>, <code>"female"</code>, <code>"other"</code>, <code>"none"</code> or <code>"unknown"</code>.
+<p>The <dfn id="contactproperties-relationship" title="ContactProperties-relationship"><code>relationship</code></dfn> indicates the relationship with this <a href="#contact"><code>Contact</code></a> (e.g. <code>"parent"</code>, <code>"child"</code>, <code>"sibling"</code>, <code>"spouse"</code>).
+<p>The <dfn id="contactproperties-phoneticgivenname" title="ContactProperties-phoneticGivenName"><code>phoneticGivenName</code></dfn> is the first name that is used for this <a href="#contact"><code>Contact</code></a> in phonetic. It may be used for sorting.
+<p>The <dfn id="contactproperties-phoneticfamilyname" title="ContactProperties-phoneticFamilyName"><code>phoneticFamilyName</code></dfn> is the last name that is used for this <a href="#contact"><code>Contact</code></a> in phonetic. It may be used for sorting.
+<p>The <dfn id="contactproperties-favorite" title="ContactProperties-favorite"><code>favorite</code></dfn> indicates if this <a href="#contact"><code>Contact</code></a> is marked as favorite (or "starred").
+<p>The <dfn id="contactproperties-ringtone" title="ContactProperties-ringTone"><code>ringTone</code></dfn> is the URI to the ring tone that is used for calls from this <a href="#contact"><code>Contact</code></a>.
+
+<h3 id="interface-contactfield"><span class="secno">4.5 </span>Interface <code title="">ContactField</code></h3>
+<pre class="idl">interface <dfn id="contactfield">ContactField</dfn> {
+  attribute DOMString[] <a href="#contactfield-type" title="ContactField-type">type</a>;
+  attribute DOMString <a href="#contactfield-value" title="ContactField-value">value</a>;
+};</pre>
+
+<p>The <dfn id="contactfield-type" title="ContactField-type"><code>type</code></dfn> is an array of types associated with this <a href="#contactfield"><code>ContactField</code></a>. Use <code>"PREF"</code> if the value is the primary or preferred one for this field. Example of types are <code>"home"</code>, <code>"work"</code>.
+
+<p>The <dfn id="contactfield-value" title="ContactField-value"><code>value</code></dfn> is the value for this <a href="#contactfield"><code>ContactField</code></a>.
+
+<h3 id="interface-contactaddress"><span class="secno">4.6 </span>Interface <code title="">ContactAddress</code></h3>
+<pre class="idl">interface <dfn id="contactaddress">ContactAddress</dfn> {
+  attribute DOMString <a href="#contactaddress-type" title="ContactAddress-type">type</a>;
+  attribute DOMString <a href="#contactaddress-streetaddress" title="ContactAddress-streetAddress">streetAddress</a>;
+  attribute DOMString <a href="#contactaddress-locality" title="ContactAddress-locality">locality</a>;
+  attribute DOMString <a href="#contactaddress-region" title="ContactAddress-region">region</a>;
+  attribute DOMString <a href="#contactaddress-postalcode" title="ContactAddress-postalCode">postalCode</a>;
+  attribute DOMString <a href="#contactaddress-country" title="ContactAddress-country">country</a>;
+};</pre>
+
+<p>The <dfn id="contactaddress-type" title="ContactAddress-type"><code>type</code></dfn> is an array of types associated with this <a href="#contactaddress"><code>ContactAddress</code></a>. Use <code>"PREF"</code> if the value is the primary or preferred one for this field. Example of types are <code>"home"</code>, <code>"work"</code>.
+
+<p>The <dfn id="contactaddress-streetaddress" title="ContactAddress-streetAddress"><code>streetAddress</code></dfn> is the street address part of this <a href="#contactaddress"><code>ContactAddress</code></a>.
+
+<p>The <dfn id="contactaddress-locality" title="ContactAddress-locality"><code>locality</code></dfn> is the locality / city part of this <a href="#contactaddress"><code>ContactAddress</code></a>.
+
+<p>The <dfn id="contactaddress-region" title="ContactAddress-region"><code>region</code></dfn> is the region part of this <a href="#contactaddress"><code>ContactAddress</code></a>.
+
+<p>The <dfn id="contactaddress-postalcode" title="ContactAddress-postalCode"><code>postalCode</code></dfn> is the postal code part of this <a href="#contactaddress"><code>ContactAddress</code></a>.
+
+<p>The <dfn id="contactaddress-country" title="ContactAddress-country"><code>country</code></dfn> is the country name part of this <a href="#contactaddress"><code>ContactAddress</code></a>.
+
+<h3 id="interface-contactrequest"><span class="secno">4.7 </span>Interface <code title="">ContactRequest</code></h3>
+<pre class="idl">interface <dfn id="contactrequest">ContactRequest</dfn> : <a class="external" href="http://dom.spec.whatwg.org/#eventtarget">EventTarget</a>
+  readonly attribute DOMString <a href="#contactrequest-readystate" title="ContactRequest-readyState">readyState</a>;
+
+  readonly attribute any <a href="#contactrequest-result" title="ContactRequest-result">result</a>;
+  readonly attribute <a class="external" href="http://dom.spec.whatwg.org/#domerror">DOMError</a> <a href="#contactrequest-error" title="ContactRequest-error">error</a>;
+
+  [TreatNonCallableAsNull]
+  attribute Function? <a href="#contactrequest-onsuccess" title="ContactRequest-onsuccess">onsuccess</a>;
+
+  [TreatNonCallableAsNull]
+  attribute Function? <a href="#contactrequest-onerror" title="ContactRequest-onerror">onerror</a>;
+};
+</pre>
+
+<p>The <dfn id="contactrequest-readystate" title="ContactRequest-readyState"><code>readyState</code></dfn> attribute must return the state of this <a href="#contactrequest"><code>ContactRequest</code></a>. Possible values are <code>"pending"</code> and <code>"done"</code>.
+
+<p>The <dfn id="contactrequest-result" title="ContactRequest-result"><code>result</code></dfn> attribute must return the result of this <a href="#contactrequest"><code>ContactRequest</code></a> (if any), once the <a href="#contactrequest-readystate" title="ContactRequest-readyState"><code>readyState</code></a> is <code>"done"</code> and the <code>success</code> event is fired.
+
+<p>The <dfn id="contactrequest-error" title="ContactRequest-error"><code>error</code></dfn> attribute must return the error that occurred for this <a href="#contactrequest"><code>ContactRequest</code></a> (if any). This attribute is populated when the <code>error</code> event is fired.
+
+<p>The <dfn id="contactrequest-onsuccess" title="ContactRequest-onsuccess"><code>onsuccess</code></dfn> is the callback function called when this <a href="#contactrequest"><code>ContactRequest</code></a> completes successfuly.
+
+<p>The <dfn id="contactrequest-onerror" title="ContactRequest-onerror"><code>onerror</code></dfn> is the callback function called when an error occurred during the execution of this <a href="#contactrequest"><code>ContactRequest</code></a>.
+
+<h3 id="interface-contactchangeevent"><span class="secno">4.8 </span>Interface <code title="">ContactChangeEvent</code></h3>
+<p>The <code title="">change</code> event is fired when contacts are added, modified or removed.
+
+<p>When this happens, the user agent must queue a task to fire an event with the name <code title="">change</code>, which does not bubble and is not cancelable, and which uses the <a href="#contactchangeevent"><code>ContactChangeEvent</code></a> interface, at each <a href="#contactmanager"><code>ContactManager</code></a> object that is affected.
+
+<pre class="idl">[Constructor(DOMString <var title="">type</var>, optional <a href="#contactchangeeventinit">ContactChangeEventInit</a> <var title="">eventInitDict</var>)]
+interface <dfn id="contactchangeevent">ContactChangeEvent</dfn> : <a class="external" href="http://dom.spec.whatwg.org/#event">Event</a> {
+  readonly attribute DOMString[] <a href="#contactchangeevent-added" title="ContactChangeEvent-added">added</a>;
+  readonly attribute DOMString[] <a href="#contactchangeevent-modified" title="ContactChangeEvent-modified">modified</a>;
+  readonly attribute DOMString[] <a href="#contactchangeevent-removed" title="ContactChangeEvent-removed">removed</a>;
+};
+
+dictionary <dfn id="contactchangeeventinit">ContactChangeEventInit</dfn> : <a class="external" href="http://dom.spec.whatwg.org/#eventinit">EventInit</a> {
+  DOMString[] added;
+  DOMString[] modified;
+  DOMString[] removed;
+};</pre>
+
+<p>The <dfn id="contactchangeevent-added" title="ContactChangeEvent-added"><code>added</code></dfn> attribute must return an array of identifiers for <a href="#contact"><code>Contact</code></a> objects that were added to the address book.
+
+<p>The <dfn id="contactchangeevent-modified" title="ContactChangeEvent-modified"><code>modified</code></dfn> attribute must return an array of identifiers for <a href="#contact"><code>Contact</code></a> objects that were modified in the address book.
+
+<p>The <dfn id="contactchangeevent-removed" title="ContactChangeEvent-removed"><code>removed</code></dfn> attribute must return an array of identifiers for <a href="#contact"><code>Contact</code></a> objects that were removed from the address book.
+
+<h2 id="contact-filtering"><span class="secno">5 </span>Contact filtering</h2>
+
+<p>This generic filtering API provides searching functionality for contacts.
+
+<h3 id="interface-abstractfilter"><span class="secno">5.1 </span>Interface <code title="">AbstractFilter</code></h3>
+<p><a href="#abstractfilter"><code>AbstractFilter</code></a> is the abstract interface inherited by all filter types.
+
+<pre class="idl">[NoInterfaceObject]
+interface <dfn id="abstractfilter">AbstractFilter</dfn> {
+};</pre>
+
+<h3 id="interface-compositefilter"><span class="secno">5.2 </span>Interface <code title="">CompositeFilter</code></h3>
+<p>The <a href="#compositefilter"><code>CompositeFilter</code></a> is a filter composed of several other filters. It is used to filter contacts based on more than one condition.
+
+<pre class="idl">enum <dfn id="compositefilteroperator">CompositeFilterOperator</dfn> { "and", "or" };
+
+Constructor(DOMString <var title="">operator</var>, <a href="#abstractfilter">AbstractFilter</a>[] <var title="">filters</var>)]
+interface <dfn id="compositefilter">CompositeFilter</dfn> : <a href="#abstractfilter">AbstractFilter</a> {
+  attribute <a href="#compositefilteroperator">CompositeFilterOperator</a> <a href="#compositefilter-operator" title="CompositeFilter-operator">operator</a>;
+  attribute <a href="#abstractfilter">AbstractFilter</a>[] <a href="#compositefilter-filters" title="CompositeFilter-filters">filters</a>;
+};</pre>
+
+<p>The <dfn id="compositefilter-operator" title="CompositeFilter-operator"><code>operator</code></dfn> attribute indicates how the filters should be joined together. The <code>"and"</code> operator returns a record if it matched by <b>all</b> filters. The <code>"or"</code> operator returns a contact if it matched by one of the filters.
+
+<p>The <dfn id="compositefilter-filters" title="CompositeFilter-filters"><code>filters</code></dfn> attribute is an array of filters that are part of this <a href="#compositefilter"><code>CompositeFilter</code></a>.
+
+<h3 id="interface-attributefilter"><span class="secno">5.3 </span>Interface <code title="">AttributeFilter</code></h3>
+<p>The <a href="#attributefilter"><code>AttributeFilter</code></a> is a filter used to return contacts based on a condition on one of its attributes.
+
+<pre class="idl">enum <dfn id="attributefilteroperator">AttributeFilterOperator</dfn> { "is", "contains", "startswith", "endswith", "exists" };
+
+Constructor(DOMString <var title="">filterBy</var>, DOMString <var title="">attributeOp</var>, optional any filterValue)]
+interface <dfn id="attributefilter">AttributeFilter</dfn> : <a href="#abstractfilter">AbstractFilter</a> {
+  attribute DOMString <a href="#attributefilter-filterby" title="AttributeFilter-filterBy">filterBy</a>;
+  attribute <a href="#attributefilteroperator">AttributeFilterOperator</a> <a href="#attributefilter-operator" title="AttributeFilter-operator">operator</a>;
+  attribute any <a href="#attributefilter-filtervalue" title="AttributeFilter-filterValue">filterValue</a>;
+};</pre>
+
+<p>The <dfn id="attributefilter-filterby" title="AttributeFilter-filterBy"><code>filterBy</code></dfn> attribute indicates which contact attribute we should filter on (e.g. <code>"givenName"</code>, <code>"nickname"</code>).
+
+<p>The <dfn id="attributefilter-operator" title="AttributeFilter-operator"><code>operator</code></dfn> attribute the operator used for matching. Possible values are <code>"is"</code>, <code>"contains"</code>, <code>"startsWith"</code>, <code>"endsWith"</code>, <code>"exists"</code>. The following operators only apply to attributes of DOMString type: <code>"contains"</code>, <code>"startsWith"</code>, <code>"endsWith"</code>.
+
+<p>The <dfn id="attributefilter-filtervalue" title="AttributeFilter-filterValue"><code>filterValue</code></dfn> attribute is the value used for matching. This value should be <code>null</code> if the <a href="#attributefilter-operator" title="AttributeFilter-operator"><code>operator</code></a> is set to <code>"exists"</code>.
+
+<h3 id="dictionary-filteroptions"><span class="secno">5.4 </span>Dictionary <code title="">FilterOptions</code></h3>
+The <a href="#filteroptions"><code>FilterOptions</code></a> dictionary is used to customize the filtering behavior such as sorting.
+
+<pre class="idl">enum <dfn id="sortorder">SortOrder</dfn> { "ascending", "descending" };
+
+dictionary <dfn id="filteroptions">FilterOptions</dfn> {
+  DOMString <a href="#filteroptions-sortby" title="FilterOptions-sortBy">sortBy</a>;
+  <a href="#sortorder">SortOrder</a> <a href="#filteroptions-sortorder" title="FilterOptions-sortOrder">sortOrder</a> = "ascending";
+  unsigned long <a href="#filteroptions-limit" title="FilterOptions-limit">limit</a>;
+};</pre>
+
+<p>The <dfn id="filteroptions-sortby" title="FilterOptions-sortBy"><code>filterBy</code></dfn> key indicates which attribute should be used for sorting the filtering results (e.g. <code>"givenName"</code>, <code>"nickname"</code>).
+
+<p>The <dfn id="filteroptions-sortorder" title="FilterOptions-sortOrder"><code>sortOrder</code></dfn> key indicates the order in which the filtering results should be sorted. Possible values are <code>"ascending"</code> (default) and <code>"descending"</code>.
+
+<p>The <dfn id="filteroptions-limit" title="FilterOptions-limit"><code>limit</code></dfn> key indicates the maximum number of filtering results that should be returned.
+
+<h2 class="no-num" id="references">References</h2>
+<div id="anolis-references"><dl><dt id="refsHTML5">[HTML5]
+<dd><cite><a href="http://dev.w3.org/html5/spec/">HTML5</a></cite>, Ian Hickson. W3C.
+
+<dt id="refsRFC6350">[RFC6350]
+<dd><cite><a href="http://tools.ietf.org/html/rfc6350">vCard Format Specification</a></cite>, Simon Perreault. IETF.
+
+<dt id="refsWEBIDL">[WEBIDL]
+<dd><cite><a href="http://dev.w3.org/2006/webapi/WebIDL/">Web IDL</a></cite>, Cameron McCormack. W3C.
+
+</dl></div>
+
+<h2 class="no-num" id="acknowledgments">Acknowledgements</h2>
+
+<p> TODO
