@@ -49,16 +49,15 @@
         An example of use is provided below:
       
       <pre class="example highlight">
-            var call = navigator.messaging.sendSms('+34638883076','Enjoy the show!'));
-            call.onsuccess = function() { 
+            var sms_send_request = navigator.messaging.sendSms('+34638883076','Enjoy the show!'));
+            sms_send_request.onsuccess = function() { 
                         window.console.log('Message Sent!'); 
             }
             
-            call.onerror = function(e) {
+            sms_send_request.onerror = function(e) {
                     window.console.error(e);
             }
-            
-            call.connect();
+
       </pre>
     </section>
     
@@ -111,7 +110,7 @@
       <dl title="[NoInterfaceObject]
                  interface MobileMessagingManager : EventTarget"
           class="idl">
-        <dt> MessagingRequest sendSMS ()</dt>
+        <dt> MessagingRequest sendSms ()</dt>
         <dd>This method allows to instantiate a new <code>MessagingRequest</code> object intended to send an SMS message with
         the text of the <code>text</code> parameter to the destination number indicated by the <code>to</code>
         parameter.
@@ -127,7 +126,7 @@
          </dl>
         </dd>
 
-        <dt> MessagingRequest[] sendSMS ()</dt>
+        <dt> MessagingRequest[] sendSms ()</dt>
         <dd>This method allows to instantiate an array of new <code>MessagingRequest</code> objects intended to send an SMS
         message with the text of the <code>text</code> parameter to each of the destination numbers indicated in the
         <code>to</code> array parameter.
@@ -154,7 +153,7 @@
          </dl>
         </dd>
 
-        <dt> MessagingRequest sendMMS ()</dt>
+        <dt> MessagingRequest sendMms ()</dt>
         <dd>This method allows to instantiate a new <code>MessagingRequest</code> object intended to send an MMS message with
         the content included in the <code>content</code> parameter to the destination number indicated by the <code>to</code>
         parameter.
@@ -170,7 +169,7 @@
          </dl>
         </dd>
 
-        <dt> MessagingRequest sendMMS ()</dt>
+        <dt> MessagingRequest sendMms ()</dt>
         <dd>This method allows to instantiate a new <code>MessagingRequest</code> object intended to send an MMS message with
         the content included in the <code>content</code> parameter to the destination numbers indicated by the <code>to</code>
         parameter.
@@ -277,12 +276,17 @@
         <dd></dd>
 
         <dt class="no-docs">
-          attribute EventHandler ondelivered
+          attribute EventHandler ondeliverysuccess
+        </dt>
+        <dd></dd>
+ 
+        <dt class="no-docs">
+          attribute EventHandler ondeliveryfailure
         </dt>
         <dd></dd>
       </dl>
  
-      <p> The <dfn><code>sendSMS</code></dfn> method when invoked MUST run the following steps:
+      <p> The <dfn><code>sendSms</code></dfn> method when invoked MUST run the following steps:
         <ol>
          <li>For each of the intended recipients in the <code>to</code> parameter: create a new instance of
          <code>SmsMessage</code> and a new instance of <code>MessagingRequest</code> and:
@@ -315,7 +319,7 @@
          </ol>
         </ol>
         
-      <p> The <dfn><code>sendMMS</code></dfn> method when invoked MUST run the following steps:
+      <p> The <dfn><code>sendMms</code></dfn> method when invoked MUST run the following steps:
         <ol>
          <li>Create a new instance of <code>MmsMessage</code> and a new instance of <code>MessagingRequest</code> and:
          <ol>
@@ -480,7 +484,8 @@
       <section>
         <h2>Event handlers</h2>
         <p>The following are the <a>event handlers</a> (and their corresponding <a>event handler event types</a>) that
-        MUST be supported as attributes by the <a>MobileMessagingManager</a> object:
+        MUST be supported as attributes by the <a>MobileMessagingManager</a> object. These type of events SHALL implement the
+        <a>MessagingEvent</a> interface.
         
         <table class="simple">
           <thead>
@@ -499,8 +504,12 @@
               <td><code><dfn>sent</dfn></code></td>
             </tr>
             <tr>
-              <td><strong><code>ondelivered</code></strong></td>
-              <td><code><dfn>delivered</dfn></code></td>
+              <td><strong><code>ondeliverysuccess</code></strong></td>
+              <td><code><dfn>deliverysuccess</dfn></code></td>
+            </tr>
+            <tr>
+              <td><strong><code>ondeliveryfailure</code></strong></td>
+              <td><code><dfn>deliveryfailure</dfn></code></td>
             </tr>
           </tbody>
         </table>
@@ -750,7 +759,7 @@
     
     <section>
       <h2><a>MessagingEvent</a> Interface</h2>
-      <p>The <a>MessagingEvent</a> interface represents events related to SMS API.
+      <p>The <a>MessagingEvent</a> interface represents events related to Messaging API.
       <dl title="[NoInterfaceObject]
                  interface MessagingEvent : Event"
           class="idl">
