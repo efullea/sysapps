@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Runtime and Security Model for Web Applications</title>
+    <meta http-equiv='Content-Type' content='text/html; charset=utf-8'>
+    <script src="http://www.w3.org/Tools/respec/respec-w3c-common" class="remove"></script>
+    <script class='remove'>
+      var respecConfig = {
+        specStatus:           "unofficial",
+        // TODO
+        //shortName:            "",
+
+        // TODO
+        //publishDate:  "2012-12-12",
+        //previousPublishDate:  "2011-06-07",
+        //previousMaturity:     "ED",
+        edDraftURI: "https://github.com/mounirlamouri/sysapps/blob/master/proposals/RunTime-Security/Overview.html",
+
+        // if this is a LCWD, uncomment and set the end of its review period
+        // lcEnd: "2009-08-05",
+        extraCSS:   ["../ReSpec.js/css/respec.css"],
+        noIDLIn:    true,
+
+        editors:  [
+            { name: "Mounir Lamouri",
+              company: "Mozilla",
+              companyURL: "http://mozilla.org/" },
+        ],
+
+        wg:           "System Applications Working Group",
+        wgURI:        "http://www.w3.org/2012/sysapps/",
+        wgPublicList: "public-sysapps",
+        wgPatentURI:  "http://www.w3.org/2004/01/pp-impl/58119/status"
+      };
+    </script>
+  </head>
+
+  <body>
+    <section id='abstract'>
+      This document specifies the runtime and security model of Web Applications.
+      It is describing how an application is defined trough an application
+      manifest, how it can be installed, updated and packaged. It is also
+      specifying how such an application can put in background, put back in
+      foreground or waken up.<br>
+      Finaly, the document describes the security model for such applications.
+      This includes the permission model and the different security rules that
+      would apply.
+    </section>
+
+    <section>
+      <h2>Application Manifest</h2>
+
+      <p>An <dfn>application manifest</dfn> is a JSON file describing an
+      installable web application. This JSON file consists of a top-level object
+      and several properties. The JSON grammar is described in [[!RFC4627]].</p>
+
+      <pre class="example highlight">
+      {
+        "name": "MozillaBall",
+        "description": "Exciting Open Web development action!",
+        "launch_path": "/",
+        "version": "1.0",
+        "type": "privileged",
+        "icons": {
+          "16": "/img/icon_16.png",
+          "48": "/img/icon_48.png",
+          "128": "/img/icon_128.png"
+        },
+        "developer": {
+          "name": "Mozilla",
+          "url": "https://mozilla.org/en-US"
+        },
+        "installs_allowed_from": [
+          "https://marketplace.mozilla.org"
+        ],
+        "appcache_path": "/cache.manifest",
+        "locales": [
+          "es": {
+            "description": "¡Acción abierta emocionante del desarrollo del Web!",
+            "developer": {
+              "url": "https://mozilla.org/es-ES"
+            }
+          }
+        ],
+        "default_locale": "en",
+        "screen_size": {
+          "min_width": "600",
+          "min_height": "300"
+        },
+        "required_features": [
+          "touch", "geolocation", "webgl"
+        ],
+        "orientation": "landscape",
+        "permissions": {
+          "contacts": {
+            "description": "Required for autocompletion in the share screen",
+            "access": "read"
+          }
+        },
+        "fullscreen": "true",
+        "activities": {
+          "share": {
+            "filters": {
+              "type": ["image/png", "image/gif"]
+            }
+            "href": "/share.html",
+            "disposition": "window"
+          }
+        }
+      }
+      </pre>
+
+      <section>
+        <h2>Properties</h2>
+
+        <p>All leaf properties MUST contain a string value unless specified
+           otherwise.</p>
+        <p>The following properties MUST be part of the <a>application
+           manifest</a>: <code>name</code> and <code>description</code>.
+           In addition, if <code>locales</code> is part of the <a>application
+           manifest</a>, <code>default_locale</code> MUST be part of the <a>
+           application manifest</a>. The other properties are optional.</p>
+
+        <ul class="properties">
+          <li><dfn id="propdef-name">name</dfn>: The name of the web application
+          in the default locale. The name SHOULD not be longer than 128
+          characters.</li>
+
+          <li><dfn id="propdef-description">description</dfn>: A short
+          description of the web application. The description MUST be in the
+          default locale. The description SHOULD not be longer than 1024
+          characters.</li>
+
+          <li><dfn id="propdef-default_locale">default_locale</dfn>: The locale
+          of the top-level name and description.</li>
+
+          <li><dfn id="propdef-launch_path">launch_path</dfn>: The path within
+          the web application's origin that is loaded when the application is
+          launched.</li>
+
+          <li><dfn id="propdef-icons">icons</dfn>: A map of icon sizes to URIs of
+          the icons (which may be absolute, relative or data URIs). Icons MUST be
+          square. Paths beginning with "<code>/</code>" are treated as relative
+          to the origin of the app.</li>
+
+          <li>
+            <dfn id="propdef-type">type</dfn>: Determines how this app and the
+            manifest will be verified by the runtime, and what security policy
+            will apply. See <a href=
+            "https://wiki.mozilla.org/Apps/Security#Types_of_applications">types
+            of applications</a>, for a more detailed description. The value for
+            this property MUST be one of the following:
+
+            <ul>
+              <li>
+                <dfn id="propdef-type-web">web</dfn>: A regular web app, may be
+                self hosted or distributed by an app store. All permissions are
+                opt-in at install and runtime, limited to permissions enumerated
+                in the manifest. If the <a>type</a> property is not specified,
+                this will be the default value.
+              </li>
+
+              <li><dfn id="propdef-type-privileged">privileged</dfn>: An
+              authenticated application approved by an app store. Equivalent in
+              functionality and security to apps on other mobile platforms, but
+              is required to be approved by an app store after a code review or
+              some equivalent risk management process. At install, app assets are
+              verified &amp; remain stored locally in a package. Requires a
+              Content Security Policy, and all explicit permissions are requested
+              at runtime, showing user the app's data usage intentions, and
+              persisted by default.</li>
+
+              <li><dfn id="propdef-type-certified">certified</dfn>: This category
+              is reserved for apps that require approval by a device vendor or
+              equivalent party due to risk of device corruption or risk to
+              critical functionality. These include apps such as the system
+              settings app, default dialer (to ensure emergency services are
+              always accessible), core radio and power management, etc. Not
+              intended for 3rd party applications.</li>
+            </ul>
+          </li>
+
+          <li>
+            <dfn id="propdef-developer">developer</dfn>: Information about the
+            developer of the application, suitable for display.
+
+            <ul>
+              <li><dfn id="propdef-developer-name">name</dfn>: The name of the
+              developer.</li>
+
+              <li><dfn id="propdef-url">url</dfn>: A URL pointing to the
+              developer's website</li>
+            </ul>
+          </li>
+
+          <li>
+            <dfn id="propdef-locales">locales</dfn>: A map of locale specific
+            overrides of data contained in the manifest. Each locale key is keyed
+            on a locale tag [RFC4646], and contains a sparse representation of
+            the manifest. Any field in the <a>locales</a> property will override
+            the corresponding property in the manifest. The <a>locales</a>,
+            <a>installs_allowed_from</a>, and <a>default_locale</a> CANNOT be
+            overridden. If the <a>locales</a> property is set, the
+            <a>default_locale</a> MUST also be set.
+          </li>
+
+          <li><dfn id=
+          "propdef-installs_allowed_from">installs_allowed_from</dfn>: An array
+          of origins that are allowed to trigger installation of this
+          application. This field allows the developer to restrict installation
+          of their application to specific sites. If the value is omitted,
+          installs are allowed from any site.</li>
+
+          <li>
+            <dfn id="propdef-appcache_path">appcache_path</dfn>: The absolute
+            path to the application cache (<a href=
+            "http://www.w3.org/TR/2011/WD-html5-20110525/offline.html#appcache">AppCache</a>)
+            manifest. When an app is installed, the AppCache manifest will be
+            fetched and parsed, and its static assets under the CACHE header will
+            be cached.
+          </li>
+
+          <li><dfn id="propdef-version">version</dfn>: A string that represents
+          the version of this manifest. The User-Agent does not interpret this
+          value in any way and is opqaue to everyone but the application itself.
+          The field is provided to help the developer deal with various update
+          cases, which will be discussed in following sections.</li>
+
+          <li><dfn id="propdef-screen_size">screen_size</dfn>: This object may
+          contain the <code>min_height</code> and <code>min_width</code>
+          properties that describe the minimum height and width (in pixels) the
+          application needs in order to render correctly. Interpretation of these
+          values is left up to the runtime and/or app store.</li>
+
+          <li><dfn id="propdef-required_features">required_features</dfn>: This
+          array consists of a set of values that describes the mandatory features
+          the application needs in order to run correctly. A full list of valid
+          values is TBD.</li>
+
+          <li>
+            <dfn id="propdef-orientation">orientation</dfn>: This value defines
+            the allowed orientations at which the application may be rendered. If
+            a value is provided, the runtime MUST ensure that the viewport
+            rendering the application will adhere to one of the specified values
+            and never orient the application in a direction not specified in this
+            property. The default behavior SHOULD be to rotate the viewport at an
+            angle that best fits the orientation of the device, and MUST change
+            as the user spatially rotates the device. The value MUST be an
+            array containing one or more of the following string values
+            (duplicates SHOULD be ignored):
+
+            <ul>
+              <li><dfn id=
+              "propdef-orientation-portrait-primary">portrait-primary</dfn>:
+              Locked to a single portrait direction. If the device has an obvious
+              primary orientation in portrait mode, this is that orientation. If
+              there is no obvious primary orientation due to landscape being the
+              primary orientation for the device, this is the orientation if
+              rotating the device 90 degrees clock-wise from the primary
+              landscape mode.</li>
+
+              <li><dfn id=
+              "propdef-orientation-landscape-primary">landscape-primary</dfn>:
+              Locked to a single landscape direction. If the device has an
+              obvious primary orientation in landscape mode, this is that
+              orientation. If there is no obvious landscape orientation due to
+              portrait being the primary orientation for the device, this is the
+              orientation if rotating the device 90 degrees clock-wise from the
+              primary portrait mode.</li>
+
+              <li>
+                <dfn id=
+                "propdef-orientation-portrait-secondary">portrait-secondary</dfn>:
+                The portrait mode opposite of <a>portrait-primary</a>.
+              </li>
+
+              <li>
+                <dfn id=
+                "propdef-orientation-landscape-secondary">landscape-secondary</dfn>:
+                The landscape mode opposite of <a>landscape-primary</a>.
+              </li>
+
+              <li><dfn id="propdef-orientation-portrait">portrait</dfn>:
+              Equivalent to
+              <code>["portrait-primary", "portrait-secondary"]</code>.</li>
+
+              <li><dfn id="propdef-orientation-landscape">landscape</dfn>:
+              Equivalent to
+              <code>["landscape-primary", "landscape-secondary"]</code>.</li>
+            </ul>
+          </li>
+
+          <li><dfn id="propdef-permisssions">permissions</dfn>: This value
+          consists of a set of permissions that the application needs. An
+          application MUST list every API that is considered to require user
+          permission in this field. Usage of an API without a corresponding
+          entry in the manifest will fail. The field is an object, with each
+          property name specifying a single permission, and object containing
+          the following fields:
+
+            <ul>
+              <li>
+                <dfn id="propdef-permissions-desc">description</dfn>: Contains
+                a human readable string specifying the intent behind requesting
+                use of this API. This property is mandatory.
+              </li>
+              <li>
+                <dfn id="propdef-permissions-access">access</dfn>: Contains a
+                a string specifying the type of access required for this
+                permission. This field is mandatory for a certain subset of
+                permissions, and MUST be one of <dfn>read</dfn>,
+                <dfn>readwrite</dfn>, <dfn>readcreate</dfn>, or
+                <dfn>createonly</dfn>.
+              </li>
+            </ul>
+
+          The following table lists the various permissions, and whether
+          they require an <a>access</a> property.
+
+          <table>
+            <tr>
+              <th>Permission Name</th>
+              <th>Permission Description</th>
+              <th>Access Type</th>
+            </tr>
+            <tr>
+              <td><code>alarm</code></td>
+              <td>Schedule a notification, or for an application to be started,
+              at a specific time.</td>
+              <td>-</td>
+            </tr>
+            <tr>
+              <td><code>backgroundservice</code></td>
+              <td>Enable a web application to run in the background and perform
+              tasks like syncing or respond to incoming messages.</td>
+              <td>-</td>
+            </tr>
+            <tr>
+              <td><code>bluetooth</code></td>
+              <td>Low level access to bluetooth hardware.</td>
+              <td>-</td>
+            </tr>
+            <tr>
+              <td><code>browser</code></td>
+              <td>Enables implementing a browser.</td>
+              <td>-</td>
+            </tr>
+            <tr>
+              <td><code>camera</code></td>
+              <td>Take photos, shoot video and control the camera.</td>
+              <td>-</td>
+            </tr>
+            <tr>
+              <td><code>contacts</code></td>
+              <td>Add, read, or modify contacts from the address book on the
+              device and read contacts from the SIM.</td>
+              <td>readonly, readwrite, readcreate, createonly</td>
+            </tr>
+            <tr>
+              <td><code>desktop-notification</code></td>
+              <td>Display a notification on the user's desktop.</td>
+              <td>-</td>
+            </tr>
+            <tr>
+              <td><code>device-storage</code></td>
+              <td>Add, read, or modify files stored at a central location on the
+              device.</td>
+              <td>readonly, readwrite, readcreate, createonly</td>
+            </tr>
+            <tr>
+              <td><code>fmradio</code></td>
+              <td>Control the FM radio.</td>
+              <td>-</td>
+            </tr>
+            <tr>
+              <td><code>geolocation</code></td>
+              <td>Obtain the current location of the user.</td>
+              <td>-</td>
+            </tr>
+            <tr>
+              <td><code>mobileconnection</code></td>
+              <td>Obtain information about the current mobile voice and data
+              connection.</td>
+              <td>-</td>
+            </tr>
+            <tr>
+              <td><code>power</code></td>
+              <td>Turn the screen on or off, control CPU, device power, etc.
+              Listen for and inspect resource lock events.</td>
+              <td>-</td>
+            </tr>
+            <tr>
+              <td><code>push</code></td>
+              <td>Receive push events.</td>
+              <td>-</td>
+            </tr>
+            <tr>
+              <td><code>settings</code></td>
+              <td>Configure or read device settings.</td>
+              <td>readonly, readwrite</td>
+            </tr>
+            <tr>
+              <td><code>sms</code></td>
+              <td>Send and receive SMS.</td>
+              <td>-</td>
+            </tr>
+            <tr>
+              <td><code>storage</code></td>
+              <td>Utilize localStorage and indexedDB without size limitations.</td>
+              <td>-</td>
+            </tr>
+            <tr>
+              <td><code>systemclock</code></td>
+              <td>Set current time. (Timezone information is controlled by the
+              settings API).</td>
+              <td>-</td>
+            </tr>
+            <tr>
+              <td><code>network-http</code></td>
+              <td>Make HTTP requests without any origin restrictions.</td>
+              <td>-</td>
+            </tr>
+            <tr>
+              <td><code>network-tcp</code></td>
+              <td>Create and communicate over TCP sockets.</td>
+              <td>-</td>
+            </tr>
+            <tr>
+              <td><code>telephony</code></td>
+              <td>All telephony related APIs.</td>
+              <td>-</td>
+            </tr>
+            <tr>
+              <td><code>wake-lock-screen</code></td>
+              <td>Turn the display on and show the lock screen.</td>
+              <td>-</td>
+            </tr>
+            <tr>
+              <td><code>webapps-manage</code></td>
+              <td>Obtain access to the <code>navigator.apps.mgmt</code> API to
+              manage installed webapps.</td>
+              <td>-</td>
+            </tr>
+            <tr>
+              <td><code>wifi</code></td>
+              <td>Enumerate available WiFi networks, get signal strength, connect
+              to a network.</td>
+              <td>-</td>
+            </tr>
+          </table>
+
+          </li>
+
+          <li><dfn id="propdef-fullscreen">fullscreen</dfn>: This value MUST be
+          set to either <dfn>true</dfn> or <dfn>false</dfn> to describe whether
+          the runtime should launch the application in fullscreen mode.</li>
+
+          <li><dfn id="propdef-activities">activities</dfn>: This value specifies
+          a set of
+          <a href="https://wiki.mozilla.org/WebAPI/WebActivities">WebActivities</a>
+          that this app supports. Each property in this value is a discrete
+          activity whose name matches the property name. Activity names are
+          free-form text, and each activity is represented by an object. This
+          object MUST contain the following property:
+
+          <ul>
+            <li><dfn id="propdef-activities-href">href</dfn>: When another app
+            or web page initiates an activity that is supported by this app, if
+            this app is chosen to perform the activity, this page will be opened
+            in the manner specified by the <dfn>disposition</dfn> property. The
+            manner in which a particular app is chosen to perform an activity is
+            out of scope for this specification.</li>
+          </ul>
+
+          An activity object MAY also contain the following properties:
+
+          <ul>
+            <li><dfn id="propdef-activites-disposition">disposition</dfn>: This
+            value specifies how the page specified in <dfn>href</dfn> is presented
+            when an activity is invoked. The value, if specified, MUST be one of
+            the following (if omitted, defaults to <dfn>window</dfn>):
+              <ul>
+                <li><dfn id="propdef-activities-disposition-window">window</dfn>:
+                The page handling the activity is opened in a new "window" (on a
+                mobile device, for example, this view will replace the original
+                app that requested the activity). The page MUST call
+                <code>navigator.setMessageHandler</code> for each activity it
+                supports and subsequently execute the activity for which it
+                receives a message. Further, if the activity requires a return
+                value, the page MUST call <code>activity.postResult</code> or
+                <code>activity.postError</code> (where <code>activity</code> is
+                the first argument provided to the function specified by
+                <code>setMessageHandler</code>) as appropriate. These functions
+                are specified in greater details in the WebActivities
+                document.</li>
+
+                <li><dfn id="propdef-activities-disposition-inline">inline</dfn>:
+                The page handling the activity will open in an overlay (on a
+                mobile device, for example, this will be rendered in a popup over
+                the original app that requested the activity). Subsequent behavior
+                is exactly the same as if the disposition were
+                <dfn>window</dfn>.</li>
+              </ul>
+
+            <li><dfn id="propdef-activities-filters">filters</dfn>:
+            <i>OPTIONAL</i>. This value is a dictionary, each property of which
+            specified a particular filter. These filters will be applied while
+            determining apps suitable for handling a given activity. Filter names
+            are free-form text, but their values MUST be either a string or an
+            array of strings (the exact type depends on the filter).</li>
+          </ul>
+
+        </ul>
+      </section>
+
+      <section>
+        <h2>Serving Manifests</h2>
+
+        <p>An <a>application manifest</a> MUST be served from the same origin as
+           the application.</p>
+
+        <p>When served as a static file, it is RECOMMENDED that the manifest is
+        stored with the extension <code>.webapp</code>. The manifest MUST be
+        served with a <i>Content-Type</i> header of
+        <code>application/x-web-app-manifest+json</code>. It is RECOMMENDED that
+        <a>application manifests</a> are served over SSL.</p>
+      </section>
+    </section>
+
+    <section>
+      <h2>Application Management</h2>
+
+        <section>
+          <h2><a>Application</a> interface</h2>
+
+          <p>Applications are represented by a JavaScript object that is accessible
+          to web content.</p>
+
+          <dl title='interface Application' class='idl'>
+            <dt>readonly attribute DOMString origin</dt>
+
+            <dd>The origin of the application, represented by a FQDN.</dd>
+
+            <dt>readonly attribute Object manifest</dt>
+
+            <dd>A JavaScript object as returned by JSON.parse invoked on the
+            manifest.</dd>
+
+            <dt>readonly attribute DOMString installOrigin</dt>
+
+            <dd>The origin of the page from which the application was
+            installed.</dd>
+
+            <dt>readonly attribute unsigned long installTime</dt>
+
+            <dd>Time in milliseconds since epoch at which the application was
+            installed.</dd>
+
+            <dt>readonly attribute Object parameters</dt>
+
+            <dd>Parameters that were provided at install time.</dd>
+
+            <dt><a>DOMRequest</a> launch()</dt>
+
+            <dd>Launches this application (behaviour is runtime dependent).</dd>
+
+            <dt><a>DOMRequest</a> uninstall()</dt>
+
+            <dd>Uninstalls this application. <em>This call is available to
+            privileged callers only.</em></dd>
+          </dl>
+        </section>
+      </section>
+
+      <section>
+        <h2>Application Registry</h2>
+
+        <section>
+          <p>The following interface is made available to allow installation of apps
+          and for apps to query for their current state.</p>
+
+          <dl title='interface AppRegistry : Navigator' class='idl'>
+            <dt>EventTarget install(in DOMString manifestUrl, [Optional] in Object
+            parameters)</dt>
+
+            <dd>Triggers the installation of an application as specified by the
+            manifest at <code>manifestUrl</code>. The User-Agent must fetch the
+            manifest from the provided URL, verify that it is valid, and then ask
+            for permission from the user to allow installation to proceed. The
+            User-Agent must also persist the parameters provided (if any) which may
+            later be retrived from the <code>AppObject</code> representing this
+            application. The user may choose to whitelist certain origins to allow
+            them to install applications without any permission prompts.</dd>
+
+            <dt>EventTarget getSelf()</dt>
+
+            <dd>Retrieves the application record for the origin at which the call
+            is made.</dd>
+
+            <dt>EventTarget getInstalled()</dt>
+
+            <dd>Retrieves application records for all apps that have been installed
+            so far from the origin at which the call is made.</dd>
+
+            <dt>attribute AppRegistryManagement mgmt</dt>
+
+            <dd>Provides access to the management interace. <em>This attribute is
+            available to privileged callers only.</em></dd>
+          </dl>
+        </section>
+      </section>
+
+      <section>
+        <h2>Application Registry Management</h2>
+
+        <section>
+          <p>A privileged caller is a web page that has been explicitely authorized
+          by the user to manage applications on their behalf. Such privileged
+          origins also have access to the AppRegistryManagement interface as
+          described below.</p>
+
+          <dl title='interface AppRegistryManagement' class='idl'>
+            <dt>EventTarget getAll()</dt>
+
+            <dd>Retrieves the application records for all apps that have been
+            installed so far.</dd>
+
+            <dt>attribute EventListener oninstall</dt>
+
+            <dd>This value may be set to a function that will be invoked when an
+            application is installed. The only argument to this function will be
+            the <code>AppObject</code> of the application that was installed.</dd>
+
+            <dt>attribute EventListener onuninstall</dt>
+
+            <dd>This value may be set to a function that will be invoked when an
+            application is uninstalled. The only argument to this function be the
+            <code>AppObject</code> of the application that was uninstalled.</dd>
+          </dl>
+        </section>
+      </section>
+
+      <section>
+        <h2>Application Events</h2>
+
+        <section>
+          <p>Most of the methods described above return an <code>EventTarget</code>
+          object to which success and error handlers may be attached using standard
+          DOM methods like <code>addEventListener</code> or attributes like
+          <code>onsuccess</code> and <code>onerror</code>.</p>
+
+          <dl title='interface AppEventError' class='idl'>
+            <dt>const unsigned short PERMISSION_DENIED = 1</dt>
+
+            <dd>Installation was denied (by user or UA).</dd>
+
+            <dt>const unsigned short MANIFEST_URL_ERROR = 2</dt>
+
+            <dd>The manifest could not be found at the given location.</dd>
+
+            <dt>const unsigned short NETWORK_ERROR = 3</dt>
+
+            <dd>The manifest could not fetched from the given location at this
+            time.</dd>
+
+            <dt>const unsigned short MANIFEST_PARSE_ERROR = 4</dt>
+
+            <dd>The manifest could not be parsed.</dd>
+
+            <dt>const unsigned short INVALID_MANIFEST = 5</dt>
+
+            <dd>The manifest was able to be parsed but contains invalid
+            values.</dd>
+
+            <dt>readonly attribute short code</dt>
+
+            <dd>This value is set to one of the constants defined in this
+            interface.</dd>
+          </dl>
+
+          <dl title='interface AppEventTarget : EventTarget' class='idl'>
+            <dt>attribute EventListener onsuccess</dt>
+
+            <dd>May be set to a success handler.</dd>
+
+            <dt>attribute EventListener onerror</dt>
+
+            <dd>May be set to an error handler.</dd>
+
+            <dt>void addEventListener(DOMString event, EventListener e)</dt>
+
+            <dd><code>event</code> can be either be "install" or "uninstall".</dd>
+
+            <dt>void removeEventListener(DOMString event, EventListener e)</dt>
+
+            <dd><code>event</code> can either be "install" or "uninstall".</dd>
+
+            <dt>readonly attribute Object result</dt>
+
+            <dd>The type and value of <code>result</code> depends on the operation
+            for which this <code>EventTarget</code> was returned. If an
+            <code>onerror</code> is fired, this value will be set to
+            <code>AppEventError</code>. When <code>getSelf()</code> and
+            <code>getInstalled()</code> succeed, ths value will be set to an array
+            of <code>AppObject</code>s.</dd>
+          </dl>
+        </section>
+      </section>
+    </section>
+
+    <section class="appendix">
+      <h2><a>DOMRequest</a> interface</h2>
+
+      <section class="note">
+        <p>The <a>DOMRequest</a> interface is temporarily hosted by this
+          specification. The <i>Runtime and Security Model for Web Applications
+          </i> specifaciton doesn't plan to keep that guest for ever, this is
+          why it is currently staying in an appendix.</p>
+      </section>
+
+      <p>TODO: describe the <a>DOMRequest</a> interface</p>
+
+      <dl title='interface DOMRequest : EventTarget' class='idl'>
+        <dt>readonly attribute DOMString readyState</dt> <!-- "pending" or "done" -->
+        <dd>TODO</dd>
+
+        <dt>readonly attribute any result</dt>
+        <dd>TODO. MUST return undefied (or null?) if no result is there yet.</dd>
+
+        <dt>readonly attribute DOMError error</dt>
+        <dd>TODO [...] in [[!DOM4]]</dd>
+
+        <dt>[TreatNonCallableAsNull] attribute Function? onsuccess</dt>
+        <dd>TODO [...] in [[!HTML5]]</dd>
+
+        <dt>[TreatNonCallableAsNull] attribute Function? onerror</dt>
+        <dd>TODO [...] in [[!HTML5]]</dd>
+      </dl>
+    </section>
+
+    <section class="appendix">
+      <h2>Acknowledgments</h2>
+
+      <p>Special thanks to Anant Narayanan for his <i>Web Application Manifest
+      Format and Management APIs</i> that this specification reuse shamlesly.</p>
+      <p>Special thanks to Jonas Sicking for being awesome, as always.</p>
+    </section>
+  </body>
+</html>
