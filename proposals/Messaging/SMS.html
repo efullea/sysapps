@@ -16,7 +16,8 @@
           crEnd:                "",
           editors:  [
               { name: "Eduardo Fullea", company: "Telefonica", companyURL: "http://www.tid.es/" },
-              { name: "Jose M. Cantera", company: "Telefonica", companyURL: "http://www.tid.es/" }              
+              { name: "Jose M. Cantera", company: "Telefonica", companyURL: "http://www.tid.es/" },
+              { name: "Mounir Lamouri", company: "Mozilla", companyURL: "http://mozilla.org/" }
          ],
           inlineCSS:    true,
           noIDLIn:      true,
@@ -338,7 +339,7 @@
          <li>When the request has been completed:
          <ol>
           <li>set the <code>readyState</code> of the <code>SMSRequest</code> object to 'done'
-          <li>set the <code>result</code> of the <code>SMSRequest</code> object to an <code>SMSIterator</code>
+          <li>set the <code>result</code> of the <code>SMSRequest</code> object to an <code>SmsCursor</code>
               providing access to the results of the retrieval
           <li>invoke the <code>onsuccess</code> <a>event handler</a> of the <code>SMSRequest</code>
         </ol>
@@ -506,16 +507,26 @@
     </section>
 
     <section>
-      <h2><a>SMSIterator</a> Interface</h2>
-      <p>The <a>SMSIterator</a> interface allows to iterate through a list of <code>SMSMessage</code> elements
+      <h2><a>SmsCursor</a> Interface</h2>
+      <p>The <a>SmsCursor</a> interface allows to iterate through a list of <code>SMSMessage</code> elements.</p>
+      <p>A <a>SmsCursor</a> always has, an <dfn>associated request</dfn> which is the <a>SmsRequset</a> that created it.
+      In other words, a <a>SmsCursor</a> is always the <code>result</code> of a <a>SmsRequest</a> and can't be created in
+      any other way.</p>
+      <p>As soon as the <a>SmsCursor</a> is <dfn>accessing the next message</dfn>, it MUST put its <a>associated request</a> in the "processing" <code>readyState</code>, and set the <code>result</code> to null. Then, the UA MUST fetch the next message asynchronously. When the message is retrieved, the <a>associated request</a>'s <code>readyState</code> must be set to "done" and the <code>result</code> must point to the cursor. If no message was found, the cursor's <code>message</code> property must return null.</p>
       <dl title="[NoInterfaceObject]
-                 interface SMSIterator"
+                 interface SmsCursor"
           class="idl">
-        <dt>readonly attribute SMSMessage message</dt>
-        <dd>The <code>SMSMessage</code> element being currently accessed through the iterator or null in case there are
-        no further messages.</dd>
-        <dt> void next()</dt>
-        <dd>This method moves to the next <code>SMSMessage</code> in the list.</dd>
+        <dt>readonly attribute SMSMessage? message</dt>
+        <dd>
+          This property MUST return the currently accessed message. If the cursor went past the last message or if it
+          is currently <a>accessing the next message</a>, it MUST return null.
+        </dd>
+        <dt>void continue()</dt>
+        <dd>
+          When this method is called, the cursor MUST change its internal state to <a>accessing the next message</a>.<br>
+          If this method is called while the cursor is <a>accessing the next message</a>, the method MUST throw an
+          <code>"InvalidStateError"</code> error as defined in [[!DOM4]].
+        </dd>
       </dl>
     </section>
     

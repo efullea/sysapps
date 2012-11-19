@@ -30,8 +30,9 @@
   </head>
   <body>
     <section id="abstract">
-      This specification defines a System Level API which offers a simple interface to manage user's contacts. A typical
-      use case of the Contacts API is the implementation of an address book.
+      This specification defines a System Level API which offers a simple interface to manage user's contacts stored in
+      the system's address book. A typical use case of the Contacts API is the implementation of an application to manage
+      said address book.
     </section>
     
     <section id="sotd">
@@ -40,8 +41,8 @@
     <section class="informative">
       <h2>Introduction</h2>
       <p>
-        The Contacts API allows applications to provide the functionality of a usual address book, thus allowing the
-        display and management (create, edit, remove, etc.) of contacts.
+        The Contacts API allows applications to provide the functionality of a usual an application to manage an
+        address book, thus allowing the display and management (create, edit, remove, etc.) of contacts.
       
       <p>
         An example of use is provided below:
@@ -98,11 +99,8 @@
     </section>
 
     <section>
-      <h2><a>NavigatorContacts</a> Interface</h2>
-      <p>The <a>NavigatorContacts</a> interface is exposed on the <code>Navigator</code> object.
-      
-      <div class="idl" title="Navigator implements NavigatorContacts"></div>
-      <dl title="[NoInterfaceObject] interface NavigatorContacts" class="idl">
+      <h2><a>Navigator</a> Interface</h2>
+       <dl title="partial interface Navigator" class="idl">
         <dt>readonly attribute ContactsManager contacts</dt>
         <dd>
           The object that exposes the contacts management functionality.
@@ -119,7 +117,7 @@
           class="idl">
         <dt> ContactsRequest find ()</dt>
         <dd>This method allows to instantiate a new <code>ContactsRequest</code> object intended to search contacts
-        within the contacts store that match the criteria indicated in the <code>options</code> parameter.
+        within the address book that match the criteria indicated in the <code>options</code> parameter.
         <dl class='parameters'>
              <dt>ContactFindOptions options</dt>
              <dd>
@@ -130,50 +128,40 @@
         </dd>
 
         <dt> ContactsRequest clear ()</dt>
-        <dd>This method allows to remove all contacts in the contacts store.
+        <dd>This method allows to remove all contacts in the address book.
         </dd>
 
         <dt> ContactsRequest save ()</dt>
-        <dd>This method allows to save a contact in the contacts store, e.g. an existing contact after having been edited.
+        <dd>This method allows to save a contact in the address book, e.g. an existing contact after having been edited.
+        So if a contact with the same identifier, i.e. <code>id</code>, already exists in the address book, it will be updated.
         <dl class='parameters'>
              <dt>Contact contact</dt>
              <dd>
-               The <code>Contact</code> object that is requested to be saved in the contacts store.
+               The <code>Contact</code> object that is requested to be saved in the address book.
              </dd>
          </dl>
         </dd>
 
         <dt> ContactsRequest remove ()</dt>
-        <dd>This method allows to remove a contact from the contacts store.
+        <dd>This method allows to remove a contact from the address book.
         <dl class='parameters'>
              <dt>Contact contact</dt>
              <dd>
-               The <code>Contact</code> object that is requested to be removed from the contacts store.
+               The <code>Contact</code> object that is requested to be removed from the address book.
              </dd>
          </dl>
         </dd>
 
-        <dt> ContactsRequest getSimContacts ()</dt>
-        <dd>This method allows to retrieve the contacts stored in the SIM card.
-        <dl class='parameters'>
-             <dt>DOMString type</dt>
-             <dd>
-               This parameter specifies the type of contacts that are requested to be retrieved from the SIM card. It
-               can have two different values "ADN" or "FDN" depending respectively on whether the regular SIM phonebook
-               or the Fix Dialing Number list (i.e. list of contacts to which the outgoing calls are restricted when
-               FDN service mode is activated) is requested.
-             </dd>
-         </dl>
         </dd>
         <dt class="no-docs">
-          attribute EventHandler oncontactchanged
+          attribute EventHandler oncontactschange
         </dt>
         <dd></dd>
       </dl>
 
       <p> The <dfn><code>find</code></dfn> method when invoked MUST run the following steps:
         <ol>
-         <li>Make a request to the system to retrieve the contacts in the contacts store matching with the criteria
+         <li>Make a request to the system to retrieve the contacts in the address book matching with the criteria
          indicated in the <code>options</code> parameter.
          <li>Create a new <code>ContactsRequest</code> object and set <code>readyState</code> of the
          <code>ContactsRequest</code> object to 'processing' and return the <code>ContactsRequest</code> to the caller 
@@ -182,15 +170,15 @@
          <li>When the request has been completed:
          <ol>
           <li>set the <code>readyState</code> of the <code>ContactsRequest</code> object to 'done'
-          <li>set the <code>result</code> of the <code>ContactsRequest</code> object to array of <code>Contacts</code>
-          returned by the system.
+          <li>set the <code>result</code> of the <code>ContactsRequest</code> object to array of <code>Contact</code>
+          objects returned by the system.
           <li>invoke the <code>onsuccess</code> <a>event handler</a> of the <code>ContactsRequest</code>
         </ol>
        </ol>
 
       <p> The <dfn><code>clear</code></dfn> method when invoked MUST run the following steps:
         <ol>
-         <li>Make a request to the system to clear all the contacts in the contacts store.
+         <li>Make a request to the system to clear all the contacts in the address book.
          <li>Create a new <code>ContactsRequest</code> object and set <code>readyState</code> of the
          <code>ContactsRequest</code> object to 'processing' and return the <code>ContactsRequest</code> to the caller 
          <li>If there is an error invoke the <code>onerror</code> <a>event handler</a> of the <code>ContactsRequest</code>
@@ -205,8 +193,7 @@
 
       <p> The <dfn><code>save</code></dfn> method when invoked MUST run the following steps:
         <ol>
-         <li>Make a request to the system to save the <code>Contact</code> object passed as parameter in the contacts
-         store.
+         <li>Make a request to the system to save the <code>Contact</code> object passed as parameter in the address book.
          <li>Create a new <code>ContactsRequest</code> object and set <code>readyState</code> of the
          <code>ContactsRequest</code> object to 'processing' and return the <code>ContactsRequest</code> to the caller 
          <li>If there is an error invoke the <code>onerror</code> <a>event handler</a> of the <code>ContactsRequest</code>
@@ -217,15 +204,14 @@
           <li>set the <code>result</code> of the <code>ContactsRequest</code> object to the saved <code>Contact</code>
           object as returned by the system, and which therefore includes the <code>id</code>, <code>published</code> and
           <code>updated</code> parameters, which could be not present in the original <code>Contact</code> object passed as
-          parameter, for instance if it is a brand new <code>Contact</code> object not yet stored in the contacts store
+          parameter, for instance if it is a brand new <code>Contact</code> object not yet stored in the address book
           <li>invoke the <code>onsuccess</code> <a>event handler</a> of the <code>ContactsRequest</code>
         </ol>
        </ol>
 
       <p> The <dfn><code>remove</code></dfn> method when invoked MUST run the following steps:
         <ol>
-         <li>Make a request to the system to remove the <code>Contact</code> object passed as parameter from the contacts
-         store.
+         <li>Make a request to the system to remove the <code>Contact</code> object passed as parameter from the address book.
          <li>Create a new <code>ContactsRequest</code> object and set <code>readyState</code> of the
          <code>ContactsRequest</code> object to 'processing' and return the <code>ContactsRequest</code> to the caller 
          <li>If there is an error invoke the <code>onerror</code> <a>event handler</a> of the <code>ContactsRequest</code>
@@ -238,23 +224,10 @@
         </ol>
        </ol>
 
-      <p> The <dfn><code>getSimContacts</code></dfn> method when invoked MUST run the following steps:
-        <ol>
-         <li>Make a request to the system to retrieve the contacts from the SIM with type equal to the one indicated in
-         the <code>type</code> parameter.
-         <li>Create a new <code>ContactsRequest</code> object and set <code>readyState</code> of the
-         <code>ContactsRequest</code> object to 'processing' and return the <code>ContactsRequest</code> to the caller 
-         <li>If there is an error invoke the <code>onerror</code> <a>event handler</a> of the <code>ContactsRequest</code>
-         object
-         <li>When the request has been completed:
-         <ol>
-          <li>set the <code>readyState</code> of the <code>ContactsRequest</code> object to 'done'
-          <li>set the <code>result</code> of the <code>ContactsRequest</code> object to array of <code>Contacts</code>
-          returned by the system.
-          <li>invoke the <code>onsuccess</code> <a>event handler</a> of the <code>ContactsRequest</code>
-        </ol>
-       </ol>
-     
+      <p> Upon a change in a contact or set thereof is performed (i.e. contact(s) added / modified / removed) the system
+      MUST <a>fire a simple event</a> named <a><code>contactschange</code></a> that implements the
+      <a><code>ContactsChangeEvent</code></a> interface at the <a><code>ContactsManager</code></a> object
+
       <section>
         <h2>Event handlers</h2>
         <p>The following are the <a>event handlers</a> (and their corresponding <a>event handler event types</a>) that
@@ -269,12 +242,13 @@
           </thead>
           <tbody>
             <tr>
-              <td><strong><code>oncontactchanged</code></strong></td>
-              <td><code><dfn>contactchanged</dfn></code></td>
+              <td><strong><code>oncontactschange</code></strong></td>
+              <td><code><dfn>contactschange</dfn></code></td>
             </tr>
           </tbody>
         </table>
       </section>
+    <p>The event</a> named <a><code>contactschange</code></a> MUST implement the <a>ContactsChangeEvent</a> interface.
     </section>
 
     <section>
@@ -297,6 +271,13 @@
         <dt>attribute unsigned long filterLimit</dt>
         <dd>Represents the maximum number of results that can be returned by the search operation.
       </dl>
+      
+      <p class="issue">
+         It is for further study whether the level of flexibility of the filters needs to be increased and/or additional
+         mechanisms need to be put in place so that applications can keep a local copy of the address book and perform
+         the filtering locally (e.g. startTrackingChanges() and getNewChanges() methods)
+      </p>
+      
     </section>       
     
     <section>
@@ -329,7 +310,8 @@
     
     <section>
       <h2><a>ContactAddress</a> Interface</h2>
-      <p>The <a>ContactAddress</a> interface represents a user's phisical address and the type associated to it.
+      <p>The <a>ContactAddress</a> interface represents a user's phisical address and the type associated to it. This
+      interface is based on <a href="http://tools.ietf.org/html/rfc6350">vCard 4.0</a> ADR attribute.
       <dl title="[NoInterfaceObject]
                  interface ContactAddress"
           class="idl">
@@ -337,82 +319,100 @@
         <dd>Indicates whether it is a preferred address ("PREF") and the type of contact address (e.g. "home", "work").
         Several <code>type</code> attributes are possible for each single contact address.</dd>
         <dt>attribute DOMString streetAddress</dt>
-        <dd>A string that contains the name of the street.</dd>
+        <dd>A string that contains the name of the street. It maps to the third component in vCard's ADR attribute.</dd>
         <dt>attribute DOMString locality</dt>
-        <dd>A string that contains the name of the locality.</dd>
+        <dd>A string that contains the name of the locality. It maps to the forth component in vCard's ADR attribute.</dd>
         <dt>attribute DOMString region</dt>
-        <dd>A string that contains the name of the region.</dd>
+        <dd>A string that contains the name of the region. It maps to the fifth component in vCard's ADR attribute.</dd>
         <dt>attribute DOMString postalCode</dt>
-        <dd>A string that contains the postal code.</dd>
+        <dd>A string that contains the postal code. It maps to the sixth component in vCard's ADR attribute.</dd>
         <dt>attribute DOMString countryName</dt>
-        <dd>A string that contains the name of the country.</dd>
+        <dd>A string that contains the name of the country. It maps to the seventh component in vCard's ADR attribute.</dd>
       </dl>
     </section>    
     
     <section>
       <h2><a>ContactProperties</a> Interface</h2>
-      <p>The <a>ContactProperties</a> interface contains all the properties associated to the contact.
+      <p>The <a>ContactProperties</a> interface contains all the properties associated to the contact. As a principle
+      the attributes are based on <a href="http://tools.ietf.org/html/rfc6350">vCard 4.0</a> and reuse the literal used in that standard. Any deviation is mentioned in
+      the description of the corresponding attribute.
       <dl title="[NoInterfaceObject]
                  interface ContactProperties"
           class="idl">
-        <dt>attribute DOMString[] displayName</dt>
-        <dd>A string or set thereof representing the  contact's display name(s).
+        <dt>attribute DOMString[] name</dt>
+        <dd>A string or set thereof representing the  contact's display name(s). It maps to vCard's FN attribute.
         <dt>attribute DOMString[] honorificPrefix</dt>
-        <dd>A string or set thereof representing the contact's honorific prefix(es).
+        <dd>A string or set thereof representing the contact's honorific prefix(es). It maps to the forth component in
+        vCard's N attribute.
         <dt>attribute DOMString[] givenName</dt>
-        <dd>A string or set thereof representing the contact's given name(s).
+        <dd>A string or set thereof representing the contact's given name(s). It maps to the second component in
+        vCard's N attribute.
         <dt>attribute DOMString[] additionalName</dt>
-        <dd>A string or set thereof representing any additional name of the contact.
+        <dd>A string or set thereof representing any additional name of the contact. It maps to the third component in
+        vCard's N attribute.
         <dt>attribute DOMString[] familyName</dt>
-        <dd>A string or set thereof representing the contact's family name(s).
+        <dd>A string or set thereof representing the contact's family name(s). It maps to the first component in vCard's
+        N attribute.
         <dt>attribute DOMString[] honorificSuffix</dt>
-        <dd>A string or set thereof representing the contact's honorific suffix(es).
+        <dd>A string or set thereof representing the contact's honorific suffix(es). It maps to the fifth component in
+        vCard's N attribute.
         <dt>attribute DOMString[] nickname</dt>
-        <dd>A string or set thereof representing the contact's nick name(s).
+        <dd>A string or set thereof representing the contact's nick name(s). It maps to vCard's NICKNAME attribute.
         <dt>attribute ContactField[] email</dt>
-        <dd>An <code>ContactField</code> element or set thereof containing the contact's email address(es).</dd>
+        <dd>An <code>ContactField</code> element or set thereof containing the contact's email address(es).
+        It maps to vCard's EMAIL attribute.</dd>
         <dt>attribute DOMString[] photo</dt>
-        <dd>A string or set thereof representing the photo(s) of the contact.
+        <dd>A string or set thereof representing the UIR of the photo(s) of the contact. It maps to vCard's PHOTO attribute.
         <dt>attribute ContactField[] url</dt>
-        <dd>An <code>ContactField</code> element or set thereof containing the user's urls (e.g. personal blog).</dd>
-        <dt>attribute DOMString[] category</dt>
+        <dd>An <code>ContactField</code> element or set thereof containing the user's urls (e.g. personal blog).
+        It maps to vCard's URL attribute.</dd>
+        <dt>attribute DOMString[] categories</dt>
         <dd>A string or set thereof representing the category or categories associated to the contact (e.g. "family").
+        It maps to vCard's CATEGORIES attribute.
         <dt>attribute ContactAddress[] adr</dt>
-        <dd>An <code>ContactAddress</code> element or set thereof containing the user's phisical address(es).</dd>
+        <dd>An <code>ContactAddress</code> element or set thereof containing the user's phisical address(es). It maps
+        to vCard's ADR attribute</dd>
         <dt>attribute ContactTelField[] tel</dt>
-        <dd>An <code>ContactTelField</code> element or set thereof containing the user's telephone numbers.</dd>
+        <dd>An <code>ContactTelField</code> element or set thereof containing the user's telephone numbers.It maps
+        to vCard's TEL attribute</dd>
         <dt>attribute DOMString[] org</dt>
-        <dd>A string or set thereof representing the organization(s) the contact belongs to.
+        <dd>A string or set thereof representing the organization(s) the contact belongs to. It maps to vCard's ORG attribute
         <dt>attribute DOMString[] jobTitle</dt>
-        <dd>A string or set thereof representing the contact's job title(s).
+        <dd>A string or set thereof representing the contact's job title(s). It maps to vCard's TITLE attribute
         <dt>attribute Date bday</dt>
-        <dd>A <code>Date</code> element representing the contact's birthday.
+        <dd>A <code>Date</code> element representing the contact's birth date. It maps to vCard's BDAY attribute
         <dt>attribute DOMString[] note</dt>
         <dd>A string or set thereof specifying supplemental information or a comment that is associated with the contact.
+        It maps to vCard's NOTE attribute
         <dt>attribute ContactAddress[] impp</dt>
-        <dd>An <code>ContactAddress</code> element or set thereof containing the user's instant messaging address(es).</dd>
+        <dd>An <code>ContactAddress</code> element or set thereof containing the user's instant messaging address(es).
+        It maps to vCard's IMPP attribute</dd>
         <dt>attribute Date anniversary</dt>
-        <dd>A <code>Date</code> element representing the contact's anniversary.
+        <dd>A <code>Date</code> element representing the contact's anniversary. It maps to vCard's ANNIVERSARY attribute</dd>
         <dt>attribute DOMString sex</dt>
         <dd>A string representing the contact's sex with following possible values: "M" for male, "F" for female, "O"
-        for other, "N" for "none or not applicable" and "U" for "unknown"
+        for other, "N" for "none or not applicable" and "U" for "unknown". It maps to the first component of vCard's
+        GENDER attribute.
         <dt>attribute DOMString genderIdentity</dt>
-        <dd>A free text string representing the contact's gender identity.
+        <dd>A free text string representing the contact's gender identity. It maps to the second component of vCard's
+        GENDER attribute.
       </dl>
     </section>    
     
     <section>
       <h2><a>Contact</a> Interface</h2>
-      <p>The <a>Contact</a> interface represents a contact stored in the contact store.
+      <p>The <a>Contact</a> interface represents a contact stored in the address book.
       <dl title="[NoInterfaceObject]
                  interface Contact"
           class="idl">
         <dt>readonly attribute DOMString id</dt>
-        <dd>Represents a unique identifier of the contact in the contacts store.
-        <dt>readonly attribute Date published</dt>
-        <dd>A <code>Date</code> element representing the date when the contact was published.
-        <dt>readonly attribute Date updated</dt>
-        <dd>A <code>Date</code> element representing the date when the contact was updated.
+        <dd>Represents a unique identifier of the contact in the address book.
+        <dt>readonly attribute boolean readOnly</dt>
+        <dd>If set to true indicates that the contact cannot be saved to the address book, and thus it cannot be modified.
+        This attribute can be used to mark those contacts that are synchronized from a source to which the addrwess book
+        cannot populate changes (e.g. online services)
+        <dt>readonly attribute Date last Updated</dt>
+        <dd>A <code>Date</code> element representing the date when the contact was last updated.
       </dl>
     </section>    
     
@@ -475,13 +475,20 @@
     </section>
    
     <section>
-      <h2><a>ContactChangeEvent</a> Interface</h2>
-      <p>The <a>ContactChangeEvent</a> interface represents events related to a change in a contact.
+      <h2><a>ContactsChangeEvent</a> Interface</h2>
+      <p>The <a>ContactsChangeEvent</a> interface represents events related to the set of contacts that have been simultaneously 
+      added, removed and/or modified. Changes that are applied to the address book in batches cause a <a>ContactsChangeEvent</a>
+      with multiple contact references to be fired, whereas changes applied sequentially cause a <a>ContactsChangeEvent</a>
+      with a single contact reference to be fired
       <dl title="[NoInterfaceObject]
-                 interface ContactChangeEvent : Event"
+                 interface ContactsChangeEvent : Event"
           class="idl">
-        <dt>readonly attribute DOMString contactID</dt>
-        <dd>Indicates the identifier of the <code>Contact</code>object that has changed.</dd>
+        <dt>readonly attribute DOMString[] added</dt>
+        <dd>Indicates the identifier(s) of the <code>Contact</code> object(s) that have been added.</dd>
+        <dt>readonly attribute DOMString[] modified</dt>
+        <dd>Indicates the identifier(s) of the <code>Contact</code> object(s) that have been modified.</dd>
+        <dt>readonly attribute DOMString[] removed</dt>
+        <dd>Indicates the identifier(s) of the <code>Contact</code> object(s) that have been removed.</dd>
       </dl>
     </section>
 
