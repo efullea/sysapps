@@ -48,6 +48,29 @@
     </section>
 
     <section>
+      <h2>Terminology</h2>
+      <p>
+        The <code><a href="http://dev.w3.org/html5/spec/webappapis.html#function">
+        Function</a></code> interface represents a function in the scripting
+        language being used as defined in [[!HTML5]].
+      </p>
+      <!--
+      <p>
+        The concepts <dfn><a href="http://dev.w3.org/html5/spec/webappapis.html#queue-a-task">
+        queue a task</a></dfn> and
+        <dfn><a href="http://dev.w3.org/html5/spec/webappapis.html#fire-a-simple-event">
+        fire a simple event</a></dfn> are defined in [[!HTML5]].
+      </p>-->
+
+      <p>
+        The terms <dfn> <a href="http://dev.w3.org/html5/spec/webappapis.html#event-handlers">
+        event handlers</a></dfn> and
+        <dfn><a href="http://dev.w3.org/html5/spec/webappapis.html#event-handler-event-type">
+        event handler event types</a></dfn> are defined in [[!HTML5]].
+      </p>
+    </section>
+
+    <section>
       <h2>Application Manifest</h2>
 
       <p>An <dfn>application manifest</dfn> is a JSON file describing an
@@ -437,7 +460,7 @@
             </tr>
             <tr>
               <td><code>webapps-manage</code></td>
-              <td>Obtain access to the <code>navigator.apps.mgmt</code> API to
+              <td>Obtain access to the <code>navigator.apps.management</code> API to
               manage installed webapps.</td>
               <td>-</td>
             </tr>
@@ -533,179 +556,286 @@
         <section>
           <h2><a>Application</a> interface</h2>
 
-          <p>Applications are represented by a JavaScript object that is accessible
-          to web content.</p>
+          <section>
+          <p>Web Applications are represented by the <a>Application</a>
+             interface.</p>
 
           <dl title='interface Application' class='idl'>
             <dt>readonly attribute DOMString origin</dt>
-
-            <dd>The origin of the application, represented by a FQDN.</dd>
+            <dd>The attribute MUST return the origin of the application as
+                described in the <a>application manifest</a>. [[!ORIGIN]]</dd>
+            <todo>
+              <ul>
+                <li>Why do we expose this here instead of doing application.manifest.origin?</li>
+                <li>What if the application has no origin? Seems like this is not a required field</li>
+              </ul>
+            </todo>
 
             <dt>readonly attribute Object manifest</dt>
-
-            <dd>A JavaScript object as returned by JSON.parse invoked on the
-            manifest.</dd>
+            <dd>The attribute MUST return an object representing the parsed
+                <a>application manifest</a>.</dd>
 
             <dt>readonly attribute DOMString installOrigin</dt>
-
-            <dd>The origin of the page from which the application was
-            installed.</dd>
+            <dd>The attribute MUST return the origin of the page from which the
+                application was installed. [[!ORIGIN]]</dd>
 
             <dt>readonly attribute unsigned long installTime</dt>
-
-            <dd>Time in milliseconds since epoch at which the application was
-            installed.</dd>
+            <dd>The attribute MUST return the time in milliseconds since epoch
+                at which the application was installed.</dd>
 
             <dt>readonly attribute Object parameters</dt>
-
-            <dd>Parameters that were provided at install time.</dd>
+            <dd>The attribute MUST return the parameters that were provided
+                at install time. See <code>install()</code> in
+                <a>ApplicationRegistry</a>.</dd>
 
             <dt><a>DOMRequest</a> launch()</dt>
-
-            <dd>Launches this application (behaviour is runtime dependent).</dd>
+            <dd>This method MUST return a <a>DOMRequest</a> instance and then run the following steps asynchronously:
+                <ol>
+                  <li>If the caller isn't allowed by the UA to launch the
+                      application, the UA MUST fire an <code>error</code> event
+                      to the <a>DOMRequest</a> object with the
+                      <code>"NotAllowedError"</code> error code and exit those
+                      steps.</li>
+                  <li>If the caller is allowed to launch the application, the
+                      UA SHOULD launch the application.</li>
+                  <li>If the application has been successfuly launched, the UA
+                      MUST fire a <code>success</code> event to the
+                      <a>DOMRequest</a> object and set <code>result</code> to
+                      null.<br>
+                      Otherwise, the UA MUST fire an <code>error</code> event
+                      to the <a>DOMRequest</a> object with an error code that
+                      describes the error.</li>
+                </ol>
+            </dd>
 
             <dt><a>DOMRequest</a> uninstall()</dt>
-
-            <dd>Uninstalls this application. <em>This call is available to
-            privileged callers only.</em></dd>
+            <dd>This method MUST return a <a>DOMRequest</a> instance and then run the following steps asynchronously:
+                <ol>
+                  <li>If the application isn't currently installed, the UA MUST
+                      fire an <code>error</code> event to the <a>DOMRequest</a>
+                      object with the <code>"NotInstalledError"</code> error code
+                      and exit those steps.</li>
+                  <li>If the caller isn't allowed by the UA to uninstall the
+                      application, the UA MUST fire an <code>error</code> event
+                      to the <a>DOMRequest</a> object with the
+                      <code>"NotAllowedError"</code> error code and exit those
+                      steps.</li>
+                  <li>If the caller is allowed to uninstall the application,
+                      the UA SHOULD uninstall the application.</li>
+                  <li>If the application has been successfuly uninstalled, the
+                      UA MUST fire a <code>success</code> event to the
+                      <a>DOMRequest</a> object and set <code>result</code> to
+                      null.<br>
+                      Otherwise, the UA MUST fire an <code>error</code> event
+                      to the <a>DOMRequest</a> object with an error code that
+                      describes the error.</li>
+                </ol>
+            </dd>
           </dl>
+          </section>
         </section>
-      </section>
-
-      <section>
-        <h2>Application Registry</h2>
 
         <section>
-          <p>The following interface is made available to allow installation of apps
-          and for apps to query for their current state.</p>
+          <h2>Extension to the <a>Navigator</a> interface</h2>
 
-          <dl title='interface AppRegistry : Navigator' class='idl'>
-            <dt>EventTarget install(in DOMString manifestUrl, [Optional] in Object
+          <section>
+          <p>An <a>ApplicationRegistry</a> instance is exposed on the
+             <code>Navigator</code> object trough the an <code>app</code>
+             attribute.</p>
+
+          <dl title='partial interface Navigator' class='idl'>
+            <dt>readonly attribute ApplicationRegistry app</dt>
+            <dd>The attribute MUST return an <a>ApplicationRegistry</a> instance.</dd>
+          </dl>
+          </section>
+        </section>
+
+        <section>
+          <h2><a>ApplicationRegistry</a> interface</h2>
+
+          <section>
+          <p>The <a>ApplicationRegistry</a> interface allows handling
+             applications and query there status.</p>
+
+          <dl title='interface ApplicationRegistry' class='idl'>
+            <dt>DOMRequest install(in DOMString manifestUrl, [Optional] in Object
             parameters)</dt>
+            <dd>This method MUST return a <a>DOMRequest</a> instance and then run the following steps asynchronously:
+              <ol>
+                <li>If the caller isn't allowed by the UA to install the
+                    application, the UA MUST fire an <code>error</code> event
+                    to the <a>DOMRequest</a> object with the
+                    <code>"NotAllowedError"</code> error code and exit those
+                    steps.</li>
+                <li>If the caller is allowed to install the application, the
+                    UA SHOULD install the application as described in the
+                    manifest at <code>manifestUrl</code>.</li>
+                <li>If the application has been successfuly installed, the UA
+                    MUST fire a <code>success</code> event to the
+                    <a>DOMRequest</a> object and set <code>result</code> to
+                    null.<br>
+                    Otherwise, the UA MUST fire an <code>error</code> event
+                    to the <a>DOMRequest</a> object with an error code that
+                    describes the error.</li>
+              </ol>
+              <p>The UA SHOULD verify at any moment before installing that
+                 <code>manifestUrl</code> points to a valid manifest. If this is
+                 not the case, the UA MUST fire an <code>error</code> event to
+                 the <a>DOMRequest</a> object with the
+                 <code>"InvalidArgumentError"</code> and exit the steps.</p>
+              <p>The UA SHOULD save the <code>parameters</code> if some are
+                 passed so they can later be retrieved by the
+                 <code>parameters</code> attribute on the <a>Application</a>
+                 interface.</p>
+            </dd>
 
-            <dd>Triggers the installation of an application as specified by the
-            manifest at <code>manifestUrl</code>. The User-Agent must fetch the
-            manifest from the provided URL, verify that it is valid, and then ask
-            for permission from the user to allow installation to proceed. The
-            User-Agent must also persist the parameters provided (if any) which may
-            later be retrived from the <code>AppObject</code> representing this
-            application. The user may choose to whitelist certain origins to allow
-            them to install applications without any permission prompts.</dd>
+            <dt>DOMRequest getSelf()</dt>
+            <dd>The UA SHOULD return a <a>DOMRequest</a> object and
+                asynchronously get all applications that have an origin matching
+                the caller's origin. [[!ORIGIN]]<br>
+                When those applications are collected, the UA SHOULD send a
+                <code>success</code> event to the <a>DOMRequest</a> object and
+                populate its <code>request</code> attribute with an array
+                containing the applications.</dd>
 
-            <dt>EventTarget getSelf()</dt>
+            <dt>DOMRequest getInstalled()</dt>
+            <dd>The UA SHOULD return a <a>DOMRequest</a> object and
+                asynchronously get all applications that have an origin matching
+                the caller's origin. [[!ORIGIN]]<br>
+                When those applications are collected, the UA SHOULD send a
+                <code>success</code> event to the <a>DOMRequest</a> object and
+                populate its <code>request</code> attribute with an array
+                containing the applications.</dd>
 
-            <dd>Retrieves the application record for the origin at which the call
-            is made.</dd>
+            <todo>
+              <ul>
+                <li>What's the real difference between getSelf() and getInstalled()?</li>
+                <li>Can an application be not installed but still in the registry? How?</li>
+              </ul>
+            </todo>
 
-            <dt>EventTarget getInstalled()</dt>
+            <dt>attribute ApplicationManagement management</dt>
+            <dd>If the caller isn't allowed to manage applications, the UA MUST
+                return null. Otherwise, it MUST return an
+                <a>ApplicationManagement</a> object.</dd>
 
-            <dd>Retrieves application records for all apps that have been installed
-            so far from the origin at which the call is made.</dd>
+            <todo>
+              <ul>
+                <li>Permission check isn't clearly defined here. Should it be better?</li>
+              </ul>
+            </todo>
 
-            <dt>attribute AppRegistryManagement mgmt</dt>
-
-            <dd>Provides access to the management interace. <em>This attribute is
-            available to privileged callers only.</em></dd>
           </dl>
+          </section>
         </section>
-      </section>
 
       <section>
-        <h2>Application Registry Management</h2>
+        <h2><a>ApplicationManagement</a> interface</h2>
 
         <section>
-          <p>A privileged caller is a web page that has been explicitely authorized
-          by the user to manage applications on their behalf. Such privileged
-          origins also have access to the AppRegistryManagement interface as
-          described below.</p>
+          <p>The <a>ApplicationManagement</a> interface allows access to all
+             applications and is being informed any time an application is being
+             installed or uninstalled. The intent of this interface is to be
+             restricted to privileged callers.</p>
 
-          <dl title='interface AppRegistryManagement' class='idl'>
-            <dt>EventTarget getAll()</dt>
+          <dl title='interface ApplicationManagement' class='idl'>
+            <dt>DOMRequest getAll()</dt>
+            <dd>The UA SHOULD return a <a>DOMRequest</a> object and
+                asynchronously get all applications currently in the application
+                registry.<br>
+                When those applications are collected, the UA SHOULD send a
+                <code>success</code> event to the <a>DOMRequest</a> object and
+                populate its <code>request</code> attribute with an array
+                containing the applications.</dd>
 
-            <dd>Retrieves the application records for all apps that have been
-            installed so far.</dd>
-
-            <dt>attribute EventListener oninstall</dt>
-
+            <dt>[TreatNonCallableAsNull] attribute Function? oninstall</dt>
             <dd>This value may be set to a function that will be invoked when an
             application is installed. The only argument to this function will be
             the <code>AppObject</code> of the application that was installed.</dd>
 
-            <dt>attribute EventListener onuninstall</dt>
-
+            <dt>[TreatNonCallableAsNull] attribute Function? onuninstall</dt>
             <dd>This value may be set to a function that will be invoked when an
             application is uninstalled. The only argument to this function be the
             <code>AppObject</code> of the application that was uninstalled.</dd>
           </dl>
         </section>
+
+        <section>
+          <h2>Events</h2>
+          <p>
+            An <a>install</a> event MUST be fired on all
+            <a>ApplicationManagement</a> instances as soon as an application is
+            installed.
+          </p>
+
+          <p>
+            The <a>uninstall</a> event MUST be fired on all
+            <a>ApplicationManagement</a> instances as soon as an application is
+            uninstalled.
+          </p>
+
+          <p>
+            The following are the <a>event handlers</a> (and their corresponding
+            <a>event handler event types</a>) that MUST be supported as
+            attributes by the <code>ApplicationManagement</code> object:
+          </p>
+
+          <table class="simple">
+            <thead>
+              <tr>
+                <th>event handler</th>
+                <th>event handler event type</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong><code>oninstall</code></strong></td>
+                <td><code>install</code></td>
+              </tr>
+              <tr>
+                <td><strong><code>onuninstall</code></strong></td>
+                <td><code>uninstall</code></td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
       </section>
 
       <section>
-        <h2>Application Events</h2>
+        <h2>Application Event Types</h2>
+
+        <p>Application Events are sent when an event happen on the application
+        level like an application being installed or uninstalled.</p>
 
         <section>
-          <p>Most of the methods described above return an <code>EventTarget</code>
-          object to which success and error handlers may be attached using standard
-          DOM methods like <code>addEventListener</code> or attributes like
-          <code>onsuccess</code> and <code>onerror</code>.</p>
-
-          <dl title='interface AppEventError' class='idl'>
-            <dt>const unsigned short PERMISSION_DENIED = 1</dt>
-
-            <dd>Installation was denied (by user or UA).</dd>
-
-            <dt>const unsigned short MANIFEST_URL_ERROR = 2</dt>
-
-            <dd>The manifest could not be found at the given location.</dd>
-
-            <dt>const unsigned short NETWORK_ERROR = 3</dt>
-
-            <dd>The manifest could not fetched from the given location at this
-            time.</dd>
-
-            <dt>const unsigned short MANIFEST_PARSE_ERROR = 4</dt>
-
-            <dd>The manifest could not be parsed.</dd>
-
-            <dt>const unsigned short INVALID_MANIFEST = 5</dt>
-
-            <dd>The manifest was able to be parsed but contains invalid
-            values.</dd>
-
-            <dt>readonly attribute short code</dt>
-
-            <dd>This value is set to one of the constants defined in this
-            interface.</dd>
+          <dl title='[Constructor(DOMString type, Application eventInitDict)]
+                    interface ApplicationEvent : Event' class='idl'>
+            <dt>readonly attribute Application application</dt>
+            <dd></dd>
           </dl>
-
-          <dl title='interface AppEventTarget : EventTarget' class='idl'>
-            <dt>attribute EventListener onsuccess</dt>
-
-            <dd>May be set to a success handler.</dd>
-
-            <dt>attribute EventListener onerror</dt>
-
-            <dd>May be set to an error handler.</dd>
-
-            <dt>void addEventListener(DOMString event, EventListener e)</dt>
-
-            <dd><code>event</code> can be either be "install" or "uninstall".</dd>
-
-            <dt>void removeEventListener(DOMString event, EventListener e)</dt>
-
-            <dd><code>event</code> can either be "install" or "uninstall".</dd>
-
-            <dt>readonly attribute Object result</dt>
-
-            <dd>The type and value of <code>result</code> depends on the operation
-            for which this <code>EventTarget</code> was returned. If an
-            <code>onerror</code> is fired, this value will be set to
-            <code>AppEventError</code>. When <code>getSelf()</code> and
-            <code>getInstalled()</code> succeed, ths value will be set to an array
-            of <code>AppObject</code>s.</dd>
+          <dl title='dictionary ApplicationEventInit : EventInit' class='idl'>
+            <dt>Application application</dt>
+            <dd></dd>
           </dl>
         </section>
+
+        <p><a>ApplicationEvent</a> objects MUST contain a non-null <code>application</code>
+        attribute representing the application on each the action happened.<br>
+        The application events are always sent asynchronously, do not buble and
+        are not cancelable.</p>
+
+        <p>
+          There are currently two types of Application Events:
+          <ul>
+            <li><dfn>install</dfn> is sent when an application is installed.
+            <code>application</code> MUST represent the installed application.</li>
+            <li><dfn>uninstall</dfn> is sent when an application is uninstalled.
+            <code>application</code> MUST represent the uninstalled application.</li>
+          </ul>
+        </p>
       </section>
+
     </section>
 
     <section class="appendix">
