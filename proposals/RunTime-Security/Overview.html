@@ -33,6 +33,27 @@
         wgPatentURI:  "http://www.w3.org/2004/01/pp-impl/58119/status"
       };
     </script>
+    <style>
+      todo { display: none; }
+      pre.privateidl {
+        border-top: 1px solid #90b8de;
+        border-bottom: 1px solid #90b8de;
+        padding: 1em;
+        line-height: 120%;
+      }
+
+      pre.privateidl::before {
+        content: "WebIDL";
+        display: block;
+        width: 150px;
+        background: #90b8de;
+        color: #fff;
+        font-family: initial;
+        padding: 3px;
+        font-weight: bold;
+        margin: -1em 0 1em -1em;
+      }
+    </style>
   </head>
 
   <body>
@@ -135,6 +156,11 @@
 
       <section>
         <h2>Properties</h2>
+
+        <section class="note">
+          These properties are not in a quite final state. Some of them might
+          move to other specifications that would extend this list.
+        </section>
 
         <p>All leaf properties MUST contain a string value unless specified
            otherwise.</p>
@@ -320,6 +346,11 @@
           entry in the manifest will fail. The field is an object, with each
           property name specifying a single permission, and object containing
           the following fields:
+
+          <section class="note">
+            This permission list isn't in a quite final state. Some of them
+            might move to other specifications that would extend this list.
+          </section>
 
             <ul>
               <li>
@@ -838,6 +869,102 @@
 
     </section>
 
+    <section>
+      <h2>System Messages</h2>
+
+      <todo>
+        TODO: We might want to have something describing how an application goes
+        inactive, get killed and everything to have a better description of
+        system messages.
+
+        TODO: there is no notion of multi-page applications in this descirption
+        of system messages. We do not handle system messages that are registered
+        on another page.
+      </todo>
+
+      <p><i>System Messages</i> are events sent by the system to an application
+      which has registered for it before. Those events are different from DOM
+      events in the sense that they are always originated by the system and that
+      if the targeted application isn't currently running, it will be started.
+      <br>
+      In addition, un-handled messages will stay in a queue.</p>
+
+      <section class="informative">
+        <h2>Use cases</h2>
+
+        <p>Some applications might be interested in getting some events even if
+        they are not running and want to be woken up if such events is sent
+        while they are asleep.<br>
+        In addition, when the application is being woken, it needs to know as
+        soon as possible why it has been disturbed to be able to show the
+        appropriate interface.<br>
+        Finally, the capability of being woken should be transparent to the
+        application.</p>
+      </section>
+
+      <section>
+        <h2>Extension to the <a>Navigator</a> interface</h2>
+
+        <section>
+<!-- This is sad but respec doesn't know about callbacks... -->
+<pre class="privateidl"><span class="idlInterface" id="idl-def-systemMessageCallback">callback <span class="idlInterfaceID">systemMessageCallback</span> = <span class="idlAttrType">void</span> (<span class="idlAttrType"><a>Application</a></span> <span class="idlAttrName">application</span>);</pre>
+
+        <dl title='partial interface Navigator' class='idl'>
+          <dt>void setMessageHandler(DOMString type, systemMessageCallback? callback)</dt>
+          <dd>The method MUST set <i>callback</i> as the new message handler
+          for the <a>type of system message</a> <i>type</i>.<br>
+          If <i>callback</i> is null, the current callback, if any, for the <a>
+          type of message</a> <i>type</i> must be reset and no callback should
+          no longer be set for this type.<br>
+          If <i>callback</i> is not null and there was no message handler for
+          the given type and there are messages in the <a>pool of messages</a>
+          for the type, then the UA MUST start an asynchronous task that
+          executes all the messages in the pool by the new handler in a
+          <abbr title='First In First Out'>FIFO</abbr> basis and then remove all
+          those messages from the <a>pool of messages</a>.<br>
+          If the <i>callback</i> is not null and there is a message handler for
+          the given type, that message handler should be replaced by
+          <i>callback</i>.</dd>
+
+          <dt>boolean hasPendingMessages(DOMString type)</dt>
+          <dd>The method MUST returns true if there is at least one message in
+          the <a>pool of messages</a> for the given <i>type</i>. Otherwise, it
+          MUST return false.</dd>
+        </dl>
+        </section>
+      </section>
+
+      <section>
+        <h2>Definitions</h2>
+
+        <p>The <dfn>type of system message</dfn> identifies a category of system
+        messages.<br>
+        Application are be able to register and handle system messages based
+        on their types. There is no exhaustive list of system messages type. Any
+        specification can create a new type of system message.</p>
+
+        <p>Each application has a <dfn>pool of messages</dfn> for each <a>type
+        of system message</a>. Everytime a system message is sent to an
+        application, if there is no handler for that message's type, the UA MUST
+        add the message to the pool of messages used for that type.<br>
+        The UA MAY, for memory optimization, discard old messages if the pool
+        becomes too big or if the messages are too old.
+
+        <p>When a UA is required to <dfn>fire a system message</dfn> of a given
+        type, it has to do one of these actions:
+        <ul>
+          <li>If the application is running and a handler is defined, the UA
+          MUST run the handling method;</li>
+          <li>Otherwise, if the application is running and no handler is defined,
+          the UA MUST add the message to the <a>pool of messages</a>;</li>
+          <li>Otherwise, if the application is not running, the UA MUST add the
+          message to the <a>pool of messages</a> and start the application.</li>
+        </ul>
+        </p>
+      </section>
+
+    </section>
+
     <section class="appendix">
       <h2><a>DOMRequest</a> interface</h2>
 
@@ -850,6 +977,7 @@
 
       <p>TODO: describe the <a>DOMRequest</a> interface</p>
 
+      <section>
       <dl title='interface DOMRequest : EventTarget' class='idl'>
         <dt>readonly attribute DOMString readyState</dt> <!-- "pending" or "done" -->
         <dd>TODO</dd>
@@ -866,6 +994,7 @@
         <dt>[TreatNonCallableAsNull] attribute Function? onerror</dt>
         <dd>TODO [...] in [[!HTML5]]</dd>
       </dl>
+      </section>
     </section>
 
     <section class="appendix">
