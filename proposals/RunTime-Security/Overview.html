@@ -71,9 +71,9 @@
     <section>
       <h2>Terminology</h2>
       <p>
-        The <code><a href="http://dev.w3.org/html5/spec/webappapis.html#function">
-        Function</a></code> interface represents a function in the scripting
-        language being used as defined in [[!HTML5]].
+        The <code><a href="http://dev.w3.org/html5/spec/webappapis.html#event-handlers">
+        EventHandler</a></code> interface represents a callback used for event
+        handlers as defined in [[!HTML5]].
       </p>
       <!--
       <p>
@@ -81,8 +81,8 @@
         queue a task</a></dfn> and
         <dfn><a href="http://dev.w3.org/html5/spec/webappapis.html#fire-a-simple-event">
         fire a simple event</a></dfn> are defined in [[!HTML5]].
-      </p>-->
-
+      </p>
+      -->
       <p>
         The terms <dfn> <a href="http://dev.w3.org/html5/spec/webappapis.html#event-handlers">
         event handlers</a></dfn> and
@@ -779,12 +779,12 @@
                 populate its <code>request</code> attribute with an array
                 containing the applications.</dd>
 
-            <dt>[TreatNonCallableAsNull] attribute Function? oninstall</dt>
+            <dt>[TreatNonCallableAsNull] attribute EventHandler oninstall</dt>
             <dd>This value may be set to a function that will be invoked when an
             application is installed. The only argument to this function will be
             the <code>AppObject</code> of the application that was installed.</dd>
 
-            <dt>[TreatNonCallableAsNull] attribute Function? onuninstall</dt>
+            <dt>[TreatNonCallableAsNull] attribute EventHandler onuninstall</dt>
             <dd>This value may be set to a function that will be invoked when an
             application is uninstalled. The only argument to this function be the
             <code>AppObject</code> of the application that was uninstalled.</dd>
@@ -988,10 +988,10 @@
         <dt>readonly attribute DOMError error</dt>
         <dd>TODO [...] in [[!DOM4]]</dd>
 
-        <dt>[TreatNonCallableAsNull] attribute Function? onsuccess</dt>
+        <dt>[TreatNonCallableAsNull] attribute EventHandler onsuccess</dt>
         <dd>TODO [...] in [[!HTML5]]</dd>
 
-        <dt>[TreatNonCallableAsNull] attribute Function? onerror</dt>
+        <dt>[TreatNonCallableAsNull] attribute EventHandler onerror</dt>
         <dd>TODO [...] in [[!HTML5]]</dd>
       </dl>
       </section>
