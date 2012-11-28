@@ -870,6 +870,76 @@
     </section>
 
     <section>
+      <h2>Packaged applications</h2>
+
+      <p>A <dfn>packaged application</dfn> is an application that is
+      self-contained in a container. All resources that are commonly used by the
+      application SHOULD be available in the container.</p>
+
+      <section class="informative">
+
+        <h2>Use cases</h2>
+
+        <p>A <a>packaged application</a> would be useful in a few situations,
+        amongst them:
+        <ul>
+          <li>If a marketplace wants to guarantee that an application is safe,
+          it allows it to review the application codes and makes sure that all
+          permissions granted can't be used outside of the reviewed code. In
+          addition, it forces, by design, that any update will go trough the
+          same review process.</li>
+          <li>Some developers might want to develop for the Web Platform without
+          investing in a server infrastructure. Any client-side only
+          applications written on top of the Web Platform will be able to be
+          very easily distributed that way.</li>
+        </ul></p>
+
+      </section>
+
+      <section>
+        <h2>Package format</h2>
+
+        <p>An <a>application manifest</a> for the application MUST be present at
+        the root of the container.</p>
+
+        <p>The container of a <a>packaged application</a> MUST be a ZIP file.</p>
+
+      </section>
+
+      <section>
+        <h2>URI of a packaged file</h2>
+
+        <p>A file contained in a <a>packaged application</a> MUST have an URI
+        with the following rules:
+        <ul>
+          <li>The <code>scheme</code> of the URI MUST be <i>app</i>.</li>
+          <li>The <code>authority</code> of the URI MUST be an identifier unique
+          for each applications. That means, two files from different
+          applications can't share the same <code>authority</code> but two files
+          from the same application will.</li>
+          <li>The <code>path</code> of the URI MUST be the file name.</li>
+          <li>Any other parts of the URI MUST be empty.</li>
+        </ul>
+        </p>
+
+        <p>For more information about URI's, refer to [[!RFC3986]].</p>
+
+        <p>
+        For example, the URI of <i>index.html</i> from an application can be:
+        <i>app://e35b8412-7451-46e7-ab29-0cee24fd486a/index.html</i>.
+        </p>
+
+        <p>The URI of a packaged file is defined such as two files from the same
+        <a>packaged application</a> MUST share the same origin.<br>
+        A file from a <a>packaged application</a> and any other resource outside
+        of this application (an application or not, packaged or not) MUST not
+        share the same origin. [[!ORIGIN]]</p>
+
+      </section>
+
+    </section>
+
+    <section>
       <h2>System Messages</h2>
 
       <todo>
