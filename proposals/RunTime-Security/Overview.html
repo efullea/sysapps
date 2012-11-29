@@ -806,6 +806,20 @@
                 populate its <code>request</code> attribute with an array
                 containing the applications.</dd>
 
+            <dt>DOMRequest checkInstalled(DOMString manifestURL)</dt>
+            <dd>The UA SHOULD return a <a>DOMRequest</a> object and
+            asynchronously check if there is an installed application in the
+            system with a manifest URL matching <i>manifestURL</i>.<br>
+            After the asynchronous operation is done,, the IA SHOULD send a
+            <code>success</code> event to the <a>DOMRequest</a> object and
+            populate its <code>result</code> attribute with the boolean value
+            true if there is an installed application fulfilling the condition,
+            otherwise <code>result</code> should be set to false.</dd>
+
+            <todo>
+              checkInstalled() could be synchronous. Seems way more convevient.
+            </todo>
+
             <todo>
               <ul>
                 <li>What's the real difference between getSelf() and getInstalled()?</li>
