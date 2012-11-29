@@ -662,6 +662,53 @@
                       describes the error.</li>
                 </ol>
             </dd>
+
+            <!-- Update-related API -->
+
+            <dt>readonly attribute DOMString updateState</dt>
+            <dd>The attribute MUST return the empty string,
+            <code>available</code>, <code>downloading</code>,
+            <code>downloaded</code> or <code>installing</code>, depending on the
+            state of the application.<br>
+            If the application is being updated, the attribute MUST return
+            <code>installing</code>.<br>
+            If the application is ready to be updated, with the updtade fully
+            downloaded or if there is no download to proceed to the update, the
+            attribute MUST return <code>downloaded</code>.<br>
+            If the application's update is being downloaded, the attribute MUST
+            return <code>downloading</code>.<br>
+            If there is an application update available, it is not being
+            installed, nor downloaded, nor downloading, the attribute MUST
+            return <code>available</code>.
+            Otherwise, the attribute MUST return the empty string.</dd>
+
+            <dt>readonly attribute unsigned long downloadSize</dt>
+            <dd>The attribute SHOULD return the size of the download that would be
+            required to update the application in kilobytes, if any. If the
+            application doesn't have have an available update, if the download
+            has already been done or if the UA can't find out the size of the
+            download required for the update, the attribute MUST return 0.<br>
+            If the download is happening, the attribute MUST return 0.<br>
+            If the download has been made but interupted and the UA is able to
+            continue it, the attribute SHOULD return the remaining size to
+            download.</dd>
+
+            <dt>DownloadRequest downloadUpdate()</dt>
+            <dd>The method MUST return a <a>DownloadRequest</a> object and
+            asynchronously run the following steps:
+            <ol>
+              <li>If the application doesn't have an available update, the UA
+              MUST send an <a>error message</a> to the request object with the
+              value <code>InvalidState</code> and abort these steps.</li>
+              <li>If the application doesn't require a download to process the
+              update, the UA MUST send a <a>succes message</a> to the request
+              object with no value and abort these steps.</li>
+              <li>If the application's update is currently being downloaded, the
+              request MUST reflect the current state of the download. Otherwise,
+              the request must <a>start the download</a>.</li>
+            </ol>
+            </dd>
+
           </dl>
           </section>
         </section>
@@ -788,6 +835,29 @@
             <dd>This value may be set to a function that will be invoked when an
             application is uninstalled. The only argument to this function be the
             <code>AppObject</code> of the application that was uninstalled.</dd>
+
+            <!-- Update-related API -->
+
+            <dt>DOMRequest applyUpdate(Application application)</dt>
+            <dd>The method MUST return a <a>DOMRequset</a> object and perform
+            the following steps asynchronously:
+            <ol>
+              <li>If the application doesn't have an updated or the updated
+              isn't fully downloaded, the UA MUST send an <a>error message</a>
+              to the request with the value <code>InvalidState</code> and abort
+              these steps.</li>
+              <li>Stop <i>application</i> from running if it is currently
+              running.</li>
+              <li>Replace the previous version with the new version of the
+              application.</li>
+              <li>If an error was occured during the previous steps, the UA MUST
+              send an <a>error message</a> to the request with any appropriate
+              value. Otherwise, the UA MUST send a <a>success message</a> to the
+              request with an <a>Application</a> object representing the updated
+              application as a value.</li>
+            </ol>
+            </dd>
+
           </dl>
         </section>
 
