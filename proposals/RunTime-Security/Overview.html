@@ -83,12 +83,19 @@
         fire a simple event</a></dfn> are defined in [[!HTML5]].
       </p>
       -->
+      <p>The concept of <dfn><a href='http://dev.w3.org/html5/spec/webappapis.html#fire-a-simple-event'>
+      fire a simple event</a></dfn> is defined in [[!HTML5]].</p>
+
       <p>
         The terms <dfn> <a href="http://dev.w3.org/html5/spec/webappapis.html#event-handlers">
         event handlers</a></dfn> and
         <dfn><a href="http://dev.w3.org/html5/spec/webappapis.html#event-handler-event-type">
         event handler event types</a></dfn> are defined in [[!HTML5]].
       </p>
+
+      <p>The <dfn><a href='http://dvcs.w3.org/hg/domcore/raw-file/tip/Overview.html/#interface-domerror'>
+      DOMError</a></dfn> interface represents an error handling object as
+      defined in [[!DOM4]].
     </section>
 
     <section>
@@ -1146,34 +1153,133 @@
       <section class="note">
         <p>The <a>DOMRequest</a> interface is temporarily hosted by this
           specification. The <i>Runtime and Security Model for Web Applications
-          </i> specifaciton doesn't plan to keep that guest for ever, this is
+          </i> specificaton doesn't plan to keep that guest for ever, this is
           why it is currently staying in an appendix.</p>
       </section>
 
-      <p>TODO: describe the <a>DOMRequest</a> interface</p>
+      <section class="informative">
+        <h2>Use cases</h2>
 
-      <p>The concept of <dfn>success message</dfn> with a value ... or
-      no value ...</p>
-      <p>The concept of <dfn>error message</dfn> with a value ... or
-      "any appropriate value" ...</p>
+        <p>Some methods want to return a value or do an action but can't do it
+        synchronously, most of the time for performance reasons. In that case,
+        most of those methods will use a callback mechanism to inform the caller
+        of the success or the failure of the action.<br>
+        However, this callback mechanism makes the code barely readable and
+        there is no common pattern used by all API in the Web Platform.<br>
+        <a>DOMRequest</a> intend to be used instead of those callbacks to make
+        those APIs more developer-friendly and help code readability.</p>
+      </section>
 
       <section>
-      <dl title='interface DOMRequest : EventTarget' class='idl'>
-        <dt>readonly attribute DOMString readyState</dt> <!-- "pending" or "done" -->
-        <dd>TODO</dd>
+        <h2>Definition</h2>
 
-        <dt>readonly attribute any result</dt>
-        <dd>TODO. MUST return undefied (or null?) if no result is there yet.</dd>
+        <p>The <a>DOMRequest</a> interface is intented to be used by
+        asynchronous methods that want to return something after performing an
+        action or simply want to inform the caller that the action is done.<br>
+        It returned request can also be used to inform that an error happened
+        during the operation.</p>
 
-        <dt>readonly attribute DOMError error</dt>
-        <dd>TODO [...] in [[!DOM4]]</dd>
+        <p><a>A <a>DOMRequest</a> has three state. It is whether
+        <code>pending</code>, <code>success</code> or <code>error</code>.<br>
+        The initial state of a <a>DOMRequest</a> MUST be <code>pending</code>.
+        <br>
+        If a <a>DOMRequest</a> receives a <a>success message</a> while in the
+        <code>pending</code> state, its state MUST change to
+        <code>success</code> and SHOULD NOT change afterward.<br>
+        If a <a>DOMRequest</a> receives an <a>error message</a> while in the
+        <code>pending</code> state, its state MUST change to <code>error</code>
+        and SHOULD NOT change afterward.<br>
+        If a <a>DOMRequest</a> receives a <a>success message</a> or an
+        <a>error message</a> while not in the <code>pending</code> state, the
+        message MUST be ignored.</p>
 
-        <dt>[TreatNonCallableAsNull] attribute EventHandler onsuccess</dt>
-        <dd>TODO [...] in [[!HTML5]]</dd>
+        <p>A <dfn>success message</dfn> SHOULD be sent to the <a>DOMRequest</a>
+        when the operation is successfuly terminated. The message MAY contain a
+        value which MUST be used by the <code>result</code> attribute. If the
+        message does not contain a value, <i>null</i> MUST be used instead.</p>
 
-        <dt>[TreatNonCallableAsNull] attribute EventHandler onerror</dt>
-        <dd>TODO [...] in [[!HTML5]]</dd>
-      </dl>
+        <p>As soon as a <a>success message</a> is received,
+        <code>readyState</code> MUST return <code>done</code>,
+        <code>result</code> MUST return the received value or <i>null</i> as
+        explained above and the object MUST NOT change its state and MUST,
+        therefore, ignore all following <a>success message</a> and
+        <a>error message</a>.<br>
+        Finally, the UA MUST <a>fire a simple event</a> named
+        <code>success</code> on the object</p>
+
+        <p>An <dfn>error message</dfn> SHOULD be sent to the <a>DOMRequest</a>
+        when the operation has failed. The message MAY contain a value which
+        MUST be a <a>DOMError</a> object and MUST be used by the
+        <code>error</code> attribute. If the message does not contain a value,
+        the UA SHOULD find the most appropriate <a>DOMError</a> that represents
+        the failure.</p>
+
+        <p>As soon as an <a>error message</a> is received,
+        <code>readyState</code> MUST return <code>done</code>,
+        <code>error</code> MUST return the received value the most appropriate
+        error value as explained above and the object MUST NOT change its state
+        and MUST, therefore, ignore all following <a>success message</a> and
+        <a>error message</a>.<br>
+        Finally, the UA MUST <a>fire a simple event</a> named <code>error</code>
+        on the object.</p>
+
+        <section>
+        <dl title='interface DOMRequest : EventTarget' class='idl'>
+          <dt>readonly attribute DOMString readyState</dt>
+          <dd>The attribute MUST return <code>pending</code> if the current
+          state is <code>pending</code>. Otherwise, it MUST return
+          <code>done</code>.</dd>
+
+          <dt>readonly attribute any result</dt>
+          <dd>The attribute MUST return <code>undefined</code> if the current
+          state is not <code>success</code>. Otherwise, it MUST return the value
+          provided by the <a>success message</a> or <code>null</code> if no
+          value was sent with the message.</dd>
+
+          <dt>readonly attribute DOMError? error</dt>
+          <dd>The attribute MUST return <i>null</i> if the current state is not
+          <code>error</code>. Otherwise, it MUST return the value provided by
+          by the <a>error message</a>. If there was no provided value, it SHOULD
+          return the most appropriate <a>DOMError</a> that represents the
+          failure.</dd>
+
+          <dt>[TreatNonCallableAsNull] attribute EventHandler onsuccess</dt>
+          <dd></dd>
+
+          <dt>[TreatNonCallableAsNull] attribute EventHandler onerror</dt>
+          <dd></dd>
+        </dl>
+        </section>
+
+        <section>
+          <h2>Events</h2>
+
+          <p>
+            The following are the <a>event handlers</a> (and their corresponding
+            <a>event handler event types</a>) that MUST be supported as
+            attributes by the <code>DOMRequest</code> objects:
+          </p>
+
+          <table class="simple">
+            <thead>
+              <tr>
+                <th>event handler</th>
+                <th>event handler event type</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong><code>onerror</code></strong></td>
+                <td><code>error</code></td>
+              </tr>
+              <tr>
+                <td><strong><code>onsuccess</code></strong></td>
+                <td><code>success</code></td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
       </section>
     </section>
 
