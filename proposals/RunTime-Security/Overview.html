@@ -726,17 +726,53 @@
           <section>
           <dl title='interface DownloadRequest : DOMRequest' class='idl'>
             <dt>void cancel()</dt>
-            <dd></dd>
+            <dd>This method MUST stops the download and asynchronously send an
+            <a>error message</a> to itself with the value
+            <code>UserCancel</code>.</dd>
 
             <dt>attribute double progress</dt>
-            <dd></dd>
+            <dd>If the current state is <code>error</code> the attribute MUST
+            return 0.0. Otherwise, if the current state is <code>success</code>,
+            the attribute MUST return 1.0. Otherwise, the attribute SHOULD
+            return the current progress of the download expressed between 0.0
+            and 1.0.</dd>
 
             <dt>attribute EventHandler onprogress</dt>
-            <dd></dd>
           </dl>
 
-          <p>The concept of <dfn>start the download</dfn> [...]</p>
-          <p><a>DownloadRequest</a> [...] events.</p>
+          <p>When the caller <dfn>start the download</dfn>, the
+          <a>DownloadRequest</a> SHOULD start downloading the resource.</p>
+
+          <p>If the resource fails to download, the UA MUST send an <a>error
+          message</a> to the request.<br>
+          <p>If the resource succeed to download, the UA MUST send a <a>success
+          message</a> to the request.</p>
+
+          <p>While the resource is downloading, which means as long as
+          <code>readyState</code> is <code>pending</code>, the UA SHOULD
+          regularly <a>fire a simple event</a> named <a>progress</a> on the
+          object. The UA should note that sending too much events might have an
+          impact on performance but sending too few of them might impact the
+          user experince.</p>
+
+          <p>The following are the <a>event handlers</a> (and their
+          corresponding <a>event handler event types</a>) that MUST be supported
+          as attributes by the <code>DOMRequest</code> objects:</p>
+
+          <table class="simple">
+            <thead>
+              <tr>
+                <th>event handler</th>
+                <th>event handler event type</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong><code>onprogress</code></strong></td>
+                <td><code>progress</code></td>
+              </tr>
+            </tbody>
+          </table>
 
           </section>
         </section>
