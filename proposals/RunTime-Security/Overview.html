@@ -1124,8 +1124,15 @@
         <h2>Extension to the <a>Navigator</a> interface</h2>
 
         <section>
-<!-- This is sad but respec doesn't know about callbacks... -->
-<pre class="privateidl"><span class="idlInterface" id="idl-def-systemMessageCallback">callback <span class="idlInterfaceID">systemMessageCallback</span> = <span class="idlAttrType">void</span> (<span class="idlAttrType"><a>Application</a></span> <span class="idlAttrName">application</span>);</pre>
+        <dl id='idl-def-systemMessageCallback' class='idl' title='callback systemMessageCallback = void'>
+          <dt>optional Object message</dt>
+          <dd>The parameter <i>message</i> SHOULD contain an object that would
+          be used by the handler and giving information about the system
+          message. For example, a system message about a delivered pizza should
+          give information about the pizzas that have been delivered. If the
+          system message is already self-explanatory, <i>message</i> SHOULD be
+          null.</dd>
+        </dl>
 
         <dl title='partial interface Navigator' class='idl'>
           <dt>void setMessageHandler(DOMString type, systemMessageCallback? callback)</dt>
