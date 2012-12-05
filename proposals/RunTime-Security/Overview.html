@@ -1290,6 +1290,54 @@
           server security or would not risk any security flaw on their servers.
           </p>
         </section>
+
+        <section>
+          <h2>CSP Policy</h2>
+
+          <section class="note">
+            The following sub-section assumes that a <a>trusted application</a>
+            can only be a <a>packaged application</a>. This needs to be updated.
+          </section>
+
+          <p>The following CSP policy MUST apply to all <a>trusted
+          application</a>s:<br></p>
+
+          <p><code>default-src *; script-src 'self'; object-src 'none';
+          style-src 'self'</code></p>
+
+          <p>This puts the following restrictions on web pages part of a
+          <a>trusted application</a>:
+          <ul>
+            <li>Scripts can only be loaded from the package;</li>
+            <li>Scripts can not use data:-URIs;</li>
+            <li>Inline scripts can not be used;</li>
+            <li>eval() can not be used. Neither can eval-like functions like
+            setTimeout or "new Function". setTimeout can still be used as long
+            as the first argument is a Function object rather than a string;<il>
+            <li>onXXX attributes can't be used in the markup of pages. However,
+            using the associated <a>EventHandler</a> is doable. For example:
+            myElement.onXXX = someFunction;<li>
+            <li>&lt;object&gt;, &lt;embed&gt; and &lt;applet&gt; are fully
+            disabled. In other words, plugins won't work at all. Including
+            flash.</li>
+            <li>CSS can only be loaded from the package. Inline CSS is
+            however allowed.</li>
+          </ul></p>
+
+          <p>This does not restrict any of the following:
+          <ul>
+            <li>&lt;iframe&gt;s can still point to any URL;</li>
+            <li>Images can still be loaded from anywhere. Including when loaded
+            using an &lt;img&gt; element, when using CSS background images or
+            when using other types of CSS images;</li>
+            <li>Media (audio and video) can still be loaded from anywhere;</li>
+            <li>Network connections can still be opened anywhere using
+            data-centric APIs like XMLHttpRequest or WebSocket.</li>
+          </ul></p>
+
+          <p>There is no way for <a>trusted application</a>s to relax this
+          policy.</p>
+        </section>
       </section>
     </section>
 
