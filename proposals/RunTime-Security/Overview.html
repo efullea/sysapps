@@ -1138,6 +1138,29 @@
     </section>
 
     <section>
+      <h2>Data isolation</h2>
+
+      <p>In the context of a running application, all usual rules for data
+      isolation MUST apply: same-origin policy, same-domain policy, or whatever
+      is used. However, between two applications, those rules no longer apply.
+      Two applications MUST be fully isolated from each other in the sense that
+      they SHOULD NOT be able to access data from each other. For example, if
+      App1 accesses <i>http://example.org</i> and gets a cookie from it, App2
+      should not be able to see that cookie when accessing
+      <i>http://example.org</i> even if the usual cookie sharing policy should
+      allow this to happen.</p>
+
+      <p>This isolation SHOULD apply for all data storage like <i>cookies</i>,
+      <i>localStorage</i>, <i>IndexedDB</i>, <i>app cache</i> and any other Web
+      Platform mechanism that allows to store data and doesn't explicitly opts
+      out from the application data isolation.<br>
+      The isolation SHOULD also apply to UA specifics data storage. For example,
+      any permission granted or denied to a host/origin/domain should be
+      isolated per-application or auto-fill and autocompletion features for
+      forms.</p>
+    </section>
+
+    <section>
       <h2>System Messages</h2>
 
       <todo>
