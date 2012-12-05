@@ -348,16 +348,11 @@
 
           <li><dfn id="propdef-permisssions">permissions</dfn>: This value
           consists of a set of permissions that the application needs. An
-          application MUST list every API that is considered to require user
+          application SHOULD list every API that is considered to require user
           permission in this field. Usage of an API without a corresponding
-          entry in the manifest will fail. The field is an object, with each
+          entry in the manifest SHOULD fail. The field is an object, with each
           property name specifying a single permission, and object containing
           the following fields:
-
-          <section class="note">
-            This permission list isn't in a quite final state. Some of them
-            might move to other specifications that would extend this list.
-          </section>
 
             <ul>
               <li>
@@ -375,141 +370,8 @@
               </li>
             </ul>
 
-          The following table lists the various permissions, and whether
-          they require an <a>access</a> property.
-
-          <table>
-            <tr>
-              <th>Permission Name</th>
-              <th>Permission Description</th>
-              <th>Access Type</th>
-            </tr>
-            <tr>
-              <td><code>alarm</code></td>
-              <td>Schedule a notification, or for an application to be started,
-              at a specific time.</td>
-              <td>-</td>
-            </tr>
-            <tr>
-              <td><code>backgroundservice</code></td>
-              <td>Enable a web application to run in the background and perform
-              tasks like syncing or respond to incoming messages.</td>
-              <td>-</td>
-            </tr>
-            <tr>
-              <td><code>bluetooth</code></td>
-              <td>Low level access to bluetooth hardware.</td>
-              <td>-</td>
-            </tr>
-            <tr>
-              <td><code>browser</code></td>
-              <td>Enables implementing a browser.</td>
-              <td>-</td>
-            </tr>
-            <tr>
-              <td><code>camera</code></td>
-              <td>Take photos, shoot video and control the camera.</td>
-              <td>-</td>
-            </tr>
-            <tr>
-              <td><code>contacts</code></td>
-              <td>Add, read, or modify contacts from the address book on the
-              device and read contacts from the SIM.</td>
-              <td>readonly, readwrite, readcreate, createonly</td>
-            </tr>
-            <tr>
-              <td><code>desktop-notification</code></td>
-              <td>Display a notification on the user's desktop.</td>
-              <td>-</td>
-            </tr>
-            <tr>
-              <td><code>device-storage</code></td>
-              <td>Add, read, or modify files stored at a central location on the
-              device.</td>
-              <td>readonly, readwrite, readcreate, createonly</td>
-            </tr>
-            <tr>
-              <td><code>fmradio</code></td>
-              <td>Control the FM radio.</td>
-              <td>-</td>
-            </tr>
-            <tr>
-              <td><code>geolocation</code></td>
-              <td>Obtain the current location of the user.</td>
-              <td>-</td>
-            </tr>
-            <tr>
-              <td><code>mobileconnection</code></td>
-              <td>Obtain information about the current mobile voice and data
-              connection.</td>
-              <td>-</td>
-            </tr>
-            <tr>
-              <td><code>power</code></td>
-              <td>Turn the screen on or off, control CPU, device power, etc.
-              Listen for and inspect resource lock events.</td>
-              <td>-</td>
-            </tr>
-            <tr>
-              <td><code>push</code></td>
-              <td>Receive push events.</td>
-              <td>-</td>
-            </tr>
-            <tr>
-              <td><code>settings</code></td>
-              <td>Configure or read device settings.</td>
-              <td>readonly, readwrite</td>
-            </tr>
-            <tr>
-              <td><code>sms</code></td>
-              <td>Send and receive SMS.</td>
-              <td>-</td>
-            </tr>
-            <tr>
-              <td><code>storage</code></td>
-              <td>Utilize localStorage and indexedDB without size limitations.</td>
-              <td>-</td>
-            </tr>
-            <tr>
-              <td><code>systemclock</code></td>
-              <td>Set current time. (Timezone information is controlled by the
-              settings API).</td>
-              <td>-</td>
-            </tr>
-            <tr>
-              <td><code>network-http</code></td>
-              <td>Make HTTP requests without any origin restrictions.</td>
-              <td>-</td>
-            </tr>
-            <tr>
-              <td><code>network-tcp</code></td>
-              <td>Create and communicate over TCP sockets.</td>
-              <td>-</td>
-            </tr>
-            <tr>
-              <td><code>telephony</code></td>
-              <td>All telephony related APIs.</td>
-              <td>-</td>
-            </tr>
-            <tr>
-              <td><code>wake-lock-screen</code></td>
-              <td>Turn the display on and show the lock screen.</td>
-              <td>-</td>
-            </tr>
-            <tr>
-              <td><code>webapps-manage</code></td>
-              <td>Obtain access to the <code>navigator.apps.management</code> API to
-              manage installed webapps.</td>
-              <td>-</td>
-            </tr>
-            <tr>
-              <td><code>wifi</code></td>
-              <td>Enumerate available WiFi networks, get signal strength, connect
-              to a network.</td>
-              <td>-</td>
-            </tr>
-          </table>
-
+            <p>Each specification MUST specify the new permissions that would be
+            required to use the feature it is defining.</p>
           </li>
 
           <li><dfn id="propdef-fullscreen">fullscreen</dfn>: This value MUST be
@@ -1024,10 +886,8 @@
       self-contained in a container. All resources that are commonly used by the
       application SHOULD be available in the container.</p>
 
-<!--
       <p>A <dfn>hosted application</dfn> is an application that is not a
       <a>packaged application</a></p>
--->
 
       <section class="informative">
 
@@ -1279,6 +1139,158 @@
         </p>
       </section>
 
+    </section>
+
+    <section>
+      <h2>Permissions</h2>
+
+      <section class="informative">
+        <h2>Use cases</h2>
+
+        <p>Some API might allow the application to access sensitive parts of the
+        hardware or sensitive information. To prevent applications to access
+        them, some APIs might require one or more permissions. For example, for
+        an application to be allowed to access your geolocation information, it
+        has to be granted the <i>geolocation</i> permission.</p>
+      </section>
+
+      <section>
+        <h2>Permission declaration</h2>
+
+        <p>An application SHOULD define all permissions it is going to use in
+        the <a>application manifest</a>. The UA MAY automatically grant some
+        permissions at install-time or ask the user to grant some applications.
+        However, MAY, in addition or alternatively, ask the user to grant
+        permissions at run-time.</p>
+
+        <p>The user MUST be able to revoke a granted permission or grant a
+        denied permission at any time.</p>
+      </section>
+
+      <section>
+        <h2>Basic Permissions</h2>
+
+        <p>Specifications are expected to declare the permissions they will
+        require for their feature to work. Altough, some basic permissions can't
+        really go into a specific specification or a related to specifications
+        that might be harder to change.</p>
+
+        <p>Thus, this specification is defining the following permissions:</p>
+
+        <table>
+          <tr>
+            <th>Permission Name</th>
+            <th>Permission Description</th>
+            <th>Access Type</th>
+          </tr>
+          <tr>
+            <td><code>backgroundservice</code></td>
+            <td>Allow a web application to run in the background and perform
+            tasks like syncing or respond to incoming messages.</td>
+            <td>N/A</td>
+          </tr>
+          <tr>
+            <td><code>desktop-notification</code></td>
+            <td>Allow the application to use the Desktop Notification API.</td>
+            <td>N/A</td>
+          </tr>
+          <tr>
+            <td><code>geolocation</code></td>
+            <td>Allow the application to access the Geolocation API.</td>
+            <td>N/A</td>
+          </tr>
+          <tr>
+            <td><code>storage</code></td>
+            <td>Allow localStorage and IndexedDB without size limitations.</td>
+            <td>N/A</td>
+          </tr>
+          <tr>
+            <td><code>webapps-manage</code></td>
+            <td>Allow access to the <code>navigator.apps.management</code> API
+            to manage installed webapps.</td>
+            <td>N/A</td>
+          </tr>
+        </table>
+      </section>
+
+      <section>
+        <h2>Trusted applications</h2>
+
+        <section class="informative">
+          <h2>Use cases</h2>
+
+          <p>Any application can be compromised. It just depends on how much
+          effort the attacker wants to provide and how much efforts the author
+          wants to dedicate making its application more secure. With an
+          interesting enough outcome, attackers could easily double their
+          efforts to beat the security in place. For example, an API allowing to
+          send SMS, if it can be manipulated by the evil persons, could be used
+          to send premium SMS and steal money from the users.</p>
+
+          <p>With a simple permission system, users could be tricked to install
+          the application and accept to grant the application the relevant
+          permissions. These kind of attacks are proven to be efficient.</p>
+        </section>
+
+        <section>
+          <h2>Chain of trust</h2>
+
+          <p>An application is said to be a <dfn>trusted application</dfn> if
+          the origin installing the application is trusted by the UA and the
+          origin installing the application consider the application as
+          trusty.</p>
+
+          <p>A UA SHOULD have the public key of all installation origin it is
+          considering trusted.</p>
+        </section>
+
+        <section>
+          <h2>Marking an application trusted</h2>
+
+          <p>A <a>hosted application</a> MUST be recognized as marked trusted by
+          the installation origin if the <a>application manifest</a> is signed
+          by the installation origin's private key.</p>
+
+          <p>A <a>packaged application</a> MUST be recognized as marked trusted
+          by the installation origin if the package is signed by the
+          installation origin's private key.</a>
+
+          <p>In both cases, the application SHOULD be considered as trusted by
+          the UA if the UA considers the installation origin as trusted,
+          following the chain of trust mentioned above.</p>
+        </section>
+
+        <section class="informative">
+          <h2>Security considerations</h2>
+
+          <p>UA should keep in mind that a signed package is way more secure
+          than a signed manifest. A correctly signed package can only be
+          compromised if the private key has been compromised or the
+          cryptographic algorithm. A UA should not trust an installation origin
+          if it does not trust its ability to keep safe its private key.</p>
+
+          <p>On the other hands, a signed manifest only proves that the
+          application is genuinly trusted (if the private key was not
+          compromised nor the cryptographic algorithm). Anything else can be
+          compromised given that it lives in the Internet. There is no need to
+          list all possible attacks.</p>
+
+          <p>An important difference between a <a>packaged application</a> and a
+          <a>hosted application</a> is the ability to review the code. Any
+          permission granted to a <a>packaged application</a> will be granted to
+          the code inside the package only. That means trusting such application
+          is way easier after a code review, for example.</p>
+
+          <p>However, code review for <a>packaged application</a>s could be
+          avoided if the installation origin trusts enough an application
+          developer. Such developer could get all its <a>packaged
+          application</a>s trusted without too much risk for the users.<br>
+          The same thing colud be done for <a>hosted application</a> except that
+          it would be recommended to make sure that the developer has strong
+          server security or would not risk any security flaw on their servers.
+          </p>
+        </section>
+      </section>
     </section>
 
     <section class="appendix">
