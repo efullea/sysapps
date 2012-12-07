@@ -926,18 +926,41 @@
         manifest</a> outside of the package so it can be used for installation
         and updates purposes. As a consequence, that copy of the <a>application
         manifest</a> can be reduced to only a few properties: <a>name</a>,
-        <a>version</a> and <a>relNotes</a>. In addition, two new properties can
-        be used only in the context of a packaged application manifest:
+        <a>version</a> and <a>relNotes</a>. In addition, a new property can be
+        used only in the content a packaged <a>application manifest<a>: <dfn
+        id='prop-package'>package</dfn> that SHOULD contain an object with the
+        following properties:
         <ul>
-          <li><dfn id='prop-package-url'>package-url</dfn>: this property MUST
-          contain the URL of the package related to that <a>application
-          manifest</a>.<br>
+          <li><dfn id='prop-package-url'>url</dfn>: this property MUST contain
+          the URL of the package related to that <a>application manifest</a>.
+          <br>
           When installing or updating a <a>packaged application</a> from an
           <a>application manifest</a>, the UA MUST always use the manifest
           inside the package as soon as the package is found.</li>
-          <li><dfn id='prop-package-size'>package-size</dfn>: the property
-          SHOULD contain the size of the package in kylo bytes.</li>
+          <li><dfn id='prop-package-size'>size</dfn>: the property SHOULD
+          contain the size of the package in kylo bytes.</li>
+          <li><dfn id='prop-package-sha256'>sha256</dfn>: this property SHOULD
+          contain the SHA256 checksum of the package and SHOULD be used by the
+          UA to verify the integrity of the downloaded package.</li>
         </ul></p>
+
+        <pre class='example highlight'>
+        {
+          "name": "My Packaged App",
+          "description": "This is my first packaged app!",
+          "launch_path": "/",
+          "version": "1.0",
+          "developer": {
+            "name": "Mozilla",
+            "url": "https://mozilla.org/en-US"
+          },
+          "package": {
+            "url": "http://example.org/mypackagedapp.zip",
+            "size": "1024",
+            "sha256": "6df134b0cfd88d6d4f27a99e29b9923d50eb8b2c0d5289c60012de424c7a9d97"
+          }
+        }
+        </pre>
       </section>
 
       <todo>
