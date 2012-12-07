@@ -111,7 +111,6 @@
         "description": "Exciting Open Web development action!",
         "launch_path": "/",
         "version": "1.0",
-        "type": "privileged",
         "icons": {
           "16": "/img/icon_16.png",
           "48": "/img/icon_48.png",
@@ -121,9 +120,6 @@
           "name": "Mozilla",
           "url": "https://mozilla.org/en-US"
         },
-        "installs_allowed_from": [
-          "https://marketplace.mozilla.org"
-        ],
         "appcache_path": "/cache.manifest",
         "locales": [
           "es": {
@@ -141,7 +137,6 @@
         "required_features": [
           "touch", "geolocation", "webgl"
         ],
-        "orientation": "landscape",
         "permissions": {
           "contacts": {
             "description": "Required for autocompletion in the share screen",
@@ -149,25 +144,25 @@
           }
         },
         "fullscreen": "true",
-        "activities": {
-          "share": {
-            "filters": {
-              "type": ["image/png", "image/gif"]
-            }
-            "href": "/share.html",
-            "disposition": "window"
-          }
-        }
       }
       </pre>
 
       <section>
         <h2>Properties</h2>
 
-        <section class="note">
-          These properties are not in a quite final state. Some of them might
-          move to other specifications that would extend this list.
+        <section>
+          <h2>Adding new properties to the manifest</h2>
+
+          <p>Any new specification can add new properties to the <a>application
+          manifest</a>. Those specifications MUST describe the new properties,
+          the expected values and the expected behaviour. Implementations MUST
+          implement the basic properties as describe below but SHOULD only
+          implement any extented feature if they are implementing those
+          specifications.</p>
         </section>
+
+        <section>
+          <h2>Basic properties</h2>
 
         <p>All leaf properties MUST contain a string value unless specified
            otherwise.</p>
@@ -187,12 +182,13 @@
           default locale. The description SHOULD not be longer than 1024
           characters.</li>
 
-          <li><dfn id="propdef-default_locale">default_locale</dfn>: The locale
-          of the top-level name and description.</li>
+          <li><dfn id="propdef-default_locale">default_locale</dfn>: The
+          property's value MUST be the top-level name and description's locale.
+          </li>
 
-          <li><dfn id="propdef-launch_path">launch_path</dfn>: The path within
-          the web application's origin that is loaded when the application is
-          launched.</li>
+          <li><dfn id="propdef-launch_path">launch_path</dfn>: The property's
+          value MUST be the path within the application's origin that is loaded
+          when the application is launched.</li>
 
           <li><dfn id="propdef-icons">icons</dfn>: A map of icon sizes to URIs of
           the icons (which may be absolute, relative or data URIs). Icons MUST be
@@ -200,99 +196,70 @@
           to the origin of the app.</li>
 
           <li>
-            <dfn id="propdef-type">type</dfn>: Determines how this app and the
-            manifest will be verified by the runtime, and what security policy
-            will apply. See <a href=
-            "https://wiki.mozilla.org/Apps/Security#Types_of_applications">types
-            of applications</a>, for a more detailed description. The value for
-            this property MUST be one of the following:
+            <dfn id="propdef-developer">developer</dfn>: This property describe
+            the developer of the application and MUST contain the following
+            properties:
 
             <ul>
-              <li>
-                <dfn id="propdef-type-web">web</dfn>: A regular web app, may be
-                self hosted or distributed by an app store. All permissions are
-                opt-in at install and runtime, limited to permissions enumerated
-                in the manifest. If the <a>type</a> property is not specified,
-                this will be the default value.
-              </li>
+              <li><dfn id="propdef-developer-name">name</dfn>: The value MUST
+              contain the name of the developer.</li>
 
-              <li><dfn id="propdef-type-privileged">privileged</dfn>: An
-              authenticated application approved by an app store. Equivalent in
-              functionality and security to apps on other mobile platforms, but
-              is required to be approved by an app store after a code review or
-              some equivalent risk management process. At install, app assets are
-              verified &amp; remain stored locally in a package. Requires a
-              Content Security Policy, and all explicit permissions are requested
-              at runtime, showing user the app's data usage intentions, and
-              persisted by default.</li>
-
-              <li><dfn id="propdef-type-certified">certified</dfn>: This category
-              is reserved for apps that require approval by a device vendor or
-              equivalent party due to risk of device corruption or risk to
-              critical functionality. These include apps such as the system
-              settings app, default dialer (to ensure emergency services are
-              always accessible), core radio and power management, etc. Not
-              intended for 3rd party applications.</li>
+              <li><dfn id="propdef-url">url</dfn>: The value MUST contain an URL
+              pointing to the developer's website</li>
             </ul>
           </li>
 
           <li>
-            <dfn id="propdef-developer">developer</dfn>: Information about the
-            developer of the application, suitable for display.
-
-            <ul>
-              <li><dfn id="propdef-developer-name">name</dfn>: The name of the
-              developer.</li>
-
-              <li><dfn id="propdef-url">url</dfn>: A URL pointing to the
-              developer's website</li>
-            </ul>
+            <dfn id="propdef-locales">locales</dfn>: The property's value MUST
+            contain a map of locale specific overrides of strings contained in
+            the <a>application manifest</a>. Each locale key is keyed on a
+            locale tag [[!RFC4646]], and contains a sparse representation of the
+            manifest. Any field in the <a>locales</a> property SHOULD override
+            the corresponding property in a localized user interface. The UA
+            MAY ignore some values if localizing the property doesn't appear
+            to be legit.<br>
+            If the <a>locales</a> property is set, the <a>default_locale</a>
+            MUST also be set.
           </li>
 
-          <li>
-            <dfn id="propdef-locales">locales</dfn>: A map of locale specific
-            overrides of data contained in the manifest. Each locale key is keyed
-            on a locale tag [RFC4646], and contains a sparse representation of
-            the manifest. Any field in the <a>locales</a> property will override
-            the corresponding property in the manifest. The <a>locales</a>,
-            <a>installs_allowed_from</a>, and <a>default_locale</a> CANNOT be
-            overridden. If the <a>locales</a> property is set, the
-            <a>default_locale</a> MUST also be set.
-          </li>
-
+<!-- Commented because it is a controversial feature.
           <li><dfn id=
           "propdef-installs_allowed_from">installs_allowed_from</dfn>: An array
           of origins that are allowed to trigger installation of this
           application. This field allows the developer to restrict installation
           of their application to specific sites. If the value is omitted,
           installs are allowed from any site.</li>
+-->
 
           <li>
-            <dfn id="propdef-appcache_path">appcache_path</dfn>: The absolute
-            path to the application cache (<a href=
-            "http://www.w3.org/TR/2011/WD-html5-20110525/offline.html#appcache">AppCache</a>)
-            manifest. When an app is installed, the AppCache manifest will be
-            fetched and parsed, and its static assets under the CACHE header will
-            be cached.
+            <dfn id="propdef-appcache_path">appcache_path</dfn>: The value MUST
+            contain the absolute path to the application cache manifest
+            [[!OFFLINE-WEBAPPS]].<br>
+            When an application is installed, the AppCache manifest will be
+            fetched and parsed, and its static assets under the CACHE header
+            MUST be cached.
           </li>
 
-          <li><dfn id="propdef-version">version</dfn>: A string that represents
-          the version of this manifest. The User-Agent does not interpret this
-          value in any way and is opqaue to everyone but the application itself.
-          The field is provided to help the developer deal with various update
-          cases, which will be discussed in following sections.</li>
+          <li><dfn id="propdef-version">version</dfn>: The value MUST be a
+          string that represents the version of the application. The UA SHOULD
+          NOT interpret this value but MAY show it to the user so the auther
+          SHOULD use human understandable versions.</dfn>
 
-          <li><dfn id="propdef-screen_size">screen_size</dfn>: This object may
-          contain the <code>min_height</code> and <code>min_width</code>
+          <li><dfn id="propdef-screen_size">screen_size</dfn>: This object
+          SHOULD contain the <code>min_height</code> and <code>min_width</code>
           properties that describe the minimum height and width (in pixels) the
-          application needs in order to render correctly. Interpretation of these
-          values is left up to the runtime and/or app store.</li>
+          application needs in order to render correctly. Those values are only
+          hint for the UA and should not be considered as mandatory
+          restrictions.</li>
 
           <li><dfn id="propdef-required_features">required_features</dfn>: This
-          array consists of a set of values that describes the mandatory features
-          the application needs in order to run correctly. A full list of valid
-          values is TBD.</li>
+          value MUST be an array containing the mandatory feature set the
+          application needs in order to run correctly. If the property is
+          missing or the value is an empty array or if the value is invalid, the
+          mandatory feature set SHOULD be considered as the empty set.<br>
+          <span style='color: red;'>TBD: add a list of features.</span></li>
 
+<!-- Commented because it might hopefully go to the Screen Orientation API spec.
           <li>
             <dfn id="propdef-orientation">orientation</dfn>: This value defines
             the allowed orientations at which the application may be rendered. If
@@ -345,6 +312,11 @@
               <code>["landscape-primary", "landscape-secondary"]</code>.</li>
             </ul>
           </li>
+-->
+
+          <li><dfn id="propdef-fullscreen">fullscreen</dfn>: This value MUST be
+          set to either <dfn>true</dfn> or <dfn>false</dfn> to describe whether
+          the runtime should launch the application in fullscreen mode.</li>
 
           <li><dfn id="propdef-permisssions">permissions</dfn>: This value
           consists of a set of permissions that the application needs. An
@@ -374,10 +346,7 @@
             required to use the feature it is defining.</p>
           </li>
 
-          <li><dfn id="propdef-fullscreen">fullscreen</dfn>: This value MUST be
-          set to either <dfn>true</dfn> or <dfn>false</dfn> to describe whether
-          the runtime should launch the application in fullscreen mode.</li>
-
+<!-- Commented because it should go to the Web Intents/Web Activities spec.
           <li><dfn id="propdef-activities">activities</dfn>: This value specifies
           a set of
           <a href="https://wiki.mozilla.org/WebAPI/WebActivities">WebActivities</a>
@@ -432,8 +401,9 @@
             are free-form text, but their values MUST be either a string or an
             array of strings (the exact type depends on the filter).</li>
           </ul>
-
+-->
         </ul>
+        </section>
       </section>
 
       <section>
