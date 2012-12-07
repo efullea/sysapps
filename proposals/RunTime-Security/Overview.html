@@ -144,6 +144,11 @@
           }
         },
         "fullscreen": "true",
+        "relNotes": {
+          "1.0": "Bugs fixed. New exciting effects. Ready for an official release!"
+          "0.5": "First alpha version with still some bugs but already fun!"
+        }
+      }
       }
       </pre>
 
@@ -317,6 +322,10 @@
           <li><dfn id="propdef-fullscreen">fullscreen</dfn>: This value MUST be
           set to either <dfn>true</dfn> or <dfn>false</dfn> to describe whether
           the runtime should launch the application in fullscreen mode.</li>
+
+          <li><dfn id='propdef-relnotes'>relNotes</dfn>: This property's value
+          MUST contain a map associating an application's version with a string
+          describing the changes between that version and the previous one.</li>
 
           <li><dfn id="propdef-permisssions">permissions</dfn>: This value
           consists of a set of permissions that the application needs. An
