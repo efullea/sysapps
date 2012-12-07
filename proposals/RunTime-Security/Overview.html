@@ -1343,6 +1343,32 @@
       </section>
     </section>
 
+    <section>
+      <h2>Application life-cycle</h2>
+
+      <section class='note'>
+        This section still requires some work. We need to define how to prevent
+        having the application being paused, how to get stuff done in the
+        background, what kind of events are sent when the application is going
+        to be killed by the system. Actually, how and why it should be killed
+        (might be implementation specific though).
+      </section>
+
+      <section>
+        <h2>Consequences of visibility</h2>
+
+        <p>While an application is running, it can be part or fully hidden. The
+        visibility events described in [[!PAGE-VISIBILITY]] MUST be sent when
+        the visibility status of the application changes.</p>
+
+        <p>In addition, when the application becomes fully hidden, the UA MAY
+        put the application in a <dfn>pause state</dfn>. That means all script
+        SHOULD stop running, such as rendering, parsing, processing media files,
+        any action that requires CPU and memory or would distract the user.</p>
+      </section>
+
+    </section>
+
     <section class="appendix">
       <h2><a>DOMRequest</a> interface</h2>
 
