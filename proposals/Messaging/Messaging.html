@@ -49,11 +49,13 @@
         An example of use is provided below:
       
       <pre class="example highlight">
-            var sms_send_request = navigator.messaging.sendSms('+34638883076','Enjoy the show!'));
+            var sms_content = new SmsContent();
+            sms_content.text = 'Enjoy the show!';
+            var sms_recipients = ['+34638883076'] ;
+            var sms_send_request = navigator.messaging.send(sms_recipients, sms_content));
             sms_send_request.onsuccess = function() { 
                         window.console.log('Message Sent!'); 
             }
-            
             sms_send_request.onerror = function(e) {
                     window.console.error(e);
             }
@@ -124,8 +126,8 @@
         
         <dt> MessagingRequest[] send ()</dt>
         <dd>This method allows to instantiate an array of new <code>MessagingRequest</code> objects intended to send an SMS
-        message with the text of the <code>text</code> parameter to each of the destination numbers indicated in the
-        <code>to</code> array parameter.
+        message with the text of the <code>text</code> attribute of the <code>content</code> parameter to each of the
+        destination numbers indicated in the <code>to</code> array parameter.
           <dl class='parameters'>
              <dt>DOMString[] to</dt>
              <dd>
