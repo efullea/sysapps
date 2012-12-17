@@ -76,7 +76,7 @@
         security requirements which cover application packaging, authenticity, installation,
         provenance, access control, runtime restrictions and monitoring interfaces.
       </p>
-
+      <section>
       <h3>Purpose</h3>
       <p>
         This document has been developed as part of a standardisation process
@@ -106,7 +106,8 @@
         understand the constraints placed on system applications and the reason
         for certain design choices.
       </p>
-      
+      </section>
+      <section>      
       <h3>Document Scope</h3>
       <p>
         This document defines the requirements for a new security model and does not define any
@@ -150,7 +151,8 @@
         <li>Requirements on system applications so that they can potentially be 
             monitored and interoperate with the rest of the device.</li>
       </ul>      
-      
+      </section>
+      <section>            
       <h3>System Assets and Stakeholders</h3>
       <p>
         This specification assumes a system with some of the following assets
@@ -170,7 +172,7 @@
             store.</li>
       </ul>        
       <img src="./security-model-concept-map.png" />
-      
+      </section>      
     </section>
 <!--    
     <section id="conformance">
@@ -457,21 +459,21 @@
         <td>Medium/low</td>
       </tr>
     </table>
-      
-      <h3>Conclusions</h3>
-      <p>
-        From this list of threats the following requirements can be elicited:
-      </p>
-      <ul>
-        <li>System applications must, by default, be isolated from the rest of the system and other applications.</li>
-        <li>System applications must communicate securely with authenticated endpoints to avoid content injection.  This implies that system applications must themselves be identifiable, and that the system application runtime must be able to authenticate all remote and local endpoints.</li> 
-        <li>System applications must implement a least-privilege access control to limit the impact of malware and should be sufficiently configurable to allow greyware to be constrained if a user wishes to do so.</li>
-        <li>Least privilege access control must include access to remote sources, particularly for loading scripts and other content.</li>
-        <li>System applications and their activities must be visible and/or auditable to end users to mitigate risks of spyware</li>
-        <li>Applications from unauthenticated sources should be constrained by default as the impact of malware is potentially high.</li>
-        <li>The threat of code injection from remote servers is sufficient that steps should be taken to guarantee the integrity of all remote inputs.</li>
-      </ul>
-      
+    <section>      
+    <h3>Conclusions</h3>
+    <p>
+      From this list of threats the following requirements can be elicited:
+    </p>
+    <ul>
+      <li>System applications must, by default, be isolated from the rest of the system and other applications.</li>
+      <li>System applications must communicate securely with authenticated endpoints to avoid content injection.  This implies that system applications must themselves be identifiable, and that the system application runtime must be able to authenticate all remote and local endpoints.</li> 
+      <li>System applications must implement a least-privilege access control to limit the impact of malware and should be sufficiently configurable to allow greyware to be constrained if a user wishes to do so.</li>
+      <li>Least privilege access control must include access to remote sources, particularly for loading scripts and other content.</li>
+      <li>System applications and their activities must be visible and/or auditable to end users to mitigate risks of spyware</li>
+      <li>Applications from unauthenticated sources should be constrained by default as the impact of malware is potentially high.</li>
+      <li>The threat of code injection from remote servers is sufficient that steps should be taken to guarantee the integrity of all remote inputs.</li>
+    </ul>
+    </section>      
     </section>
     
     <section>
@@ -485,7 +487,7 @@
 
     <section>
       <h2>Application Installation, Provenance and Update</h2>
-      
+      <section>      
       <h3>Installation</h3>
       <p>
         System applications MUST be installed before they can be executed.
@@ -523,7 +525,7 @@
         certificates.  This mechanism MAY be restricted to only certain 
         device owners based on a policy set by a more privileged device owner.
       </p>
-      
+      </section>      
       <h3>Update</h3>      
       <p>
         System applications SHALL have a well-defined update process that SHALL
@@ -535,7 +537,8 @@
         System applications SHALL be updated automatically.  This feature MAY 
         be disabled by a device owner.
       </p>
-      
+      </section>
+      <section>            
       <h3>Uninstallation</h3>
       <p>
         The execution environment SHALL allow all system applications to be  
@@ -554,6 +557,7 @@
         E.g., a contact manager application, when uninstalled, shouldn't 
         necessarily delete all the user's contacts.
       </div>
+      </section>      
     </section>
     
     <section>
@@ -626,18 +630,22 @@
         document.  It is likely that system applications (particularly
         from the same author) will want to communicate with one another, though.
       </div>
-           
+      <section>           
       <h3>Communication access control and permissions</h3>
       <p>
         System applications SHALL define the applications they wish to 
-        communicate with through the manifest.  
+        communicate with through the manifest.  This definition MAY include
+        wildcards or other patterns for matching with particular application 
+        developers or distributors.
       </p>
-      
+      </section>      
+      <section>
       <h3>Communication between system applications</h3>
       <p>
         System applications SHALL communicate with other system applications on 
         the same host through <em>channel messaging</em> [[POSTMSG]].
       </p>
+      </section>      
     </section>
     
     <section>
@@ -656,13 +664,15 @@
         implementations such as WARP [[WARP]] may also be used.
       </div>
       
+      <section>
       <h3>Restrictions on JavaScript</h3>
       <p>
         System applications SHALL NOT be allowed to execute inline javascript
         nor shall they be able to execute string-to-JavaScript methods such as
         <code>eval</code> and <code>function</code>.
       </p>   
-     
+      </section>      
+      <section>
       <h3>Restrictions on Including Web Resources</h3>
       <p>
         To maintain the integrity of a system application, the execution environment 
@@ -687,7 +697,8 @@
         the CSP policy for the application in this regard, although not CSP 
         statements which would violate the rest of this document. 
       </div>        
-      
+      </section>      
+      <section>
       <h3>Restrictions on Communicating with External Sources </h3>
       <p>
         System applications SHALL only be able to communicate using 
@@ -695,7 +706,8 @@
         explicitly defined in the manifest of the application and only if the 
         protocol of these URIs is <code>https:</code> or <code>wss:</code>.
       </p>
-      
+      </section>      
+      <section>
       <h3>Cookies</h3>
       <p>
         System applications SHALL have an individual, isolated cookie store.  
@@ -703,6 +715,8 @@
         same store, but two instances of system applications from different
         packages SHALL NOT be able to access each other's cookies.
       </p>
+      </section>      
+      <section>
       <h3>File API</h3>
       <p>
         System applications MAY be granted permission to access system files 
@@ -719,7 +733,8 @@
       <div class="note">
         Encrypted storage may take the form of full-disk encryption.
       </div>
-      
+      </section>      
+      <section>
       <h3>Disabled and modified features</h3>
       <p>
         System applications do not have access to the following features 
@@ -735,7 +750,7 @@
         <li>Browser "chrome" APIs  (window.locationbar, window.menubar, 
         window.external, window,sidebar, etc.).</li>
       </ul>
-      
+      </section>
     </section>
     
     <section>
