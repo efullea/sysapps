@@ -1,0 +1,66 @@
+@startuml security-model-concept-map.png
+
+class User << (P,#FF7700) Person >>
+
+abstract class DeviceOwner {
+
+}
+
+class CorporateITDepartment {
+
+}
+
+class Device { 
+
+}
+
+class ExecutionEnvironment {
+
+}
+
+class AppInstance {
+    appdata
+}
+
+class AppPackage {
+    content
+    manifest
+}
+
+class Network {
+
+}
+
+class WebServer {
+    
+}
+
+class AppStore {
+
+}
+
+
+interface API {
+
+}
+
+
+User                  "1..*"  --> "1..*"  Device                 : uses
+DeviceOwner           "1..*"  --> "1"     Device                 : controls
+User                          --|>        DeviceOwner            
+NetworkOperator               --|>        DeviceOwner            
+Manufacturer                  --|>        DeviceOwner  
+CorporateITDepartment         --|>        DeviceOwner  
+Device                "1"     <-- "1"     ExecutionEnvironment   : runs on
+AppInstance           "0..*"  <-- "1"     ExecutionEnvironment   : executes and controls
+ExecutionEnvironment  "1"     --> "*"     API                    : supports and provides \n access control for
+AppInstance           "*"     --> "*"     API                    : invokes functionality \n defined by
+AppInstance           "1"     --> "1"     AppPackage             : loaded from
+ExecutionEnvironment  "*"     --> "0..*"  Network                : connects to
+ExecutionEnvironment  "*"     --> "0..*"  WebServer              : connects to
+AppInstance           "1"     --> "0..*"  WebServer              : is authorised to \n connect to and \n may load content \n from
+AppPackage            "*"     <-- "1"     AppDeveloper           : created
+AppPackage            "1..*"  --> "0..*"  AppStore               : can be found from
+AppStore              "*"     <-- "1"     AppDistributor         : Owns and manages
+
+@enduml

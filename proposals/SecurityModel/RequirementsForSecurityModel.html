@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Security Requirements for System Applications</title>
+    <meta http-equiv='Content-Type' content='text/html;charset=utf-8'/>
+    <!-- 
+      === NOTA BENE ===
+      For the three scripts below, if your spec resides on dev.w3 you can check them
+      out in the same tree and use relative links so that they'll work offline,
+     -->
+    <script src='http://www.w3.org/Tools/respec/respec-w3c-common' class='remove' async></script>
+    <script class='remove'>
+      var respecConfig = {
+          specStatus:           "ED",
+          shortName:            "sysapps-security-requirements",
+          publishDate:          "",
+          previousPublishDate:  "",
+          previousMaturity:     "",
+          // edDraftURI:           "",
+          // lcEnd: "2009-08-05",
+          extraCSS: ["http://dev.w3.org/2009/dap/ReSpec.js/css/respec.css"],
+          editors:  [
+              { name: "John Lyle", 
+                url: "http://www.cs.ox.ac.uk/people/john.lyle/",
+                company: "The University of Oxford", 
+                companyURL: "http://www.ox.ac.uk/" },
+          ],
+          wg:           "System Applications Working Group",
+          wgURI:        "http://www.w3.org/2012/sysapps/",
+          wgPublicList: "public-sysapps",
+          wgPatentURI:  "http://www.w3.org/2004/01/pp-impl/58119/status",
+      };
+    </script>
+    <style type="text/css">
+      table.threats {
+	      border-width: 2px;
+	      border-spacing: 2px;
+	      border-style: outset;
+	      border-color: gray;
+	      border-collapse: collapse;
+	      background-color: rgb(250, 240, 230);
+      }
+      table.threats th {
+	      border-width: 1px;
+	      padding: 4px;
+	      border-style: dotted;
+	      border-color: gray;
+	      background-color: white;
+      }
+      table.threats td {
+	      border-width: 1px;
+	      padding: 4px;
+	      border-style: dotted;
+	      border-color: gray;
+	      background-color: rgb(250, 240, 230);
+      }
+    </style>
+  </head>
+  <body>
+    <section id='abstract'>
+      This document defines the secuirty requirements for <em>system 
+      applications</em>, a class of web application which has access to APIs 
+      not made available by a normal web browser.
+    </section>
+    
+    <section>
+      <h2>Introduction</h2>
+      <p>
+        This document defines the security requirements for system applications. 
+        System applications are web applications which require stronger interaction with
+        the host platform compared to traditional web pages and are most closely
+        comparable to native applications [[SYSAPPSCHARTER]].  System applications enjoy
+        extra privileges and are able to access APIs which are not available to web
+        applications running in the browser.  They are therefore not bound by the
+        existing browser security model [[Zalewski2009]].  This document defines a set of
+        security requirements which cover application packaging, authenticity, installation,
+        provenance, access control, runtime restrictions and monitoring interfaces.
+      </p>
+
+      <h3>Purpose</h3>
+      <p>
+        This document has been developed as part of a standardisation process
+        in order to enable web applications to be functional equals to native
+        applications.  At present, most web applications run in a browser context which
+        is intentionally isolated from the underlying system.  This allows users to (in
+        theory) visit web pages without placing any trust in their behaviour as a
+        malicious browser-based application is limited in its ability to compromise the
+        user's security and privacy requirements.  However, this also means that
+        browser-based applications cannot perform functions that require access to
+        potentially-dangerous parts of the underlying platform.  For example: deleting
+        or changing contacts from an address book, sending SMS, or making outgoing
+        telephone calls, except in a very limited way.  To support such functions,
+        system applications must be run in a context outside of the web browser and new
+        requirements must be placed upon them.  This document defines those new
+        requirements and suggests some technical measures for enforcing them.
+      </p>
+      <p>
+        The reason for <em>standardising</em> a security model is to enable
+        potential interoperability of system applications and to produce a set
+        of 'best practice' guidelines for implementors of system application
+        platforms.  This document may be used by application developers to 
+        understand the constraints placed on system applications and the reason
+        for certain design choices.
+      </p>
+      
+      <h3>Document Scope</h3>
+      <p>
+        This document defines the requirements for a new security model and does not define any
+        specific APIs.  The scope of this document is any element that a system
+        application may interact with and the execution environment, although the
+        requirements and threats may include more diverse assets and considerations. 
+        This document may make assertions around the platform implementing a
+        system application runtime environment in order to dictate expected
+        features.  As boundary objects, the following non-exhaustive list of things are
+        <em>not</em> within scope of this document:
+      </p>
+      <ul>
+        <li>Default API access control rules.</li>
+        <li>API-specific access control rules or permissioning interfaces.</li>
+        <li>An exhaustive set of API permissions.  <em>Some</em> API permissions may
+            be defined, however.</li>
+        <li>How application stores review or manage applications.</li>
+        <li>Digital rights management for system application content.</li>
+        <li>Side channel attacks on system applications.</li>
+        <li>Platform vulnerabilities.</li>
+        <li>Implementation details of secure storage or disk encryption 
+            provided by a conformant system application platform.</li>
+        <li>Fingerprinting of users through system applications.</li>
+        <li>Invasive government monitoring of citizens through system 
+            applications.</li>
+        <li>Modification to trusted components in the platform such as the 
+            system application renderer process.</li>
+        <li>The runtime security of web pages as processed by a web browser.</li>
+      </ul>
+      <p>
+        Primarily, this document will define:     
+      </p>
+      <ul>
+        <li>Requirements on how system applications should be packaged and 
+            signed.</li>
+        <li>System application lifecycle events including installation, update and uninstallation.</li>
+        <li>Access control requirements for system applications using APIs or 
+            resources.</li>
+        <li>Constraints placed on system application execution at runtime.</li>
+        <li>Requirements on system applications so that they can potentially be 
+            monitored and interoperate with the rest of the device.</li>
+      </ul>      
+      
+      <h3>System Assets and Stakeholders</h3>
+      <p>
+        This specification assumes a system with some of the following assets
+        and stakeholders.  
+      </p>
+      <ul>
+        <li><em>User</em>.  The person who uses a device running a conformant platform.  This specification does not define whether this user is the owner of the platform.</li>
+        <li><em>Application author / developer</em>.  The person or team who created a system application</li>
+        <li><em>Device manufacturer</em>.</li>
+        <li><em>Network operator</em>.  In some contexts, particularly mobile devices, an operator will exist who provides network access.</li>        
+        <li><em>Application distributor</em>.  The entity responsible for distributing an application, e.g. the owner and manager of an app store.</li>
+      </ul>        
+      <img src="./security-model-concept-map.png" />
+      
+    </section>
+<!--    
+    <section id="conformance">
+      <p>
+        This document is primarily <em>informative</em> in that it does not 
+        define detailed standards to which a product must comply for 
+        interoperability.
+      </p>
+      </p>
+        There is one class of product that this document is aimed at: 
+        an <dfn>execution environment</dfn> for system applications.
+      </p>
+    </section>
+-->
+    
+    <section>
+      <h2>Terminology</h2>
+      <p>The following terms are used throughout this document.</p>
+      <ul>
+        <li><em>Device owners</em>. One or more stakeholders who has a level of ownership in the device.  This may include the user, operator and device manufacturer.  The owners are defined in a strict hierarchy such that a more privileged owner may override a less privileged owner.</li>
+        <li><em>Device</em>.  The device running a conformant system application execution environment.  A user may have several devices.</li>
+        <li><em>Execution environment</em>.  The system application platform, also described in this document as a <em>runtime</em>, responsible for controlling and supporting the system application and providing it with access to APIs.</li>
+        <li><em>Network</em>.  The network connection(s) used by system applications.</li>
+        <li><em>Application</em>.  For the rest of this document, the word 'application' refers to a system application.</li>
+        <li><em>App Package</em>.  The downloaded content used to install the application.</li>
+        <li><em>App Manifest</em>.  A configuration document defined by the application containing metadata and the set of permissions that the application requires.</li>
+        <li><em>App Instance</em>.  The runtime instance of an application.</li>
+        <li><em>App Store</em>.  An entity who may be the source of applications and provide additional signing or assurance.</li>      
+        <li><em>Side-loading</em>.  The installation of an application through a channel out side of a distributor or app store.  Most commonly through downloading an application package and installing it from disk.</li>
+        <li><em>Malware</em>.  Malicious software, in this context a malicious system application with a primary aim which violates the end user's security or privacy requirements.</li>
+        <li><em>Greyware</em>.  Software with a primary purpose that is aligned to the users expectations but is also bundled with some form of functionality (advertising, monitoring, etc) that violates the user's privacy requirements.</li>       
+        <li><em>Policy</em>.  A set of rules governing system applications or the system application environment.  This does not have to correspond to a particular language and may be implemented in any way (policy file, credentials, etc) so long as it allows for interoperability.</li> 
+      </ul>
+    </section>
+
+    <section>
+      <h2>System Application Requirements</h2>
+      <p>
+        System applications are required to be able to do the following things.
+      </p>
+      <ul>
+        <li>Use the Alarm API to create alarms</li>
+        <li>Use the Contacts API to  add, remove and edit contacts</li>
+        <li>Use the Messaging API to send, receive and view SMS</li>
+        <li>Use the Telephony API to dial a number, pick up a call, route to voicemail, access the call log</li>
+        <li>Use the Raw Sockets API to create, manipulate and listen for low-level TCP and UDP connections</li>
+        <li>Use APIs defined by the Device APIs Working Group</li>
+        <li>Communicate with other system applications</li>
+        <li>Communicate with web servers and use online resources</li>
+        <li>Express the permissions they request for accessing APIs</li>
+        <li>Store data persistently through File APIs, both within a single 
+            application's sandboxed storage area and files on the rest of the 
+            system if permitted.</li>
+        <li>Provide evidence of their authenticity and provenance</li>
+        <li>Detect the privileges they have been granted</li>
+      </ul>
+      <p>
+        The users of a system application are assumed to have the following 
+        requirements.
+      </p>
+      <ul>
+        <li>Users can install system applications</li>
+        <li>Users can remove system applications they have installed</li>
+        <li>Users can manage and view the permissions granted to the 
+            installed system applications</li>
+        <li>User data created and stored by applications shall be protected by
+            the platform against violation to integrity or confidentiality</li>
+        <li>User can migrate the preferences and permissions granted to 
+            applications on to other devices</li>
+      </ul>      
+      <p>
+        Other requirements on a system application runtime include:
+      </p>
+      <ul>
+        <li>The owner, manufacturer or service provider of a device may install
+            system applications and remove them</li>
+        <li>Other platform entities such as the operating system or a native
+            application should be able to manage the permissions granted to
+            system applications</li>
+      </ul>      
+    </section>
+
+    
+    <section>
+      <h2>Threat Model</h2>
+      <p>
+        In order to define the security considerations and controls required by
+        system applications the following threat model is assumed.  This is
+        not intended to be exhaustive: the specific context in which a system
+        application is run and the device in question may have additional
+        considerations.  This list is drawn from related academic literature
+        and systems (TODO: Reference).
+      </p>
+      <p>
+        The threat from Malware is repeated several times in this list in order
+        to define the various motivations and potential harm caused by a 
+        malicious application.  However, this should not be read to imply that
+        malware is necessarily the most important threat.
+      </p>
+      <p>
+        This threat model is highly subjective considering the vast range of
+        environments in which system applications may be applied.  In 
+        particular, as system applications may exist on a range of device 
+        form-factors with different likelihood for physical loss and operating 
+        systems with different malware expectations.  Furthermore, the 'impact' 
+        is currently based purely on users not on other stakeholders.  As such 
+        the 'impact' and 'likelihood' values should not be given too much 
+        importance.
+      </p>
+      
+    <table class="threats">
+      <tr>
+        <th>Threat</th>
+        <th>Description</th>
+        <th>Impact</th>
+        <th>Likelihood</th>
+      </tr>
+      <tr>
+        <td>Misuse of user or application data through lack of transport security</td>
+        <td>An application communicates insecurely with a remote server and a malicious
+          party intercepts application or user data</td>
+        <td>Medium - loss of confidentiality and integrity of one user or application's data</td>
+        <td>Medium - this has occurred many times in the past</td>
+      </tr>
+      <tr>
+        <td>Injection of code into trusted application through unauthenticated/compromised
+          remote endpoint</td>
+        <td>An application downloads executable code from a remote server which is
+          modified by a malicious party either by compromising the server or the
+          communication</td>
+        <td>High - misuse of application permissions resulting in loss of data, theft of credentials or installation of malware.  May be applied to all users of the application with one attack.</td>
+        <td>High - this has occurred many times previously with web applications</td>          
+      </tr>
+      <tr>
+        <td>Exploit weak credentials / bad session handling to create a session with
+          an application host impersonating a legitimate user</td>
+        <td>A malicious party exploits the session handling code used by the application
+          to communicate with a remote server to impersonate the user</td>
+        <td>Medium - user impersonation with an impact dependent on the application but limited to one person.</td>
+        <td>High - this has occurred many times previously with web applications</td>           
+      </tr>
+      <tr>
+        <td>Client-side code injection through improperly controlled inputs</td>
+        <td>An attacker uses an unauthenticated client-side API or injection method
+          to inject malicious code and exploit the application's credentials</td>
+        <td>High - misuse of application permissions resulting in loss of data, theft of credentials or installation of malware.</td>
+        <td>Low - little history of this on mobile platforms, although more on PC.  Requires control of the client and each individual would need to be attacked separately.</td>
+      </tr>
+      <tr>
+        <td>Malware installed by a malicious user with physical access</td>
+        <td>An attacker with physical access to the device is able to install a malicious
+          system-level application and misuse device capabilities and credentials</td>
+        <td>High</td>
+        <td>Medium - requires physical access to the device, but this is not unlikely.</td>
+      </tr>
+      <tr>
+        <td>User installed malware</td>
+        <td>A user accidentally installs malware not realising the implications of
+          doing so. This malware is able to misuse device capabilities in various
+          ways (see below)</td>
+        <td>High</td>
+        <td>Mixed.  Mobile malware in western countries is relatively scarce.  However, it is growing and malware on other platforms is significant.</td>
+      </tr>
+      <tr>
+        <td>User-installed grayware accessing more capabilities than the user wanted</td>
+        <td>A user installs a genuine application but it operates in unexpected ways,
+          violating user security requirements (excessive adverts, privacy invasion,
+          data sharing).</td>
+        <td>Low</td>
+        <td>High - plenty of examples exist on app stores</td>
+      </tr>
+      <tr>
+        <td>Malware installed through app store compromise</td>
+        <td>A trusted, legitimate source of applications (such as an app store) is
+          remotely compromised in order to authorise and install malware on end user
+          devices</td>
+        <td>Very High - this could compromise all users of an app store</td>
+        <td>Low</td>  
+      </tr>
+      <tr>
+        <td>Malware installed through side-loading</td>
+        <td>Malware is installed through a channel which is not mediated by any malware
+          checking process</td>
+        <td>High</td>
+        <td>Medium - side-loading is a known vector for attack on mobile</td>            
+      </tr>
+      <tr>
+        <td>Malware: destructive</td>
+        <td>Malware misuses its permissions to delete data or cause harm to the device
+          through APIs.</td>
+        <td>Medium/High - while destruction is bad for the end user, it may only cost time rather than necessarily money.</td>
+        <td>Mixed (see earlier)</td>
+      </tr>
+      <tr>
+        <td>Malware: SMS / Telephony</td>
+        <td>Malware misuses SMS or Telephony access to call or send text messages
+          to expensive numbers</td>
+        <td>Medium/High - could be expensive for users, but unlikely to cost too much or it will quickly be detected.</td>
+        <td>Medium/Low - does exist on mobile devices but rare.  Depends on context: when reliable app stores are always used this is relatively unlikely</td>          
+      </tr>
+      <tr>
+        <td>Malware: Contacts, spam and email misuse</td>
+        <td>Malware misuses access to contact data in order to spam other users or perform spear phishing</td>
+        <td>Medium/Low - spear phishing could have a monetary cost on the affected user, although most spamming attacks have a low severity.</td>
+        <td>Medium/Low - does exist on mobile devices but relatively rare.</td>            
+      </tr>
+      <tr>
+        <td>Malware: adware</td>
+        <td>Malware spoils the user experience by displaying excessive adverts</td>
+        <td>Low</td>
+        <td>Medium - exists but can be avoided relatively easily.</td>                
+      </tr>
+      <tr>
+        <td>Malware: botnet, network misuse</td>
+        <td>Malware behaves like a botnet, misusing the device's network connection
+          to contact unknown services, lowering battery life and performance and
+          potentially costing the user money</td>
+        <td>Low - generally only inconveniences the user, monetary loss minor</td>
+        <td>Low (mobile) - botnets on mobile are almost unheard of (though they are beginning to be reported).  High (PC) - a well acknowledged problem.</td>
+      </tr>
+      <tr>
+        <td>Malware: changing settings for novelty/amusement</td>
+        <td>Malware is installed and annoys the user to the amusement of an attacker.
+          No real harm is done.</td>
+        <td>Low - easily revertable</td>
+        <td>Low</td>
+      </tr>
+      <tr>
+        <td>Malware: credential and identity theft</td>
+        <td>Malware gains access to credentials, email accounts or SMS inboxes allowing
+          it (or the authors) to impersonate the user and defraud them. This may
+          include defeating two-factor authentication.</td>
+        <td>High - possibility of defrauding the user and impersonating them.</td>
+        <td>Medium</td>                 
+      </tr>
+      <tr>
+        <td>Malware: blackmail</td>
+        <td>Malware threatens to destroy user data or locks the user out of their
+          device until payment is made to the attacker.</td>
+        <td>High - potential loss of data or money</td>
+        <td>Low</td>            
+      </tr>
+      <tr>
+        <td>Malware: in-app billing</td>
+        <td>Malware exploits the in-app billing capabilities of the device to charge
+          the user money without authorisation.</td>
+        <td>High/medium - potential loss of (relatively small amounts of) money</td>
+        <td>Low - few known attacks</td>            
+      </tr>
+      <tr>
+        <td>Malware: UI spoofing for privilege escalation</td>
+        <td>Malware phishes the end user by impersonating another application, stealing
+          user credentials and adding new privileges</td>
+        <td>Medium - potential loss of a credential</td>
+        <td>Low - few known attacks, not always a high success rate.</td>           
+      </tr>
+      <tr>
+        <td>NFC abuse - exploiting a device's NFC interface (through proximity) to
+          impersonate a user</td>
+        <td>The device's NFC capabilities are used by malware to perform a relay attack
+          (or otherwise) and impersonate the user somewhere else.</td>
+        <td>High - loss of money in electronic payment scenarios</td>
+        <td>Low - lack of known attacks.</td>           
+      </tr>
+      <tr>
+        <td>Device denial of service through API abuse</td>
+        <td>Malware misuses APIs to the extent that the user is no longer able to
+          use the device or some services. For instance, processor-intensive queries.</td>
+        <td>Low - inconveniences the user (depending on context)</td>
+        <td>Low - relatively little incentive for this attack.</td>               
+      </tr>
+      <tr>
+        <td>Circumvention of access control through access to other interfaces/APIs</td>
+        <td>Malware is able to circumvent the platform's access control system through
+          use of other APIs, interfaces or methods exposed by other applications
+          in order to gain access to more features</td>
+        <td>Potentially high - depends entirely on the APIs being circumvented.</td>
+        <td>Unknown</td>
+      </tr>
+      <tr>
+        <td>Loss of user data stored by an application</td>
+        <td>An application does not store data given by the user safely, 
+          resulting in a accidental or malicious integrity compromise or 
+          loss.</td>
+        <td>Medium: loss of user data (contacts / media / etc) in one application</td>
+        <td>Medium/low</td>
+      </tr>
+    </table>
+      
+      <h3>Conclusions</h3>
+      <p>
+        From this list of threats the following requirements can be elicited:
+      </p>
+      <ul>
+        <li>System applications must, by default, be isolated from the rest of the system and other applications.</li>
+        <li>System applications must communicate securely with authenticated endpoints to avoid content injection.  This implies that system applications must themselves be identifiable, and that the system application runtime must be able to authenticate all remote and local endpoints.</li> 
+        <li>System applications must implement a least-privilege access control to limit the impact of malware and should be sufficiently configurable to allow greyware to be constrained if a user wishes to do so.</li>
+        <li>Least privilege access control must include access to remote sources, particularly for loading scripts and other content.</li>
+        <li>System applications and their activities must be visible and/or auditable to end users to mitigate risks of spyware</li>
+        <li>Applications from unauthenticated sources should be constrained by default as the impact of malware is potentially high.</li>
+        <li>The threat of code injection from remote servers is sufficient that steps should be taken to guarantee the integrity of all remote inputs.</li>
+      </ul>
+      
+    </section>
+    
+    <section>
+      <h2>Application Packaging and Signing</h2>
+      <p>
+        A system application SHALL consist of a downloadable archive containing
+        a manifest file and signatures.  It MAY contain application content.  One
+        example of a conformant application package is a Widget [[WIDGETS]].
+      </p>
+    </section>
+
+    <section>
+      <h2>Application Installation, Provenance and Update</h2>
+      
+      <h3>Installation</h3>
+      <p>
+        System applications MUST be installed before they can be executed.
+      </p>
+      <p>  
+        System applications MAY be installed by any device owner.  System 
+        applications MAY be installed by the operating system of a device when
+        it is first installed.
+      </p>
+      <p>  
+        System application MAY be installed by the user of the device.  The 
+        installation of a system application by a user MUST involve user 
+        interaction and MUST be the result of an action triggered by the user's
+        explicit intent to install the application.
+      </p>  
+      <p>
+        The party responsible for installing an application MUST be recorded by
+        the execution environment.  The distributor of an application (and 
+        whether the application was side-loaded) MUST be recorded by the 
+        execution environment.
+      </p>
+      <p>
+        The execution environment SHALL reject invalid application signatures.  
+        It SHALL by default disable applications with no signature or with 
+        signatures from entities with unrecoginsed root certificates.  However, 
+        the exection environment MAY allow signatures from entities with an 
+        unrecognised root certificate if a device owner explicitly permits 
+        this.  The execution environment MAY 
+        define a policy regarding whether an application is permitted to be 
+        installed depending on the signatures accompanying the application.
+      </p>
+      <p>
+        The execution environment SHALL provide an interoperable mechanism allowing device 
+        owners to add and remove certificate authority root
+        certificates.  This mechanism MAY be restricted to only certain 
+        device owners based on a policy set by a more privileged device owner.
+      </p>
+      
+      <h3>Update</h3>      
+      <p>
+        System applications SHALL have a well-defined update process that SHALL
+        allow for the application to be upgraded when the distributor 
+        indicates that a newer version of the application is available.  System
+        applications SHALL contain a version number.
+      </p>
+      <p>
+        System applications SHALL be updated automatically.  This feature MAY 
+        be disabled by a device owner.
+      </p>
+      
+      <h3>Uninstallation</h3>
+      <p>
+        The execution environment SHALL allow all system applications to be  
+        uninstalled.  However, an execution environment MAY prevent device 
+        owners from uninstalling applications that were installed by a more 
+        privileged device owner.
+      </p>
+      <p>
+        An uninstalled system application SHALL NOT be executed by the user
+        agent.  User data SHALL be deleted by a system application when it is 
+        uninstalled only when that system application has indicated that this 
+        is appropriate.  Applications are encouraged to gain consent from the 
+        user where appropriate to avoid loss of data.
+      </p>    
+      <div class="note">
+        E.g., a contact manager application, when uninstalled, shouldn't 
+        necessarily delete all the user's contacts.
+      </div>
+    </section>
+    
+    <section>
+      <h2>API Access Control</h2>
+      <p>
+        System applications SHALL access platform capabilities through a set of
+        APIs as defined by the System Applications Working Group [[SysApps]].  
+        The use of an API by an application SHALL require the application to
+        have the corresponding permission, granted by the execution environment.
+      </p>
+      <p>
+        Application packages SHALL contain a list of the permissions that it 
+        requires in order to function in the manner the developer intends. A 
+        conformant execution environment SHALL follow the principle of least 
+        privilege and provide a system application with <em>no more</em> than 
+        the requested set of permissions.
+      </p>
+      <p>
+        The execution environment MAY install an application without granting it
+        the full set of permissions requested in the manifest.
+      </p>
+      <p>
+        the execution environment SHALL store the permissions granted to an 
+        application in an interoperable format and reload these permissions
+        when an application instance is started.  Other privileged system 
+        components or system applications MAY be granted permission to modify 
+        these permissions but this permission SHALL NOT be given to system
+        applications by default.
+      </p>
+      
+      <div class="note">
+        This document does not define the language or structure of how 
+        permissions should be stored or processed by a execution environment.  
+        However, the requirement to store and load permissions in an 
+        interoperable way allows for use cases such as synchronising user 
+        preferences between devices and allows system applications to be 
+        managed by an operating system which may also control native 
+        applications.  In the editor's view, this document could go further and 
+        define the structure of permissions (or at least the meta-model).
+      </div>
+    
+    </section>
+    
+    
+    
+    <section>
+      <h2>Application Communication and Isolation</h2>
+      <p>
+        System applications operate in an isolated context with a unique origin 
+        defined by their execution environment.  Unless requested by both applications, 
+        a system application SHALL NOT be able to communicate with or access 
+        the runtime content of another system application instance from a 
+        different application package.  System application instances from
+        the same package SHALL have the same origin and SHALL be able to 
+        communicate with each other.
+      </p>
+      <p>
+        The origin of a system application instance SHALL be distinct from any 
+        other application from a different application package. An example
+        can be found in [[WIDGETS-URI]] and is repeated here:
+      </p>
+      <p><code>widget://c13c6f30-ce25-11e0-9572-0800200c9a66</code></p>
+      <div class="note">
+        It seems necessary to define the 'origin' of a system application as
+        the execution environment may be a browser operating in a different mode, e.g., a
+        chrome browser running packaged applications.  However, there are no
+        use cases for normal web applications interacting with system 
+        applications so this does not seem to be an important part of the 
+        document.  It is likely that system applications (particularly
+        from the same author) will want to communicate with one another, though.
+      </div>
+           
+      <h3>Communication access control and permissions</h3>
+      <p>
+        System applications SHALL define the applications they wish to 
+        communicate with through the manifest.  
+      </p>
+      
+      <h3>Communication between system applications</h3>
+      <p>
+        System applications SHALL communicate with other system applications on 
+        the same host through <em>channel messaging</em> [[POSTMSG]].
+      </p>
+    </section>
+    
+    <section>
+      <h2>Runtime Environment</h2>
+      <p>
+        Because system applications are given access to more potentially 
+        dangerous APIs and capabilities, the definition of a set of constraints
+        on such applications is an opportunity to remove a whole class of 
+        potential vulnerabilities.  This section defines how system applications
+        are constrained beyond normal web applications.
+      </p>
+      
+      <div class="note">
+        It is recommended that CSP [[CSP]] be used to implement many of the 
+        restrictions outlined in this document.  However, other 
+        implementations such as WARP [[WARP]] may also be used.
+      </div>
+      
+      <h3>Restrictions on JavaScript</h3>
+      <p>
+        System applications SHALL NOT be allowed to execute inline javascript
+        nor shall they be able to execute string-to-JavaScript methods such as
+        <code>eval</code> and <code>function</code>.
+      </p>   
+     
+      <h3>Restrictions on Including Web Resources</h3>
+      <p>
+        To maintain the integrity of a system application, the execution environment 
+        SHALL NOT allow an application to load external content from 
+        non-whitelisted locations.  This includes images, CSS style sheets, 
+        scripts, frames, fonts and other media. The definition of this content
+        can be found in [[CSP]].
+      </p>           
+      <p>
+        System applications SHALL be able to specify in their manifest the set 
+        of remote locations for these resources.
+      </p>
+      <p>
+        With the exception of images and other media content, all remote 
+        locations defined in the manifest MUST have the protocol 
+        <code>https:</code> or <code>wss:</code>.  Any remote locations defined in the manifest for
+        non image or media sources which does not use the <code>https</code> or <code>wss:</code>
+        protocol MUST be disregarded and not whitelisted.
+      </p>
+      <div class="note">
+        It is suggested, therefore, that the manifest contain a section defining
+        the CSP policy for the application in this regard, although not CSP 
+        statements which would violate the rest of this document. 
+      </div>        
+      
+      <h3>Restrictions on Communicating with External Sources </h3>
+      <p>
+        System applications SHALL only be able to communicate using 
+        XmlHttpRequests [[XHR]], WebSockets and EventSources only with URIs 
+        explicitly defined in the manifest of the application and only if the 
+        protocol of these URIs is <code>https:</code> or <code>wss:</code>.
+      </p>
+      
+      <h3>Cookies</h3>
+      <p>
+        System applications SHALL have an individual, isolated cookie store.  
+        Two instances of applications from the same package SHALL share the 
+        same store, but two instances of system applications from different
+        packages SHALL NOT be able to access each other's cookies.
+      </p>
+      <h3>File API</h3>
+      <p>
+        System applications MAY be granted permission to access system files 
+        through the File API [[FILE-API]].  
+      </p>
+      <p>  
+        System applications SHALL be granted permission to read, write and 
+        append to files stored in an isolated area unique to that application.  
+        This storage SHALL NOT be shared with applications from different 
+        application packages.  Execution environments SHALL provide encryption for this
+        storage area in order to mitigate the threat of application data 
+        when a device is stolen.  This capability MAY be turned off by a user.
+      </p>
+      <div class="note">
+        Encrypted storage may take the form of full-disk encryption.
+      </div>
+      
+      <h3>Disabled and modified features</h3>
+      <p>
+        System applications do not have access to the following features 
+        provided by browsers.
+      </p>
+      <ul>
+        <li>Navigation history - window.history and window.location.</li>
+        <li>Hyperlinks - hyperlinks to external websites should be opened 
+        in a web browser rather than in the context of the system application.</li>
+        <li>Third-party browser plugins. Man-in-the-browser threats could cause 
+        code injection resulting in a security violation.  As such, third-party 
+        browser plugins should be disabled in a systems applications context.</li>
+        <li>Browser "chrome" APIs  (window.locationbar, window.menubar, 
+        window.external, window,sidebar, etc.).</li>
+      </ul>
+      
+    </section>
+    
+    <section>
+      <h2>Monitoring and Interacting with Applications</h2>
+      <p>
+        In order to mitigate threats relating to the misuse of APIs by
+        system applications, one countermeasure is to allow the underlying
+        platform to monitor applications and what they are doing.  
+      </p>
+      <p>
+        For example, a system application may have permission to send an SMS
+        message but the end user could be notified at the time that this is
+        happening.
+      </p>
+      <p>
+        Security-sensitive events invoked by system applications SHALL be 
+        monitored by the execution environment and MAY trigger actions by 
+        another system application or a native application.
+      </p>
+    </section>
+        
+    <section class='appendix'>
+      <h2>Acknowledgements</h2>
+      <p>
+        The editors thank the webinos project for providing technical guidance
+        as well as a wide range of other projects, the knowledge from which 
+        this document has drawn upon.  These include Adam Barth's early 
+        strawman proposals, Mozilla B2G documentation, academic work from 
+        Berkeley, and Google's packaged applications documentation.
+      </p>
+      <p>
+        We also thank Robin Berjon for creating the ReSpec.js tool.
+      </p>
+    </section>
+  </body>
+</html>
+
