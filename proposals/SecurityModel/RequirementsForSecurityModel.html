@@ -69,10 +69,11 @@
         This document defines the security requirements for system applications. 
         System applications are web applications which require stronger interaction with
         the host platform compared to web pages and are most closely
-        comparable to native applications [[SYSAPPSCHARTER]].  System applications enjoy
+        comparable to native applications [[SYSAPPS-CHARTER]].  System applications enjoy
         extra privileges and are able to access APIs which are not available to web
         applications running in the browser.  They are therefore not bound by the
-        existing browser security model [[Zalewski2009]].  This document defines a set of
+        existing browser security model (See [[Zalewski2011]] for details on 
+        the current browser security model).  This document defines a set of
         security requirements which cover application packaging, authenticity, installation,
         provenance, access control, runtime restrictions and monitoring interfaces.
       </p>
@@ -564,7 +565,7 @@
       <h2>API Access Control</h2>
       <p>
         System applications SHALL access platform capabilities through a set of
-        APIs as defined by the System Applications Working Group [[SysApps]].  
+        APIs as defined by the System Applications Working Group [[SYSAPPS-CHARTER]].  
         The use of an API by an application SHALL require the application to
         have the corresponding permission, granted by the execution environment.
       </p>
