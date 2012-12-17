@@ -68,7 +68,7 @@
       <p>
         This document defines the security requirements for system applications. 
         System applications are web applications which require stronger interaction with
-        the host platform compared to traditional web pages and are most closely
+        the host platform compared to web pages and are most closely
         comparable to native applications [[SYSAPPSCHARTER]].  System applications enjoy
         extra privileges and are able to access APIs which are not available to web
         applications running in the browser.  They are therefore not bound by the
@@ -81,18 +81,22 @@
       <p>
         This document has been developed as part of a standardisation process
         in order to enable web applications to be functional equals to native
-        applications.  At present, most web applications run in a browser context which
-        is intentionally isolated from the underlying system.  This allows users to (in
-        theory) visit web pages without placing any trust in their behaviour as a
-        malicious browser-based application is limited in its ability to compromise the
-        user's security and privacy requirements.  However, this also means that
-        browser-based applications cannot perform functions that require access to
+        applications.
+      </p>
+      
+      <p>  
+        At present, most web applications run in a browser context which is
+        intentionally isolated from the underlying operating system.  This allows users
+        (in theory) to visit web pages without security concerns as a malicious
+        browser-based application is limited in its ability to compromise the user's
+        security and privacy requirements.  However, this also means that browser-based
+        applications cannot perform functions that require access to
         potentially-dangerous parts of the underlying platform.  For example: deleting
         or changing contacts from an address book, sending SMS, or making outgoing
-        telephone calls, except in a very limited way.  To support such functions,
-        system applications must be run in a context outside of the web browser and new
-        requirements must be placed upon them.  This document defines those new
-        requirements and suggests some technical measures for enforcing them.
+        telephone calls.  To support such functions, system applications must be run in
+        a context outside of the web browser and new requirements must be placed upon
+        them to maintain security.  This document defines those new requirements and
+        suggests some technical measures for enforcing them.
       </p>
       <p>
         The reason for <em>standardising</em> a security model is to enable
@@ -138,7 +142,8 @@
       <ul>
         <li>Requirements on how system applications should be packaged and 
             signed.</li>
-        <li>System application lifecycle events including installation, update and uninstallation.</li>
+        <li>System application lifecycle events including installation, update 
+            and uninstallation.</li>
         <li>Access control requirements for system applications using APIs or 
             resources.</li>
         <li>Constraints placed on system application execution at runtime.</li>
@@ -152,11 +157,17 @@
         and stakeholders.  
       </p>
       <ul>
-        <li><em>User</em>.  The person who uses a device running a conformant platform.  This specification does not define whether this user is the owner of the platform.</li>
-        <li><em>Application author / developer</em>.  The person or team who created a system application</li>
+        <li><em>User</em>.  The person who uses a device running a conformant 
+            platform.  This specification does not define whether this user is 
+            the owner of the platform.</li>
+        <li><em>Application author / developer</em>.  The person or team who 
+            created a system application</li>
         <li><em>Device manufacturer</em>.</li>
-        <li><em>Network operator</em>.  In some contexts, particularly mobile devices, an operator will exist who provides network access.</li>        
-        <li><em>Application distributor</em>.  The entity responsible for distributing an application, e.g. the owner and manager of an app store.</li>
+        <li><em>Network operator</em>.  In some contexts, particularly mobile 
+            devices, an operator will exist who provides network access.</li>        
+        <li><em>Application distributor</em>.  The entity responsible for 
+            distributing an application, e.g. the owner and manager of an app 
+            store.</li>
       </ul>        
       <img src="./security-model-concept-map.png" />
       
@@ -201,48 +212,46 @@
         System applications are required to be able to do the following things.
       </p>
       <ul>
-        <li>Use the Alarm API to create alarms</li>
-        <li>Use the Contacts API to  add, remove and edit contacts</li>
-        <li>Use the Messaging API to send, receive and view SMS</li>
-        <li>Use the Telephony API to dial a number, pick up a call, route to voicemail, access the call log</li>
-        <li>Use the Raw Sockets API to create, manipulate and listen for low-level TCP and UDP connections</li>
-        <li>Use APIs defined by the Device APIs Working Group</li>
-        <li>Communicate with other system applications</li>
-        <li>Communicate with web servers and use online resources</li>
-        <li>Express the permissions they request for accessing APIs</li>
+        <li>Use the Alarm API to create alarms.</li>
+        <li>Use the Contacts API to  add, remove and edit contacts.</li>
+        <li>Use the Messaging API to send, receive and view SMS.</li>
+        <li>Use the Telephony API to dial a number, pick up a call, route to voicemail, access the call log.</li>
+        <li>Use the Raw Sockets API to create, manipulate and listen for low-level TCP and UDP connections.</li>
+        <li>Use APIs defined by the Device APIs Working Group.</li>
+        <li>Communicate with other system applications.</li>
+        <li>Communicate with web servers and use online resources.</li>
+        <li>Express the permissions they request for accessing APIs.</li>
         <li>Store data persistently through File APIs, both within a single 
             application's sandboxed storage area and files on the rest of the 
             system if permitted.</li>
-        <li>Provide evidence of their authenticity and provenance</li>
-        <li>Detect the privileges they have been granted</li>
+        <li>Provide evidence of their authenticity and provenance.</li>
+        <li>Detect the privileges they have been granted.</li>
       </ul>
       <p>
         The users of a system application are assumed to have the following 
         requirements.
       </p>
       <ul>
-        <li>Users can install system applications</li>
-        <li>Users can remove system applications they have installed</li>
+        <li>Users can install system applications (barring policies expressed by owners).</li>
+        <li>Users can remove system applications they have installed.</li>
         <li>Users can manage and view the permissions granted to the 
-            installed system applications</li>
+            installed system applications.</li>
         <li>User data created and stored by applications shall be protected by
-            the platform against violation to integrity or confidentiality</li>
+            the platform against violation to integrity or confidentiality.</li>
         <li>User can migrate the preferences and permissions granted to 
-            applications on to other devices</li>
+            applications on to other devices.</li>
       </ul>      
       <p>
         Other requirements on a system application runtime include:
       </p>
       <ul>
         <li>The owner, manufacturer or service provider of a device may install
-            system applications and remove them</li>
+            system applications and remove them.</li>
         <li>Other platform entities such as the operating system or a native
             application should be able to manage the permissions granted to
-            system applications</li>
+            system applications.</li>
       </ul>      
     </section>
-
-    
     <section>
       <h2>Threat Model</h2>
       <p>
@@ -407,7 +416,7 @@
         <td>Malware exploits the in-app billing capabilities of the device to charge
           the user money without authorisation.</td>
         <td>High/medium - potential loss of (relatively small amounts of) money</td>
-        <td>Low - few known attacks</td>            
+        <td>Medium - few known attacks, but it seems likely</td>
       </tr>
       <tr>
         <td>Malware: UI spoofing for privilege escalation</td>
@@ -582,8 +591,9 @@
         interoperable way allows for use cases such as synchronising user 
         preferences between devices and allows system applications to be 
         managed by an operating system which may also control native 
-        applications.  In the editor's view, this document could go further and 
-        define the structure of permissions (or at least the meta-model).
+        applications.  In the editor's view, the full security model 
+        specification should go further and define the structure of permissions 
+        (or at least the meta-model).
       </div>
     
     </section>
