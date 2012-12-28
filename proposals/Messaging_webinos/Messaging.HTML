@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Messaging API</title>
+    <meta http-equiv='Content-Type' content='text/html;charset=utf-8'/>
+    <!-- 
+      === NOTA BENE ===
+      For the three scripts below, if your spec resides on dev.w3 you can check them
+      out in the same tree and use relative links so that they'll work offline,
+     -->
+    <script src='http://www.w3.org/Tools/respec/respec-w3c-common' class='remove' async></script> 
+    <script class='remove'>
+      var respecConfig = {
+          // specification status (e.g. WD, LCWD, NOTE, etc.). If in doubt use ED.
+          specStatus:           "ED",
+          
+          // the specification's short name, as in http://www.w3.org/TR/short-name/
+          shortName:            "messaging-api",
+
+          // if your specification has a subtitle that goes below the main
+          // formal title, define it here
+          // subtitle   :  "an excellent document",
+
+          // if you wish the publication date to be other than today, set this
+          // publishDate:  "2009-08-06",
+
+          // if the specification's copyright date is a range of years, specify
+          // the start date here:
+          // copyrightStart: "2005"
+
+          // if there is a previously published draft, uncomment this and set its YYYY-MM-DD date
+          // and its maturity status
+          // previousPublishDate:  "1977-03-15",
+          // previousMaturity:  "WD",
+
+          // if there a publicly available Editor's Draft, this is the link
+          edDraftURI:           "http://www.w3.org/2012/sysapps/",
+
+          // if this is a LCWD, uncomment and set the end of its review period
+          // lcEnd: "2009-08-05",
+
+          // if you want to have extra CSS, append them to this list
+          // it is recommended that the respec.css stylesheet be kept
+          extraCSS:             ["http://dev.w3.org/2009/dap/ReSpec.js/css/respec.css"],
+
+          // editors, add as many as you like
+          // only "name" is required
+          editors:  [
+              { name: "Christian Furhop", url: "christian.fuhrhop@fokus.fraunhofer.de",
+                company: "Fraunhofer Fokus", companyURL: "http://www.fokus.fraunhofer.de" },
+              { name: "Claes Nilsson", url: "claes1.nilsson@sonymobile.com",
+                company: "Sony Mobile", companyURL: "http://www.sonymobile.com" },
+          ],
+
+          // authors, add as many as you like. 
+          // This is optional, uncomment if you have authors as well as editors.
+          // only "name" is required. Same format as editors.
+
+          //authors:  [
+          //    { name: "Your Name", url: "http://example.org/",
+          //      company: "Your Company", companyURL: "http://example.com/" },
+          //],
+          
+          // name of the WG
+          wg:           "System Applications Working Group",
+          
+          // URI of the public WG page
+          wgURI:        "http://www.w3.org/2012/sysapps/",
+          
+          // name (without the @w3c.org) of the public mailing to which comments are due
+          wgPublicList: "public-sysapps",
+          
+          // URI of the patent status for this WG, for Rec-track documents
+          // !!!! IMPORTANT !!!!
+          // This is important for Rec-track documents, do not copy a patent URI from a random
+          // document unless you know what you're doing. If in doubt ask your friendly neighbourhood
+          // Team Contact.
+          wgPatentURI:  "http://www.w3.org/2004/01/pp-impl/58119/status",
+      };
+    </script>
+  </head>
+  <body>
+    <section id='abstract'>
+      This API provides SMS, MMS, Email and InstantMessaging sending, receiving and searching functionality.
+    </section>
+    
+    <section class="informative">
+      <h2>Introduction</h2>
+      <p>
+        The messaging API provides access to the following capabilities: 
+      </p>
+      <ul class="rule">
+        <li>Sending messages through different technologies, SMS, MMS, Email and Instant Messages.</li>
+        <li>Search for messages in the different folders. </li>
+        <li>Subscribe for being notified upon incoming message events.</li>
+      </ul>  
+      <p> 
+        The API does not provide message or folder management.      
+      </p>
+      
+      An example of use is provided below:
+      
+      <pre class="example highlight">
+
+        // Message sent callback
+        var messageSendCallback = {        
+          onsuccess: function() {
+            alert("The SMS has been sent to all the recipients");
+          },
+          onmessagesendsuccess: function(recipient) {
+            alert("The SMS has been sent to " + recipient);
+          },
+          onmessagesenderror: function(error, recipient) {
+            alert("The SMS has not been sent to " + recipient + " error " + error.name);
+          }
+        };
+ 
+        // Define the error callback
+        function messageFailed(error) {
+          alert("The SMS could not be sent " + error.name);
+        }
+ 
+        // SMS sending example
+        var msg = navigator.messaging.createMessage("sms");
+        msg.body = "I will arrive in 10 minutes";
+        msg.to = ["+34666666666"];
+ 
+        // Send request
+        navigator.messaging.sendMessage(messageSendCallback, messageFailed, msg);            
+      </pre>
+    </section>
+    
+    <section id="conformance">
+      <p>This specification defines conformance criteria that apply to a single product: the <dfn>user agent</dfn> that
+         implements the interfaces that it contains.
+      </p>
+      
+      <p>Implementations that use ECMAScript to implement the APIs defined in this specification MUST implement them in
+         a manner consistent with the ECMAScript Bindings defined in the Web IDL specification [[!WEBIDL]], as this
+          specification uses that specification and terminology.
+      </p>          
+      
+    </section>
+    
+    <section>
+      <h2>Terminology</h2>
+      <p>The <code><a href="http://dev.w3.org/html5/spec/webappapis.html#eventhandler"> EventHandler</a></code>
+         interface represents a callback used for event handlers as defined in [[!HTML5]].
+      </p>
+      
+      <p>The concepts <dfn><a href="http://dev.w3.org/html5/spec/webappapis.html#queue-a-task"> queue a task</a></dfn>
+         and <dfn><a href="http://dev.w3.org/html5/spec/webappapis.html#fire-a-simple-event"> fire a simple event</a></dfn>
+         are defined in [[!HTML5]].
+      </p>
+            
+      <p>The terms <dfn><a href="http://dev.w3.org/html5/spec/webappapis.html#event-handlers"> event handler</a></dfn>
+         and <dfn><a href="http://dev.w3.org/html5/spec/webappapis.html#event-handler-event-type"> event handler event
+         types</a></dfn> are defined in [[!HTML5]].
+      </p>
+    </section>
+
+    <section>
+      <h2>Security and privacy considerations</h2>
+      <p>
+        This API must be only exposed to trusted content.
+      </p>
+      
+    </section>
+
+    <section>
+      <h2>Interface Navigator</h2>
+      <p>
+        The <a>Messaging</a> interface is exposed on the <code>Navigator</code> object.
+      </p>      
+      
+      <dl title="partial interface Navigator" class="idl">
+        <dt>readonly attribute Messaging messaging;</dt>
+        <dd>
+          The object that exposes the messaging functionality.
+        </dd>
+      </dl>
+      
+    </section>
+    
+    <section>
+      <h2><a>Messaging</a> Interface</h2>
+      <p>The <a>Messaging</a> interface exposes message creation, sending and reading capabilities.</p> 
+      <p>The interface allows a web application to create a message through the createMessage() method that returns an instance of the Message 
+         interface. That message could be manipulated through the functionality offered by the Message interface and sent afterwards through the 
+         sendMessage() method.</p> 
+      <p>Messages created through this API are not persistent in device memory until the implementation tries to send them through the send 
+         operation. When that operation has been performed, the message will be available on the relevant folder depending on the result of the 
+         operation (e.g. sent, drafts...). The only way to access the messages that have been sent is through the use of the findMessages method. 
+         The findMessages method allows developers to retrieve the content of the messages available in the device folders.</p>
+      <p>This interface also offers a mechanism to subscribe for being notified upon incoming message events.</p>
+
+      <dl title="[NoInterfaceObject]
+                 interface Messaging"
+          class="idl">                           
+        
+        <dt> Message createMessage()</dt>
+        <dd>
+          
+          <p>
+            Creates a message of a given type. Returns a Message object of the given type or null if there is any problem during the message 
+            creation.
+          </p>
+        
+          <pre class="example highlight">
+            var msg = navigator.messaging.createMessage("sms");
+            msg.body = "The first SMS message.";            
+          </pre>
+          
+          <p>
+            Throws DOMException INVALID_ACCESS_ERR if the input parameter contains an invalid value or if the input parameter is not compatible with the expected type for that parameter. 
+          </p>
+        
+          <dl class='parameters'>
+             <dt>MessageType type</dt>
+             <dd>
+               The type of message that is created. The possible values are: "sms", "mms", "email", "im". 
+             </dd>
+          </dl>
+        </dd>
+
+        <dt> PendingSendMessageOperation sendMessage ()</dt>
+        <dd>
+          <p>Attempt to send the specified message.</p>
+          <p>If the message type is set to email and the user has multiple email accounts set up, the runtime SHOULD use the default e-mail 
+             account. If no account has been set up, the runtime MAY either provide respective mechanisms to create a new one or throw the given 
+             MessagingErrorCallback back to the requesting application.</p>
+          <p>Only the parameters supported by a specific technology and that can be set up by the developer (see Message interface attribute definition) 
+             are sent as specified in the following table (the rest are ignored): </p>  
+          <p>   
+          <table>
+            <tr>
+              <th>Attribute</th>
+              <th>SMS</th>
+              <th>MMS</th>
+              <th>Email</th>
+              <th>IM</th>
+            </tr>
+            <tr>
+              <td>to</td>
+              <td>Yes</td>
+              <td>Yes</td>
+              <td>Yes</td>
+              <td>Yes</td>
+            </tr>
+            <tr>
+              <td>body</td>
+              <td>Yes</td>
+              <td>Yes</td>
+              <td>Yes</td>
+              <td>Yes</td>
+            </tr>
+            <tr>
+              <td>subject</td>
+              <td>No</td>
+              <td>Yes</td>
+              <td>Yes</td>
+              <td>No</td>
+            </tr>
+            <tr>
+              <td>attachments</td>
+              <td>No</td>
+              <td>Yes</td>
+              <td>Yes</td>
+              <td>No</td>
+            </tr>
+            <tr>
+              <td>cc                            </td>
+              <td>No                    </td>
+              <td>No                    </td>
+              <td>Yes                   </td>
+              <td>Yes              </td>
+            </tr>
+            <tr>
+              <td>bcc                           </td>
+              <td>No                    </td>
+              <td>No                    </td>
+              <td>Yes                   </td>
+              <td>Yes              </td>
+            </tr>
+            <tr>
+              <td>priority                      </td>
+              <td>No                    </td>
+              <td>No                    </td>
+              <td>Yes                   </td>
+              <td>No              </td>
+            </tr>
+          </table>
+          </p>
+          
+          <p>
+            When a message has been successfully or unsuccessfully sent, it will be stored in the relevant folder (e.g. sent folder if 
+            successfully sent). Please note that some platforms may store multiple copies of the message if multiple recipients were included.
+          </p>
+          <p>
+            When the operation is fully completed (i.e. the implementation knows the result of the send operation to all the recipients), 
+            the onsuccess method of the successCallback will be invoked if the message is successfully sent to all the recipients.
+          </p>
+          <p>
+            If any of the input parameters is not compatible with the expected type for that parameter a DOMException with code 
+            INVALID_ACCESS_ERR be synchronously thrown.
+          </p>
+          <p>
+            If the operation fails for any other reason, the errorCallback will be invoked with an appropriate error code amongst the 
+            following:
+          </p>
+          <p>
+            NOT_SUPPORTED_ERR: If the specified messaging technology is not supported.
+          </p>
+          <p>
+            SECURITY_ERR: If the operation is not allowed.
+          </p>
+          
+          <pre class="example highlight">
+            // Message sent callback
+            var messageSendCallback = {        
+              onsuccess: function() {
+                alert("The SMS has been sent to all the recipients");
+              },
+              onmessagesendsuccess: function(recipient) {
+                alert("The SMS has been sent to " + recipient);
+              },
+              onmessagesenderror: function(error, recipient) {
+                alert("The SMS has not been sent to " + recipient + " error " + error.name);
+              }
+            };
+ 
+            // Define the error callback
+            function messageFailed(error) {
+              alert("The SMS could not be sent " + error.message);
+            }
+ 
+            // SMS sending example
+            var msg = navigator.messaging.createMessage("sms");
+            msg.body = "I will arrive in 10 minutes";
+            msg.to = ["+34666666666", "+34888888888"];
+ 
+            // Send request
+            navigator.messaging.sendMessage(messageSendCallback, messageFailed, msg);
+             
+          </pre>
+          <dl class='parameters'>
+             <dt>MessageSendCallback messageSendCallback</dt>
+             <dd>
+               Interface for the methods to be called for message send results for each recipient. 
+             </dd>
+             <dt> optional MessagingErrorCallback? errorCallback</dt>
+             <dd>
+               To be invoked in case the sending request fails. The function has one parameter: Error code of type DOMError.
+             </dd>
+             <dt> Message message</dt>
+             <dd>
+               The message to be sent. 
+             </dd>             
+          </dl>
+          
+        </dd>
+        
+        <dt> PendingSendMessageOperation findMessages ()</dt>
+        <dd>
+          <p>Gets an array of messages from the message folders matching the selected filter.</p>
+          <p>If this feature is not supported, a DOMError with name NOT_SUPPORTED_ERR MUST be returned in the errorCallback. If this functionality 
+             is not allowed the errorCallback MUST be invoked with a DOMError with code SECURITY_ERR.</p>
+          <p>If the filter is passed and contains valid values, only those values in the message lists that 
+             matches the filter criteria as specified in the MessageFilter interface will be returned in the successCallback. If no filter is 
+             passed, it is null or undefined, or contains any invalid value, the implementation MUST return the full list of messages in the 
+             successCallback. If no messages are available in the lists or no one matches the filter criteria, the successCallback will be 
+             invoked with an empty array. </p>  
+          <p>In any of the cases in which the errorCallback should be invoked, if the developer has not passed an ErrorCallback or it is null, 
+             no action is required (i.e. the error is not notified to the developer).</p>
+          <p>Throws DOMException INVALID_ACCESS_ERR if any input parameter is not compatible with the expected type for that parameter.</p>
+          
+          <pre class="example highlight">  
+             var msg = { type:"sms", body:"first messa%" };
+
+             navigator.messaging.findMessages(
+               function (messages) {
+                 alert(messages.length + " message(s) found!");
+                 for (var i=0; imessages.length; i++) {
+                   alert(i + ". message from " + messages[i].from);
+                 }
+               }, 
+               null, 
+               msg
+             );   
+          
+          </pre>  
+          
+          <dl class='parameters'>
+             <dt>FindMessagesSuccessCallback successCallback</dt>
+             <dd>
+               Function called when the invocation ends successfully. The function has one parameter: An array of <a>Message</a> objects.
+             </dd>
+             <dt>optional MessagingErrorCallback? errorCallback</dt>
+             <dd>
+               Function called when an error occurs. The function has one parameter: Error code of type DOMError.
+             </dd>  
+             <dt> optional MessageFilter filter</dt>
+             <dd>
+               Message data to be used when filtering
+             </dd>
+             
+          </dl>  
+
+        </dd>
+        
+        <dt> unsigned long onSMS ()</dt>
+        <dd>Registers the function to be notified on incoming new SMSs.
+          <p>When this method is invoked, the implementation MUST register the function passed in the messageHandler argument as the handler for 
+             being notified whenever an incoming SMS arrives to the device. That function will be invoked every time an incoming SMS arrives, unless the 
+             unsubscribe method with the handler identifier is invoked in order to cancel the subscription.</p>
+          <p>If the subscription is successfully created, an identifier for the handler is created and returned so that it is possible to cancel the subscription.
+             If the subscription cannot be created, a DOMException is synchronously thrown with an error code that describes the reason for the error. If any of 
+             the input parameters is not compatible with the expected type for that parameter a DOMException with code INVALID_ACCESS_ERR MUST be synchronously 
+             thrown.</p>
+        
+          <pre class="example highlight">
+            // function to receive new SMS notifications
+            function incomingSMS(message)
+            {
+              alert("New incoming SMS from " + message.from);
+ 
+              // The subscription is cancelled to prevent further notifications
+              if (mySMSListener != null)
+                navigator.messaging.unsubscribe(mySMSListener);
+            }
+            // Register listener for new SMS events
+            var mySMSListener = null;
+            mySMSListener = navigator.messaging.onSMS(incomingSMS);         
+          </pre>
+          
+          <p>
+            Throws DOMException SECURITY_ERR if this operation is not allowed. 
+          </p>
+          <p>
+            Throws DOMException NOT_SUPPORTED_ERR if this feature is not supported. 
+          </p>
+          <p>
+            Throws DOMException INVALID_ACCESS_ERR if the messageHandler is null or undefined. 
+          </p>          
+          <p>
+            Throws DOMException INVALID_ACCESS_ERR if any input parameter is not compatible with the expected type for that parameter. 
+          </p>          
+        
+          <dl class='parameters'>
+             <dt>OnIncomingMessage messageHandler</dt>
+             <dd>
+               The function to be invoked on incoming SMSs. The function has one parameter: The message received of type <a>Message</a>.
+             </dd>
+          </dl>
+        </dd>     
+        
+        <dt> unsigned long onMMS ()</dt>
+        <dd>Registers the function to be notified on incoming new MMSs.
+          <p>When this method is invoked, the implementation MUST register the function passed in the messageHandler argument as the handler for being notified 
+             whenever an incoming MMS arrives to the device. That function will be invoked every time an incoming MMS arrives, unless the unsubscribe method with 
+             the handler identifier is invoked in order to cancel the subscription.</p>
+          <p>If the subscription is successfully created, an identifier for the handler is created and returned so that it is possible to cancel the subscription.
+             If the subscription cannot be created, a DOMException is synchronously thrown with an error code that describes the reason for the error.</p>
+        
+          <pre class="example highlight">
+            // function to receive new MMS notifications
+            function incomingMMS(message)
+            {
+              alert("New incoming MMS from " + message.from);
+ 
+              // The subscription is cancelled to prevent further notifications
+              if (myMMSListener != null)
+                navigator.messaging.unsubscribe(myMMSListener);
+            }
+            // Register listener for new MMS events
+            var myMMSListener = null;
+            myMMSListener = navigator.messaging.onMMS(incomingMMS);         
+          </pre>
+          
+          <p>
+            Throws DOMException SECURITY_ERR if this operation is not allowed. 
+          </p>
+          <p>
+            Throws DOMException NOT_SUPPORTED_ERR if this feature is not supported. 
+          </p>
+          <p>
+            Throws DOMException INVALID_ACCESS_ERR if the messageHandler is null or undefined. 
+          </p>          
+          <p>
+            Throws DOMException INVALID_ACCESS_ERR if any input parameter is not compatible with the expected type for that parameter. 
+          </p>          
+        
+          <dl class='parameters'>
+             <dt>OnIncomingMessage messageHandler</dt>
+             <dd>
+               The function to be invoked on incoming MMSs. The function has one parameter: The message received of type <a>Message</a>.
+             </dd>
+          </dl>
+        </dd>  
+        
+        <dt> unsigned long onEmail ()</dt>
+        <dd>Registers the function to be notified on incoming new Emails.
+          <p>When this method is invoked, the implementation MUST register the function passed in the messageHandler argument as the handler for 
+             being notified whenever an incoming Email arrives to the device. That function will be invoked every time an incoming Email arrives, unless the 
+             unsubscribe method with the handler identifier is invoked in order to cancel the subscription.</p>
+          <p>If the subscription is successfully created, an identifier for the handler is created and returned so that it is possible to cancel the subscription.
+             If the subscription cannot be created, a DOMException is synchronously thrown with an error code that describes the reason for the error.If any of 
+             the input parameters is not compatible with the expected type for that parameter a DOMException with code INVALID_ACCESS_ERR MUST be synchronously 
+             thrown.</p>
+        
+          <pre class="example highlight">
+            // function to receive new Email notifications
+            function incomingEmail(message)
+            {
+              alert("New incoming Email from " + message.from);
+ 
+              // The subscription is cancelled to prevent further notifications
+              if (myEmailListener != null)
+                navigator.messaging.unsubscribe(myEmailListener);
+            }
+            // Register listener for new Email events
+            var myEmailListener = null;
+            myEmailListener = navigator.messaging.onEmail(incomingEmail);         
+          </pre>
+          
+          <p>
+            Throws DOMException SECURITY_ERR if this operation is not allowed. 
+          </p>
+          <p>
+            Throws DOMException NOT_SUPPORTED_ERR if this feature is not supported. 
+          </p>
+          <p>
+            Throws DOMException INVALID_ACCESS_ERR if the messageHandler is null or undefined. 
+          </p>          
+          <p>
+            Throws DOMException INVALID_ACCESS_ERR if any input parameter is not compatible with the expected type for that parameter. 
+          </p>          
+        
+          <dl class='parameters'>
+             <dt>OnIncomingMessage messageHandler</dt>
+             <dd>
+               The function to be invoked on incoming Emails. The function has one parameter: The message received of type <a>Message</a>.
+             </dd>
+          </dl>
+        </dd>      
+        
+        <dt> unsigned long onIM ()</dt>
+        <dd>Registers the function to be notified on incoming new IMs.
+          <p>When this method is invoked, the implementation MUST register the function passed in the messageHandler argument as the handler for 
+             being notified whenever an incoming IM arrives to the device. That function will be invoked every time an incoming IM arrives, unless the 
+             unsubscribe method with the handler identifier is invoked in order to cancel the subscription.</p>
+          <p>If the subscription is successfully created, an identifier for the handler is created and returned so that it is possible to cancel the subscription.
+             If the subscription cannot be created, a DOMException is synchronously thrown with an error code that describes the reason for the error.If any of 
+             the input parameters is not compatible with the expected type for that parameter a DOMException with code INVALID_ACCESS_ERR MUST be synchronously 
+             thrown.</p>
+        
+          <pre class="example highlight">
+            // function to receive new IM notifications
+            function incomingIM(message)
+            {
+              alert("New incoming IM from " + message.from);
+ 
+              // The subscription is cancelled to prevent further notifications
+              if (myIMListener != null)
+                navigator.messaging.unsubscribe(myIMListener);
+            }
+            // Register listener for new IM events
+            var myIMListener = null;
+            myIMListener = navigator.messaging.onIM(incomingIM);         
+          </pre>
+          
+          <p>
+            Throws DOMException SECURITY_ERR if this operation is not allowed. 
+          </p>
+          <p>
+            Throws DOMException NOT_SUPPORTED_ERR if this feature is not supported. 
+          </p>
+          <p>
+            Throws DOMException INVALID_ACCESS_ERR if the messageHandler is null or undefined. 
+          </p>          
+          <p>
+            Throws DOMException INVALID_ACCESS_ERR if any input parameter is not compatible with the expected type for that parameter. 
+          </p>          
+        
+          <dl class='parameters'>
+             <dt>OnIncomingMessage messageHandler</dt>
+             <dd>
+               The function to be invoked on incoming IMs. The function has one parameter: The message received of type <a>Message</a>.
+             </dd>
+          </dl>
+        </dd>  
+        
+        <dt> void unsubscribe ()</dt>
+        <dd>Cancels a messaging subscription.
+          <p>If the subscriptionHandler argument is valid and corresponds to a subscription already in place the subscription process MUST immediately stop and no 
+          further message notifications MUST be invoked. If the subscriptionHandler argument does not correspond to a valid subscription, the method should
+          return without any further action.</p>
+          <p>Throws DOMException INVALID_ACCESS_ERR if any input parameter is not compatible with the expected type for that parameter.</p>               
+        
+          <dl class='parameters'>
+             <dt>unsigned long subscriptionHandler</dt>
+             <dd>
+               Identifier of the subscription returned by the onSMS(), onMMS(), onEmail() or onIM() methods. 
+             </dd>
+          </dl>
+        </dd>                     
+
+      </dl>                
+            
+    </section>    
+
+    <section>
+      <h2>Interface <a>Message</a></h2>
+      <p>The <a>Message</a> interface Defines the content and attributes of a message.</p> 
+      <p>This interface allows a web application to define the set of properties linked to a message previously created through the createMessage() 
+      method in the Messaging Interface.</p> 
+      <p>Additionally, it also allows an application to retrieve the content of a message through the findMessages, onSMS, onMMS and onEmail methods. 
+      In those cases, the implementation MAY return in some situations only part of the body because of its size.</p>
+      <p>If the developer attempts to access an attribute not supported by the messaging technology (see attribute description or summary table in the 
+      sendMessage mehtod description), the implementation MUST ignore this attempt.</p>
+      
+      <pre class="example highlight">
+        var msg = navigator.messaging.createMessage("sms");
+        msg.body = "webinos first SMS message.";
+        msg.to = ["+34666666666"];         
+      </pre>
+      
+      <dl title="[NoInterfaceObject]
+                 interface Message"
+          class="idl">
+          
+        <dt> readonly attribute DOMString id</dt>
+        <dd>A unique indicator for identifying a message. This property is a locally unique and persistent id, assigned by the device or the web runtime 
+        environment. For new messages created using Messaging.createMessage(), the id is assigned on the first occasion that the message is processed by
+         the underlying platform such as a call to send(). This property is unique across device power cycles.</dd>
+         
+        <dt>attribute MessageType type</dt>
+        <dd>The type of the given message.</dd> 
+        
+        <dt>attribute MessageFolder folder</dt>
+        <dd>The folder for the given message. For messages created through the createMessage method this property is undefined.</dd>  
+        
+        <dt>readonly attribute Date timestamp</dt>
+        <dd>The timestamp of a message. This property is set up by the device or the web runtime environment.</dd> 
+        
+        <dt>readonly attribute DOMString from</dt>
+        <dd>The source address of a message. This property is set up by the device or the web runtime environment. This property should only be taken into 
+        account for Email.</dd>                        
+
+        <dt>attribute StringArray to</dt>
+        <dd>The destination of a message.</dd> 
+        
+        <dt>attribute StringArray cc</dt>
+        <dd>The Cc address of a message</dd>  
+              
+        <dt>attribute StringArray bcc</dt>
+        <dd>The Bcc address of a message.</dd>
+        
+        <dt>attribute DOMString body</dt>
+        <dd>The body of a message.</dd>  
+        
+        <dt>attribute boolean isRead</dt>
+        <dd>The flag "read" for this Message. True if the message has been read and false otherwise.</dd>        
+        
+        <dt>attribute boolean priority</dt>
+        <dd>The priority of a message. True means high priority and false normal or low priority. This property should only be taken into account for Email.</dd>      
+          
+        <dt>attribute DOMString subject</dt>
+        <dd>The subject of a message. This property should only be taken into account for MMS and Email.</dd> 
+        
+        <dt>attribute MessageAttachment[] attachments</dt>
+        <dd>The list of message attachments. This property should only be taken into account for Email and MMS. If the message has not been created by the 
+        developer but returned through the findMessage, onMMS or onEmail methods, the attachments will be stored in the "attachments" file system root 
+        location, that is only accessible through this API.</dd>     
+        
+        <dt> void update()</dt>
+        <dd>        
+          <p>Updates a message retrieved with the findMessages method.</p>
+        
+          <p>
+            This method is meant to transfer all changes made to the given Message object before (i.e. changed attributes) to the underlying 
+            system (e.g. native messaging database and LDAP). If any changes cannot be transferred to the system, they can be ignored by the 
+            implementation.
+          </p>
+          <p>
+            This method does not have effect on messages created through the createMessage method as they are not persistenly stored until the 
+            send action is invoked.
+          </p>
+          <p>  
+            For messages in the inbox, outbox and sentbox the implementation MUST only change the isRead attribute of the Message object.
+            For messages within the draft folder the implementation MAY update other attributes as well. However, this 
+            is up to the actual implementation and relies on the underlying system.
+          </p>
+          <p>
+            The implementation has to make sure that an updated Message object is provided in the success callback, which represents the current 
+            status of the message. The developer is expected to use this updated message for comparison with the former object to check which 
+            fields have or have not been transferred by the implementation.
+          </p>
+          <p>
+            If any of the input parameters is not compatible with the expected type for that parameter a DOMException with code 
+            INVALID_ACCESS_ERR MUST be synchronously thrown.
+          </p> 
+          <p>
+            If this feature is not supported, a DOMError with code NOT_SUPPORTED_ERR MUST be returned in the errorCallback. If this 
+            functionality is not allowed the errorCallback MUST be invoked with a DOMError with code SECURITY_ERR.
+          </p>
+          <p>
+            If the successCallback contains an invalid value (e.g. null or undefined), a DOMError with code SYNTAX_ERR be 
+            returned.
+          </p>
+          <p>  
+            If any other error occurs, while trying to update the messages, the errorCallback function that was passed in the invocation MUST be 
+            called including a DOMError object with an appropriate error code.
+          </p>
+          <p>
+            If the errorCallback does not contain a valid function (e.g. null), case of any error that should be returned in the errorCallback 
+            (see above), the implementation MUST silently fail and no further action is required (i.e. the error is not notified to the developer).
+          </p>  
+          <p>
+            Throws DOMException INVALID_ACCESS_ERR if any input parameter is not compatible with the expected type for that parameter.
+          </p>
+        
+          <dl class='parameters'>
+             <dt>UpdateMessageSuccessCallback successCallback</dt>
+             <dd>
+               Function to call on successful update. The function has one parameter: The new message representing the actual updated status of type 
+               <a>Message</a>.
+             </dd>
+             <dt>optional MessagingErrorCallback errorCallback</dt>
+             <dd>
+               Function to call on unsuccessful update. The function has one parameter: Error code of type DOMError.
+             </dd>             
+          </dl>
+        </dd>     
+                      
+      </dl>  
+            
+    </section>      
+    
+    <section>
+      <h2>Dictionary <a>MessageFilter</a></h2>
+      <p>
+        Filter to restrict the items returned by the findMessages method
+      </p>
+      <p>       
+        An entry matches the filter, if the attributes of the entry matches all the attributes of the filter with values different to undefined or 
+        null. I.e. the search is performed in a similar manner to a SQL "AND" operation.
+      </p> 
+      <p> An attribute of the Message entry matches the filter value according to
+          the following rules: </p>
+        <ul>
+          <li> For filter attributes of type DOMString, an entry matches this value
+            if it's corresponding attribute is exactly the same as the filter
+            attribute. However, if wildcards are used, such as the U+0025 'PERCENT SIGN' wildcard
+            character(s), the filter behavior is similar to the
+            LIKE condition in SQL ('%' matches any string of any length -
+            including zero length). In order to specify that a 'PERCENT SIGN'
+            character is to be considered literally instead of interpreting it as
+            a wildcard, developers may escape it with the backslash character (\).
+            The matching is not case sensitive, e.g. "FOO" matches a "foo" or an "f%" filter. </li>
+          <li> For filter attributes of type StringArray, the rules described above for filter
+            attributes of the type DOMString apply for each of the fields within the
+            given Array. The search for all included fields is similar to an SQL "AND" operation,
+            without taking into account
+            the (possible) difference in field order in the Message and MessageFilter. </li>
+          <li> For filter attributes of an array of WebIDL numeric types, (i.e. type),
+            a Message entry matches the filter only if the corresponding Message entry attribute has exactly
+            the same value as any of the array elements. </li>
+          <li> For filter attributes of WebIDL boolean type, (e.g. isRead, messagePriority),
+            a Message entry matches the filter only if the corresponding Message entry attribute has exactly
+            the same state (i.e. true or false). </li>
+          <li> For Message attributes of type Date, attributes initial and end are included in order to
+            searching for messages between two supplied dates. If either or both of these attributes are
+            specified, the following rules apply:
+            A) If both initial and end dates are specified (i.e. other than null), a File entry matches
+            the filter if it's corresponding attribute is the same as either initial or end or between the
+            two supplied dates (i.e. after initial and before end).
+            B) If only the initial attribute contains a value (other than null), a File entry matches the
+            filter if its correspoding attibute is later than or equal to the initial one.
+            C) If only the end date contains a value (other than null), a file matches the filter if its
+            corresponding attribute is earlier than or equal to the end date. </li>
+        </ul>
+      
+      <dl title="dictionary MessageFilter"
+          class="idl">
+          
+        <dt>DOMString id</dt>
+        <dd>Used for filtering the Message id attribute. Messages which id corresponds with this attribute (either exactly or with the specified 
+        wildcards) match this filtering criteria.</dd>
+        <dt>MessageType[] type</dt>
+        <dd>Used for filtering the Message type attribute. Messages with type equals to one of the values in this array match the filtering 
+        criteria.</dd>
+        <dt>MessageFolder[] folder</dt>
+        <dd>Used for filtering the Message folder attribute. Messages with folder equals to one of the values in this array match the filtering 
+        criteria.</dd>      
+        <dt>Date startTimestamp</dt>
+        <dd>Used for filtering the Message timestamp attribute. Messages with date later than or equal to this attribute match the filtering 
+        criteria.</dd>
+        <dt>Date endTimestamp</dt>
+        <dd>Used for filtering the Message timestamp attribute. Messages with date earlier than or equal to this attribute match the filtering 
+        criteria.</dd>        
+        <dt>DOMString from</dt>
+        <dd>Used for filtering the Message from attribute. Messages which from corresponds with this attribute (either exactly or with the 
+        specified wildcards) match this filtering criteria.</dd>        
+        <dt>DOMString[] to</dt>
+        <dd>Used for filtering the Message to attribute. Messages which elements in the to array that correspond to all the elements of this 
+        attribute (either exactly or with the specified wildcards) match this filtering criteria.</dd>        
+        <dt>DOMString[] cc</dt>
+        <dd>Used for filtering the Message cc attribute. Messages which elements in the cc array that correspond to all the elements of this 
+        attribute (either exactly or with the specified wildcards) match this filtering criteria.</dd>        
+        <dt>DOMString[] bcc</dt>
+        <dd>Used for filtering the Message bcc attribute. Messages which elements in the bcc array that correspond to all the elements of this 
+        attribute (either exactly or with the specified wildcards) match this filtering criteria.</dd>        
+        <dt>DOMString body</dt>
+        <dd>Used for filtering the Message body attribute. Messages which body corresponds with this attribute (either exactly or with the 
+        specified wildcards) match this filtering criteria.</dd>     
+        <dt>boolean isRead</dt>
+        <dd>Used for filtering the Message isRead attribute. Messages which isRead corresponds exactly with this attribute match this filtering 
+        criteria.</dd>              
+        <dt>boolean messagePriority</dt>
+        <dd>Used for filtering the Message messagePriority attribute. Messages which messagePriority corresponds exactly with this attribute 
+        match this filtering criteria.</dd>                     
+        <dt>DOMString subject</dt>
+        <dd>Used for filtering the Message subject attribute. Messages which subject corresponds with this attribute (either exactly or with the 
+        specified wildcards) match this filtering criteria.</dd>   
+      </dl>  
+            
+    </section>    
+    
+    <section>
+      <h2>Interface <a>MessageAttachment</a></h2>
+      <p>Describes a message attachement</p> 
+
+      
+      <dl title="interface MessageAttachment : File"
+          class="idl">
+          
+        <dt>readonly attribute DOMString MIMEType</dt>
+        <dd>Describes the mime type of the attachment, e.g. "text/html" and extends the File interface (from W3C File reader 
+           (http://dev.w3.org/2006/webapi/FileAPI/#file)) by MIMEtype.
+        </dd>     
+          
+      </dl>  
+            
+    </section>      
+    
+    <section>
+      <h2>Interface <a>MessageSendCallback</a></h2>
+      <p>Interface for specifying the methods to be called for message send results for each recipient.</p> 
+      <p>This interface specifies a set of functions that will be invoked every time the result of the send 
+         operation to a recipient is obtained or when the message is successfully sent to all the recipients.</p>
+
+      
+      <dl title="callback interface MessageSendCallback"
+          class="idl">
+          
+        <dt> void onsuccess()</dt>
+        <dd>        
+          <p>Method invoked when the message is successfully sent to all the recipients.</p>
+        </dd>      
+        
+        <dt> void onmessagesendsuccess()</dt>
+        <dd>        
+          <p>Method invoked when the message is successfully sent to a recipient.</p>
+        
+          <dl class='parameters'>
+             <dt>DOMString recipient</dt>
+             <dd>
+               The recipient which the message has been sent to.
+             </dd>
+          </dl>          
+        </dd>             
+        
+        <dt> void onmessagesenderror()</dt>
+        <dd>        
+          <p>Method invoked when the message is unsuccessfully sent to a recipient.</p>
+        
+          <dl class='parameters'>
+             <dt>DOMError error</dt>
+             <dd>
+               The error code that identifies the reason of the failure.
+             </dd>
+             <dt>DOMString recipient</dt>
+             <dd>
+               The recipient which the message has been sent to.
+             </dd>             
+          </dl>
+          
+        </dd>         
+          
+      </dl>  
+            
+    </section>      
+    
+    <section>
+      <h2>Interface <a>PendingFindMessagesOperation</a></h2>
+      <p>The PendingFindMessagesOperation interface describes the object that is returned by the asynchronous find messages method. It makes 
+      it possible to abort this operation to a stop if it hasn't produced a result within a desired time or before a given event, thereby 
+      possibly reclaiming resources.</p> 
+      
+      <dl title="[NoInterfaceObject] interface PendingFindMessagesOperation" class="idl">
+          
+        <dt> void cancel()</dt>
+        <dd>        
+          <p>Cancels the pending find messages asynchronous operation. When this method is called, the user agent must immediately bring the 
+          operation to a stop and return. Allocated resources should be released and any ongoing related network operations should be 
+          terminated. An error callback is issued with the DOMError name "AbortError" is issued.</p>        
+        </dd>        
+          
+      </dl>  
+            
+    </section>            
+                
+    <section>
+      <h2>Interface <a>PendingSendMessageOperation</a></h2>
+      <p>The PendingSendMessageOperation interface describes the object that is returned by the asynchronous send messages method. It makes 
+      it possible to abort this operation to a stop if it hasn't produced a result within a desired time or before a given event, thereby 
+      possibly reclaiming resources.</p> 
+      
+      <dl title="[NoInterfaceObject] interface PendingSendMessageOperation" class="idl">
+          
+        <dt> void cancel()</dt>
+        <dd>        
+          <p>Cancels the pending send message method asynchronous operation if the message has not already been irrevokeably sent. When this 
+          method is called, and the message is not yet sent the user agent must immediately bring the operation to a stop and return. 
+          Allocated resources should be released and any ongoing related network operations should be terminated. An error callback is issued 
+          with the DOMError name "AbortError" is issued. If the message has already been sent out and is no longer under control of the 
+          calling process, the cancel function will be ignored and all neccessary 'housekeeping functions' required after the sending of a 
+          message will be performed as if the cancel had never been issued.</p>        
+        </dd>        
+          
+      </dl>  
+            
+    </section>  
+    
+    
+    <section>
+      <h2> Callbacks </h2>
+      
+        <section>
+          <h3> FindMessagesSuccessCallback </h3>
+          <p> Invoked if the find messages operation was successful. </p>         
+             
+          <dl id='cb-less-basic' class='idl' title='callback FindMessagesSuccessCallback = void'>
+            <dt>Message[] messages</dt>
+            <dd>An array of <a>Message</a> objects.</dd>
+          </dl>
+        </section>     
+        
+        <section>
+          <h3> OnIncomingMessage </h3>
+          <p> Invoked on incoming message. </p>         
+             
+          <dl id='cb-less-basic' class='idl' title='callback OnIncomingMessage = void'>
+            <dt>Message message</dt>
+            <dd>The <a>Message</a> received.</dd>
+          </dl>
+        </section>     
+        
+         <section>
+          <h3> UpdateMessageSuccessCallback </h3>
+          <p> Invoked if the message was successfully upadted. </p>         
+             
+          <dl id='cb-less-basic' class='idl' title='callback UpdateMessageSuccessCallback = void'>
+            <dt>Message message</dt>
+            <dd>The updated <a>Message</a>.</dd>
+          </dl>
+        </section>                        
+      
+        <section>
+          <h3> MessagingErrorCallback </h3>
+          <p> Function called when an error occurs. </p>         
+             
+          <dl id='cb-less-basic' class='idl' title='callback MessagingErrorCallback = void'>
+            <dt>DOMError error</dt>
+            <dd>Error code</dd>
+          </dl>
+        </section>  
+    
+    </section>
+    
+    <section>
+      <h2> Enums </h2>
+      <section>
+        <h3> MessageType</h3>
+      
+        <dl id='enum-basic' class='idl' title='enum MessageType'>
+          <dt>sms</dt>
+          <dd>sms message type</dd>
+          <dt>mms</dt>
+          <dd>mms message type</dd>
+          <dt>email</dt>
+          <dd>email message type</dd>
+          <dt>im</dt>
+          <dd>instant messaging message type</dd>
+        </dl>   
+      </section>   
+      
+      <section>
+        <h3> MessageFolder </h3>         
+        <dl id='enum-basic' class='idl' title='enum MessageFolder'>
+          <dt>inbox</dt>
+          <dd>inbox folder</dd>
+          <dt>outbox</dt>
+          <dd>outbox folder</dd>
+          <dt>drafts</dt>
+          <dd>drafts folder</dd>
+          <dt>sentbox</dt>
+          <dd>sent messages folder</dd>
+        </dl>        
+      </section>   
+            
+    </section>
+        
+    <section class='appendix'>
+      <h2>Acknowledgements</h2>
+      <p>
+        Many thanks to Robin Berjon for making our lives so much easier with his cool tool.
+      </p>
+    </section>
+  </body>
+</html>

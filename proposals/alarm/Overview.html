@@ -36,7 +36,7 @@
 <div class="head">
 	<h1>Web Alarms API Specification</h1>
 	
-	<h2 class="no-num no-toc" id="editor-draft-29-october-2012">Editor Draft &mdash; 29 October 2012</h2>
+	<h2 class="no-num no-toc" id="editor-draft-20-november-2012">Editor Draft &mdash; 20 November 2012</h2>
 	
 	<dl>
 		<dt>This version:
@@ -83,7 +83,7 @@
    <li><a href="#interface-alarmmanager"><span class="secno">4.2 </span>Interface <code title="">AlarmManager</code></a></li>
    <li><a href="#interface-alarm"><span class="secno">4.3 </span>Interface <code title="">Alarm</code></a></li>
    <li><a href="#interface-alarmrequest"><span class="secno">4.4 </span>Interface <code title="">AlarmRequest</code></a></li>
-   <li><a href="#interface-alarmevent"><span class="secno">4.5 </span>Interface <code title="">AlarmEvent</code></a></ol></li>
+   <li><a href="#interface-alarmevent"><span class="secno">4.5 </span>Interface <code title="AlarmEvent">AlarmEvent</code></a></ol></li>
  <li><a class="no-num" href="#references">References</a></li>
  <li><a class="no-num" href="#acknowledgments">Acknowledgements</a></ol>
 <!--end-toc-->
@@ -102,14 +102,14 @@
  request.onerror = function (e) { alert(e.target.error.name); };
 </pre>
 
-<p>How to add an <code>"honorTimezone"</code> alarm? 
+<p>How to add an <code>"respectTimezone"</code> alarm?
 <pre> var alarmId2;
- var request = navigator.alarms.add(new Date("June 29, 2012 07:30:00"), "honorTimezone", { mydata: "foo" });
+ var request = navigator.alarms.add(new Date("June 29, 2012 07:30:00"), "respectTimezone", { mydata: "foo" });
  request.onsuccess = function (e) { alarmId2 = e.target.result; };
  request.onerror = function (e) { alert(e.target.error.name); };
 </pre>
 
-<p>How to retrieve the information of added alarms? 
+<p>How to retrieve the information of added alarms?
 <pre> var request = navigator.alarms.getAll();
  request.onsuccess = function (e) { alert(JSON.stringify(e.target.result)); };
  request.onerror = function (e) { alert(e.target.error.name); };
@@ -121,8 +121,8 @@
  request.onerror = function (e) { alert(e.target.error.name); };
 </pre>
 
-<p>How to listen to the <code><a href="#alarm">"alarm"</a></code> event with a callback function which will run whem an alarm goes off? 
-<pre> navigator.alarms.addEventListener("alarm", function (message) { alert("alarm fired: " + JSON.stringify(message)); }, false);
+<p>How to listen to the <code title="AlarmEvent"><a href="#alarmevent">alarm</a></code> event with a callback function which will run whem an alarm goes off? 
+<pre> navigator.alarms.addEventListener("alarm", function (e) { alert("alarm fired: " + JSON.stringify(e)); }, false);
 </pre>
 </div>
 
@@ -141,7 +141,7 @@ uses that specification and terminology.
 interface represents a callback used for event handlers as defined in <a href="#refsHTML5">[HTML5]</a>.
 
 <p>The concepts <dfn id="queue-a-task"><a href="http://dev.w3.org/html5/spec/webappapis.html#queue-a-task">
-queue a task</a></dfn> and <dfn id="fire-a-simple-event"><a href="http://dev.w3.org/html5/spec/webappapis.html#fire-a-simple-event">
+queue a task</a></dfn>, <dfn id="event-handler-attributes"><a href="http://www.w3.org/TR/2011/WD-html5-20110525/webappapis.html#event-handler-attributes">event handler attributes</a></dfn> and <dfn id="fire-a-simple-event"><a href="http://dev.w3.org/html5/spec/webappapis.html#fire-a-simple-event">
 fire a simple event</a></dfn> are defined in <a href="#refsHTML5">[HTML5]</a>.
 
 <p>The terms <dfn id="event-handler"><a href="http://dev.w3.org/html5/spec/webappapis.html#event-handlers"> event handler</a></dfn>
@@ -149,6 +149,18 @@ and <dfn id="event-handler-event-types"><a href="http://dev.w3.org/html5/spec/we
 are defined in <a href="#refsHTML5">[HTML5]</a>.
 
 <h2 id="web-alarms-api"><span class="secno">4 </span>Web Alarms API</h2>
+
+The Alarm API supports the following features:
+<ul>
+<li>Web applications can add multiple alarms and get a returned ID for each of them.</li>
+<li>The returned ID is unique (within the application origin) and can be used to specify and remove the added alarm.</li>
+<li>Web applications can pass a customized JSON object data to describe more details about each alarm setting.</li>
+<li>Web applications can only access their own alarms.</li>
+<li>When the alarm goes off, an alarm event will be fired.</li>
+<li>All the alarms that have been added can be automatically restored after rebooting the system.</li>
+<li>Alarm API actually does more than setTimeout because it can actively <b>wake up</b> the system from sleeping.</li>
+<li>Whenever the system clock or timezone is adjusted at run-time, all the saved alarms will be rescheduled.</li>
+</ul>
 
 <h3 id="interface-navigator"><span class="secno">4.1 </span>Interface <code title="">Navigator</code></h3>
 <pre class="idl">partial interface Navigator {
@@ -159,25 +171,29 @@ are defined in <a href="#refsHTML5">[HTML5]</a>.
 
 <h3 id="interface-alarmmanager"><span class="secno">4.2 </span>Interface <code title="">AlarmManager</code></h3>
 
-The <a href="#alarmmanager"><code>AlarmManager</code></a> interface exposes methods to get, set or remove alarms. Alarms are application specific, so there is no way to see the alarms scheduled by other applications nor to modify them.
+The <a href="#alarmmanager"><code>AlarmManager</code></a> interface exposes methods to get, set or remove alarms. Alarms are application specific, so there is no way to see the alarms scheduled by other applications nor to modify them. This interface also notifies the application when an alarm goes off, using an event handler attribute <a href="#refsDOM3EVENTS">[DOM3EVENTS]</a>.
 
-<pre class="idl">enum <dfn id="timezonedirective">TimezoneDirective</dfn> { "honorTimezone", "ignoreTimezone" };
+<pre class="idl">enum <dfn id="timezonedirective">TimezoneDirective</dfn> { "respectTimezone", "ignoreTimezone" };
 
 [NoInterfaceObject]
 interface <dfn id="alarmmanager">AlarmManager</dfn> : <a class="external" href="http://dom.spec.whatwg.org/#eventtarget">EventTarget</a> {
   <a href="#alarmrequest">AlarmRequest</a> <a href="#alarmmanager-getall" title="AlarmManager-getAll">getAll</a>();
   <a href="#alarmrequest">AlarmRequest</a> <a href="#alarmmanager-add" title="AlarmManager-add">add</a>(Date <var title="">date</var>, <a href="#timezonedirective">TimezoneDirective</a> <var title="">respectTimezone</var>, optional Object <var title="">data</var>);
   <a href="#alarmrequest">AlarmRequest</a> <a href="#alarmmanager-remove" title="AlarmManager-remove">remove</a>(DOMString <var title="">alarmId</var>);
+
+  [TreatNonCallableAsNull]
+  attribute Function? <a href="#alarmmanager-onalarm" title="AlarmManager-onalarm">onalarm</a>;
 };</pre>
 
 <p>The <dfn id="alarmmanager-getall" title="AlarmManager-getAll"><code>getAll()</code></dfn> method is used to to retrieve all the alarms added to the device as an array of <a href="#alarm">Alarm</a> objects.
-<p>The <dfn id="alarmmanager-add" title="AlarmManager-add"><code>add(<var>alarm</var>, <var>respectTimezone</var>[, <var>data</var>])</code></dfn> method is used to register a an alarm.
+<p>The <dfn id="alarmmanager-add" title="AlarmManager-add"><code>add(<var>date</var>, <var>respectTimezone</var>[, <var>data</var>])</code></dfn> method is used to register an alarm.
 <ol>
-<li>The first argument <code>date</code> can be passed by a <code>Date</code> object.</li>
-<li>The second argument <code>respectTimezone</code> can be passed by either <code>"honorTimezone"</code> or <code>"ignoreTimezone"</code> to specify if we need to ignore the timezone information of that <code>Date</code> object. When <code>"honorTimezone"</code> is passed, we will alert that application when that time happens in that timezone. I.e. if someone passes a <code>Date</code> object which has the timezone set to US Pacific Time and time set to 7am, we will alert the application when the time is 7am in the US Pacific timezone, even if the user is in New York and thus in US Eastern Time and it's 10am for the user. When <code>"ignoreTimezone"</code> is passed, we will ignore the timezone part of the passed in <code>Date</code> object. I.e. if someone passes a Date object which has the timezone set to US Pacific Time and time set to 7am, we will alert the application when the time is 7am in whatever timezone the user happens to be in. So if the user is in New York, we will alert the user when it's 7am in that timezone.</li>
-<li>The third argument <code>data</code> can be optionally specified to pass the customized JSON object data for that alarm. Note that an unique ID will be returned to refer to the added alarm.</li>
+<li>The first argument <code>date</code> can is a <code>Date</code> object indicating when the alarm should trigger.</li>
+<li>The second argument <code>respectTimezone</code> can be either <code>"respectTimezone"</code> or <code>"ignoreTimezone"</code> to specify if we need to ignore the timezone information of that <code>Date</code> object. When <code>"respectTimezone"</code> is passed, we will alert that application when that time happens in that timezone. I.e. if someone passes a <code>Date</code> object which has the timezone set to Pacific Standard Time (PST) and time set to 7am, we will alert the application when the time is 7am in the Pacific Standard Time, even if the user is in New York and currently in Eastern Standard Time (EST) and it's 10am for the user. When <code>"ignoreTimezone"</code> is passed, we will ignore the timezone part of the passed in <code>Date</code> object. I.e. if someone passes a Date object which has the timezone set to Pacific Standard Time and time set to 7am, we will alert the application when the time is 7am in whatever timezone the user happens to be in. So if the user is in New York, we will alert the user when it's 7am in that timezone.</li>
+<li>The third argument <code>data</code> can be optionally specified to pass the customized JSON object data for that alarm. Note that a unique ID will be returned to refer to the added alarm.</li>
 </ol>
 <p>The <dfn id="alarmmanager-remove" title="AlarmManager-remove"><code>remove(<var>alarmId</var>)</code></dfn> method is used to remove an alarm that has been added in the device with a unique ID.
+<p>The <dfn id="alarmmanager-onalarm" title="AlarmManager-onalarm"><code>onalarm</code></dfn> attribute is the event handler of type <code>Function</code> for the <code><a href="#alarm">alarm</a></code> event. This event uses the <a href="#alarmevent"><code>AlarmEvent</code></a> interface is fired when an alarm goes off.
 
 <h3 id="interface-alarm"><span class="secno">4.3 </span>Interface <code title="">Alarm</code></h3>
 <p>The <a href="#alarm"><code>Alarm</code></a> interface captures the properties of a registered alarm.
@@ -199,6 +215,10 @@ interface <dfn id="alarmmanager">AlarmManager</dfn> : <a class="external" href="
 <p>The <dfn id="alarm-data" title="Alarm-data"><code>data</code></dfn> attribute optionally defines the customized JSON object data pass to the alarm.
 
 <h3 id="interface-alarmrequest"><span class="secno">4.4 </span>Interface <code title="">AlarmRequest</code></h3>
+<p>An <code><a href="#alarmrequest">AlarmRequest</a></code> object represents an ongoing operation; it notifies the application when the operation completes using event handler attributes <a href="#refsDOM3EVENTS">[DOM3EVENTS]</a>, as well as a reference to the operation's result. A DOM method that initiates an ongoing operation may return a <code><a href="#alarmrequest">AlarmRequest</a></code> object that you can use to monitor the progress of that operation. 
+
+<p>This interface is identical to the <code>DOMRequest</code> interface <a href="#refsDOMREQUEST">[DOMREQUEST]</a>.
+
 <pre class="idl">interface <dfn id="alarmrequest">AlarmRequest</dfn> : <a class="external" href="http://dom.spec.whatwg.org/#eventtarget">EventTarget</a>
   readonly attribute DOMString <a href="#alarmrequest-readystate" title="AlarmRequest-readyState">readyState</a>;
 
@@ -219,28 +239,37 @@ interface <dfn id="alarmmanager">AlarmManager</dfn> : <a class="external" href="
 
 <p>The <dfn id="alarmrequest-error" title="AlarmRequest-error"><code>error</code></dfn> attribute must return the error that occurred for this <a href="#alarmrequest"><code>AlarmRequest</code></a> (if any). This attribute is populated when the <code>error</code> event is fired.
 
-<p>The <dfn id="alarmrequest-onsuccess" title="AlarmRequest-onsuccess"><code>onsuccess</code></dfn> is the callback function called when this <a href="#alarmrequest"><code>AlarmRequest</code></a> completes successfuly.
+<p>The <dfn id="alarmrequest-onsuccess" title="AlarmRequest-onsuccess"><code>onsuccess</code></dfn> attribute is the event handler of type <code>Function</code> for the <code>success</code> event.
 
-<p>The <dfn id="alarmrequest-onerror" title="AlarmRequest-onerror"><code>onerror</code></dfn> is the callback function called when an error occurred during the execution of this <a href="#alarmrequest"><code>AlarmRequest</code></a>.
+<p>The <dfn id="alarmrequest-onerror" title="AlarmRequest-onerror"><code>onerror</code></dfn> attribute is the event handler of type <code>Function</code> for the <code>error</code> event.
 
-<h3 id="interface-alarmevent"><span class="secno">4.5 </span>Interface <code title="">AlarmEvent</code></h3>
-<p>The <code title="">alarm</code> event is fired when an alarm goes off.
+<h3 id="interface-alarmevent"><span class="secno">4.5 </span>Interface <code title="AlarmEvent"><a href="#alarmevent">AlarmEvent</a></code></h3>
+<p>The <code title="AlarmEvent"><a href="#alarmevent">alarm</a></code> event is fired when an alarm goes off.
 
-<p>When this happens, the user agent must queue a task to fire an event with the name <code title="">alarm</code>, which does not bubble and is not cancelable, and which uses the <a href="#alarmevent"><code>AlarmEvent</code></a> interface, at each <a href="#alarmmanager"><code>AlarmManager</code></a> object that is affected.
+<p>When this happens, the user agent must queue a task to fire an event with the name <code title="AlarmEvent"><a href="#alarmevent">alarm</a></code>, which does not bubble and is not cancelable, and which uses the <a href="#alarmevent"><code>AlarmEvent</code></a> interface, at each <a href="#alarmmanager"><code>AlarmManager</code></a> object that is affected.
 
 <pre class="idl">[Constructor(DOMString <var title="">type</var>, optional <a href="#alarmeventinit">AlarmEventInit</a> <var title="">eventInitDict</var>)]
 interface <dfn id="alarmevent">AlarmEvent</dfn> : <a class="external" href="http://dom.spec.whatwg.org/#event">Event</a> {
-  readonly attribute <a href="#alarm">Alarm</a> <span title="AlarmEvent-alarm">alarm</span>;
+  readonly attribute <a href="#alarm">Alarm</a> <a href="#alarmevent-alarm" title="AlarmEvent-alarm">alarm</a>;
 };
 
 dictionary <dfn id="alarmeventinit">AlarmEventInit</dfn> : <a class="external" href="http://dom.spec.whatwg.org/#eventinit">EventInit</a> {
   <a href="#alarm">Alarm</a> alarm;
 };</pre>
 
-<p>The <dfn id="alarmevent-added" title="AlarmEvent-added"><code>alarm</code></dfn> attribute must return the alarm that is going off.
+<p>The <dfn id="alarmevent-alarm" title="AlarmEvent-alarm"><code>alarm</code></dfn> attribute must return the alarm that is going off.
 
 <h2 class="no-num" id="references">References</h2>
-<div id="anolis-references"><dl><dt id="refsHTML5">[HTML5]
+<div id="anolis-references"><dl><dt id="refsB2G-ALARM">[B2G-ALARM]
+<dd><cite><a href="https://wiki.mozilla.org/WebAPI/AlarmAPI">B2G Alarm API Specification</a></cite>, Mounir Lamouri, Kan-Ru Chen and Jonas Sicking. Mozilla.
+
+<dt id="refsDOM3EVENTS">[DOM3EVENTS]
+<dd><cite><a href="http://dev.w3.org/2006/webapi/DOM-Level-3-Events/html/DOM3-Events.html">Document Object Model (DOM) Level 3 Events Specification</a></cite>, Travis Leithead. W3C.
+
+<dt id="refsDOMREQUEST">[DOMREQUEST]
+<dd><cite><a href="https://developer.mozilla.org/en-US/docs/DOM/DOMRequest">DOMRequest Reference</a></cite>. Mozilla.
+
+<dt id="refsHTML5">[HTML5]
 <dd><cite><a href="http://dev.w3.org/html5/spec/">HTML5</a></cite>, Ian Hickson. W3C.
 
 <dt id="refsWEBIDL">[WEBIDL]
@@ -250,5 +279,5 @@ dictionary <dfn id="alarmeventinit">AlarmEventInit</dfn> : <a class="external" h
 
 <h2 class="no-num" id="acknowledgments">Acknowledgements</h2>
 
-<p>We would like to thank Kan-Ru Chen, Mounir Lamouri, Gene Lian and Jonas Sicking for their work on the API design, as well as the WebAPI/B2G teams at Mozilla.
+<p>We would like to thank Kan-Ru Chen, Mounir Lamouri, Gene Lian and Jonas Sicking for their work on the API design, as well as the WebAPI/B2G teams at Mozilla <a href="#refsB2G-ALARM">[B2G-ALARM]</a>.
 

@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Messaging API</title>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+    <script src='https://www.w3.org/Tools/respec/respec-w3c-common' class='remove'></script>
+    <script class="remove">
+      var respecConfig = {
+          specStatus:           "ED",
+          shortName:            "messaging-api",
+          publishDate:          "",
+          previousPublishDate:  "",
+          previousMaturity:     "",
+          edDraftURI:           "http://www.w3.org/2012/sysapps/",
+          // lcEnd:                "",
+          crEnd:                "",
+          editors:  [
+              { name: "Eduardo Fullea", company: "Telefonica", companyURL: "http://www.tid.es/" },
+              { name: "Jose M. Cantera", company: "Telefonica", companyURL: "http://www.tid.es/" },
+              { name: "Mounir Lamouri", company: "Mozilla", companyURL: "http://mozilla.org/" }
+         ],
+          inlineCSS:    true,
+          noIDLIn:      true,
+          extraCSS:     ["../ReSpec.js/css/respec.css"],
+          wg:           "System Applications Working Group",
+          wgURI:        "http://",
+          wgPublicList: "public-sysapps",
+          wgPatentURI:  "http://www.w3.org/2004/01/pp-impl/43696/status",
+      };
+    </script>
+  </head>
+  <body>
+    <section id="abstract">
+      This specification defines a System Level API which offers a simple interface to manage mobile messaging services.
+      A typical use case of the Messaging API is the implementation of a messaging client application that allows the user
+      send SMS and MMS messages as well as to access and manage the received SMS and MMS messages.
+    </section>
+    
+    <section id="sotd">
+    </section>
+    
+    <section class="informative">
+      <h2>Introduction</h2>
+      <p>
+        The Messaging API allows applications to provide the functionality of a usual mobile messaging client, i.e. send, receive,
+        mark SMS or MMS message as read, etc.
+      
+      <p>
+        An example of use is provided below:
+      
+      <pre class="example highlight">
+            var sms_content = new SmsContent();
+            sms_content.text = 'Enjoy the show!';
+            var sms_recipients = ['+34638883076'] ;
+            var sms_send_request = navigator.messaging.send(sms_recipients, sms_content));
+            sms_send_request.onsuccess = function() { 
+                        window.console.log('Message Sent!'); 
+            }
+            sms_send_request.onerror = function(e) {
+                    window.console.error(e);
+            }
+
+      </pre>
+    </section>
+    
+    <section id="conformance">
+      <p>This specification defines conformance criteria that apply to a single product: the <dfn>user agent</dfn> that
+      implements the interfaces that it contains.
+      
+      <p>Implementations that use ECMAScript to implement the APIs defined in this specification MUST implement them in
+      a manner consistent with the ECMAScript Bindings defined in the Web IDL specification [[!WEBIDL]], as this
+      specification uses that specification and terminology.
+      
+    </section>
+    
+    <section>
+      <h2>Terminology</h2>
+      <p>The <code><a href="http://dev.w3.org/html5/spec/webappapis.html#eventhandler"> EventHandler</a></code>
+      interface represents a callback used for event handlers as defined in [[!HTML5]].
+      
+      <p>The concepts <dfn><a href="http://dev.w3.org/html5/spec/webappapis.html#queue-a-task"> queue a task</a></dfn>
+      and <dfn><a href="http://dev.w3.org/html5/spec/webappapis.html#fire-a-simple-event"> fire a simple event</a></dfn>
+      are defined in [[!HTML5]].
+      
+      <p>The terms <dfn><a href="http://dev.w3.org/html5/spec/webappapis.html#event-handlers"> event handler</a></dfn>
+      and <dfn><a href="http://dev.w3.org/html5/spec/webappapis.html#event-handler-event-type"> event handler event
+      types</a></dfn> are defined in [[!HTML5]].
+      
+    </section>
+
+    <section>
+      <h2>Security and privacy considerations</h2>
+      <p>This API must be only exposed to trusted content
+      
+    </section>
+
+    <section>
+      <h2><a>Navigator</a> Interface</h2>
+        <dl title="partial interface Navigator" class="idl">
+          <dt>readonly attribute MobileMessagingManager messaging</dt>
+          <dd>
+          The object that exposes the mobile messaging functionality.
+          </dd>
+      </dl>
+    </section>
+    
+    <section>
+      <h2><a>MobileMessagingManager</a> Interface</h2>
+      <p>The <a>MobileMessagingManager</a> interface represents the initial entry point for getting access to mobile
+      messaging services, i.e. SMS and MMS.
+      
+      <dl title="[NoInterfaceObject]
+                 interface MobileMessagingManager : EventTarget"
+          class="idl">
+
+        <dt> unsigned short numberOfSmsSegments ()</dt>
+        <dd>This method returns the number of concatenated SMS segments needed to send a given text.
+          <dl class='parameters'>
+             <dt>DOMString text</dt>
+             <dd>
+               Text intended to be sent as an SMS, whose number of required concatenated SMS segments is checked by
+               this method
+             </dd>
+         </dl>
+        </dd>
+        
+        <dt> MessagingRequest[] send ()</dt>
+        <dd>This method allows to instantiate an array of new <code>MessagingRequest</code> objects intended to send an SMS
+        message with the text of the <code>text</code> attribute of the <code>content</code> parameter to each of the
+        destination numbers indicated in the <code>to</code> array parameter.
+          <dl class='parameters'>
+             <dt>DOMString[] to</dt>
+             <dd>
+               Array including the destination numbers for the SMS message 
+             </dd>
+             <dt>SmsContent content</dt>
+             <dd>
+               Content of the SMS message to be sent
+             </dd>
+         </dl>
+        </dd>
+
+        <dt> MessagingRequest send ()</dt>
+        <dd>This method allows to instantiate a new <code>MessagingRequest</code> object intended to send an MMS message with
+        the content included in the <code>content</code> parameter to the destination numbers indicated by the <code>to</code>
+        parameter.
+        <dl class='parameters'>
+             <dt>DOMString[] to</dt>
+             <dd>
+               Destination numbers for the MMS message 
+             </dd>
+             <dt>MmsContent content</dt>
+             <dd>
+               Content of the MMS message to be sent
+             </dd>
+         </dl>
+        </dd>
+
+        <dt> MessagingRequest getMessage ()</dt>
+        <dd>This method allows to instantiate a new <code>MessagingRequest</code> object intended to retrieve the SMS or MMS
+        message with identifier equal to the indicated in the <code>id</code> parameter.
+          <dl class='parameters'>
+             <dt>long id</dt>
+             <dd>
+               Unique identifier of the SMS or MMS message that is requested to be retrieved
+             </dd>
+         </dl>
+        </dd>
+
+        <dt> MessagingRequest getMessages ()</dt>
+        <dd>This method allows to instantiate a new <code>MessagingRequest</code> object intended to retrieve the set of
+        messages matching the filter described by the <code>filter</code> parameter and sorted according to the
+        <code>reverse</code> parameter.
+          <dl class='parameters'>
+             <dt>MessagingFilter filter</dt>
+             <dd>
+               Filter that identifies the set of messages that are requested to be retrieved
+             </dd>
+             <dt>boolean reverse</dt>
+             <dd>
+              Indicates whether the set of retrieved messages are to be sorted with the older message first (if 'false')
+              or last if (if 'true')
+             </dd>
+         </dl>
+        </dd>
+
+        <dt> MessagingRequest delete ()</dt>
+        <dd>This method allows to instantiate a new <code>MessagingRequest</code> object intended to delete the SMS or MMS
+        messages with identifiers equal to the indicated in the <code>id</code> array parameter.
+          <dl class='parameters'>
+             <dt>long[] id</dt>
+             <dd>
+               Array including unique identifiers of the messages that are requested to be deleted
+             </dd>
+         </dl>
+        </dd>
+
+        <dt> MessagingRequest markAsRead ()</dt>
+        <dd>This method allows to instantiate a new <code>MessagingRequest</code> object intended to mark as read or unread
+        the SMS or MMS message with identifiers equal to the indicated in the <code>id</code> array parameter.
+          <dl class='parameters'>
+             <dt>long[] id</dt>
+             <dd>
+               Array including unique identifiers of the messages that are requested to be marked as read or unread
+             </dd>
+             <dt>boolean value</dt>
+             <dd>
+              Indicates whether the SMS or MMS messages are to be marked as read (if 'true') or unread (if 'false')
+             </dd>
+         </dl>        
+        </dd>
+
+        <dt class="no-docs">
+          attribute EventHandler onreceived
+        </dt>
+        <dd></dd>
+
+        <dt class="no-docs">
+          attribute EventHandler onsent
+        </dt>
+        <dd></dd>
+
+        <dt class="no-docs">
+          attribute EventHandler ondeliverysuccess
+        </dt>
+        <dd></dd>
+ 
+        <dt class="no-docs">
+          attribute EventHandler ondeliveryfailure
+        </dt>
+        <dd></dd>
+      </dl>
+ 
+      <p> The <dfn><code>send</code></dfn> method when invoked with a <code>content</code> argument of type <a>SmsContent</a>
+      MUST run the following steps:
+        <ol>
+         <li>For each of the intended recipients in the <code>to</code> parameter: create a new instance of
+         <code>SmsMessage</code> and a new instance of <code>MessagingRequest</code> and:
+         <ol>
+          <li>generate a unique identifier for this message
+          <li>set the <code>id</code> of the <code>SmsMessage</code> to the generated identifier
+          <li>set the <code>delivery</code> of the <code>SmsMessage</code> to 'sent'
+          <li>set the <code>sender</code> of the <code>SmsMessage</code> to the number of the mobile subscription used to
+          send this SMS message
+          <li>set the <code>recipient</code> of the <code>SmsMessage</code> to the value of the corresponding recipient
+          from the <code>to</code> parameter
+          <li>set the <code>content</code> of the <code>SmsMessage</code> to the value of the <code>content</code>
+          parameter
+          <li>set the <code>read</code> of the <code>SmsMessage</code> to 'true'
+          <li>Make a request to the system to send an SMS message with text passed in the <code>message</code>
+         parameter to the number(s) of the corresponding recipient indicated in the <code>to</code> parameter.
+          <li>set <code>readyState</code> of the <code>MessagingRequest</code> object to 'processing'  
+          <li>return the <code>MessagingRequest</code> to the caller and <a>queue a task</a> to monitor SMS sending progress
+         </ol>  
+         <li>If there is an error invoke the <code>onerror</code> <a>event handler</a> of the <code>MessagingRequest</code>
+         object
+         <li>When each of the requests has been completed:
+         <ol>
+          <li>set the <code>timestamp</code> of the corresponding <code>SmsMessage</code> to the timestamp when the SMS message was
+          actually sent
+          <li>set the <code>readyState</code> of the <code>MessagingRequest</code> object to 'done'
+          <li>set the <code>result</code> of the <code>MessagingRequest</code> object to the corresponding
+          <code>SmsMessage</code> that has been sent
+          <li>invoke the <code>onsuccess</code> <a>event handler</a> of the <code>MessagingRequest</code>
+         </ol>
+        </ol>
+        
+      <p> The <dfn><code>send</code></dfn> method when invoked with a <code>content</code> argument of type <a>MmsContent</a>
+      MUST run the following steps:
+        <ol>
+         <li>Create a new instance of <code>MmsMessage</code> and a new instance of <code>MessagingRequest</code> and:
+         <ol>
+          <li>generate a unique identifier for this message
+          <li>set the <code>id</code> of the <code>MmsMessage</code> to the generated identifier
+          <li>set the <code>delivery</code> of the <code>MmsMessage</code> to 'sent'
+          <li>set the <code>sender</code> of the <code>MmsMessage</code> to the number of the mobile subscription used to
+          send this MMS message
+          <li>add a new element in the <code>recipients</code> array of the <code>MmsMessage</code> for each of the
+          addresses included in the <code>to</code> parameter
+          <li>set the <code>content</code> of the <code>MmsMessage</code> to the value of the <code>content</code>
+          parameter
+          <li>set the <code>read</code> of the <code>MmsMessage</code> to 'true'
+          <li>Make a request to the system to send an MMS message with the content passed in the <code>content</code>
+         parameter to the number(s) of indicated in the <code>to</code> parameter.
+          <li>set <code>readyState</code> of the <code>MessagingRequest</code> object to 'processing'  
+          <li>return the <code>MessagingRequest</code> to the caller and <a>queue a task</a> to monitor MMS sending progress
+         </ol>  
+         <li>If there is an error invoke the <code>onerror</code> <a>event handler</a> of the <code>MessagingRequest</code>
+         object
+         <li>When the requests has been completed:
+         <ol>
+          <li>set the <code>timestamp</code> of the <code>MmsMessage</code> to the timestamp when the MMS message was
+          actually sent
+          <li>set the <code>readyState</code> of the <code>MessagingRequest</code> object to 'done'
+          <li>set the <code>result</code> of the <code>MessagingRequest</code> object to the corresponding
+          <code>MmsMessage</code> that has been sent
+          <li>invoke the <code>onsuccess</code> <a>event handler</a> of the <code>MessagingRequest</code>
+         </ol>
+        </ol>
+        
+      <p> The <dfn><code>getMessage</code></dfn> method when invoked MUST run the following steps:
+        <ol>
+         <li>Make a request to the system to get the SMS or MMS message with identifier equal to the <code>id</code>
+         parameter passed in the request.
+         <li>Create a new <code>MessagingRequest</code> object and set <code>readyState</code> of the
+         <code>MessagingRequest</code> object to 'processing' and return the <code>MessagingRequest</code> to the caller 
+         <li>If there is an error invoke the <code>onerror</code> <a>event handler</a> of the <code>MessagingRequest</code>
+         object
+         <li>When the request has been completed:
+         <ol>
+          <li>set the <code>readyState</code> of the <code>MessagingRequest</code> object to 'done'
+          <li>set the <code>result</code> of the <code>MessagingRequest</code> object to the <code>SmsMessage</code> or
+          <code>MmsMessage</code> whose identifier matches the <code>id</code> parameter
+          <li>invoke the <code>onsuccess</code> <a>event handler</a> of the <code>MessagingRequest</code>
+        </ol>
+       </ol>
+ 
+      <p> The <dfn><code>getMessages</code></dfn> method when invoked MUST run the following steps:
+        <ol>
+         <li>Make a request to the system to get the SMS and/or MMS message(s) matching the resulting filter and to sort
+         them on timestamp with the older message first if the <code>reverse</code> parameter is 'false' or last if
+         it is 'true'.
+         <li>Create a new <code>MessagingRequest</code> object and set <code>readyState</code> of the
+         <code>MessagingRequest</code> object to 'processing' and return the <code>MessagingRequest</code> to the caller
+         <li>If there is an error invoke the <code>onerror</code> <a>event handler</a> of the <code>MessagingRequest</code>
+         object
+         <li>When the request has been completed:
+         <ol>
+          <li>set the <code>readyState</code> of the <code>MessagingRequest</code> object to 'done'
+          <li>set the <code>result</code> of the <code>MessagingRequest</code> object to an <code>MessagingCursor</code>
+              providing access to the results of the retrieval
+          <li>invoke the <code>onsuccess</code> <a>event handler</a> of the <code>MessagingRequest</code>
+        </ol>
+       </ol>
+         
+      <p>When the task in charge of monitoring the SMS or MMS sending progress is notified of message being successfully
+      sent it MUST <a>queue a task</a> to <a>fire a simple event</a> named <code>sent</code> with the
+      <code>message</code> attribute set to the sent <code>SmsMessage</code> or <code>MmsMessage</code>.
+      
+      <p> The <dfn><code>delete</code></dfn> method when invoked MUST run the following steps:
+        <ol>
+         <li>Make a request to the system to delete the set of messages with identifiers equal to the identifiers
+         included in the <code>id</code> parameter passed in the request
+         <li>Create a new <code>MessagingRequest</code> object and set <code>readyState</code> of the
+         <code>MessagingRequest</code> object to 'processing' and return the <code>MessagingRequest</code> to the caller
+ 
+         <li>If there is an error invoke the <code>onerror</code> <a>event handler</a> of the <code>MessagingRequest</code>
+         object
+         <li>When the request has been completed:
+         <ol>
+          <li>set the <code>readyState</code> of the <code>MessagingRequest</code> object to 'done'
+          <li>set the <code>result</code> of the <code>MessagingRequest</code> object to 'true'
+          <li>invoke the <code>onsuccess</code> <a>event handler</a> of the <code>MessagingRequest</code>
+        </ol>
+       </ol>
+
+      <p> The <dfn><code>markAsRead</code></dfn> method when invoked MUST run the following steps:
+        <ol>
+         <li>Make a request to the system to mark as read/unread (depending on the <code>value</code> parameter being
+         respectively 'true' or 'false') the set of messages with identifiers equal to the identifiers
+         included in the <code>id</code> parameter passed in the request.
+         <li>Create a new <code>MessagingRequest</code> object and set <code>readyState</code> of the
+         <code>MessagingRequest</code> object to 'processing' and return the <code>MessagingRequest</code> to the caller 
+         <li>If there is an error invoke the <code>onerror</code> <a>event handler</a> of the <code>MessagingRequest</code>
+         object
+         <li>When the request has been completed:
+         <ol>
+          <li>set the <code>readyState</code> of the <code>MessagingRequest</code> object to 'done'
+          <li>set the <code>result</code> of the <code>MessagingRequest</code> object to 'true'
+          <li>invoke the <code>onsuccess</code> <a>event handler</a> of the <code>MessagingRequest</code>
+        </ol>
+       </ol>
+
+      <p> The <dfn><code>numberOfSmsSegments</code></dfn> method when invoked MUST return the number of
+      concatenated SMS segments needed to send the text passed in the <code>text</code> parameter, taking into account
+      the encoding to be used to send such message as well as the overhead associated to concatenated SMS messages.
+      Note that the application SHOULD NOT split the text in a set of strings that fit each into a single SMS
+      segment as it would result in different independent SMS messages being sent, but SHOULD instead send the full message
+      in a single <code>send</code> request. However having information on the number of SMS segments
+      may be required by the application in order to inform the user (e.g. in case the length of the text impacts on the price
+      charged for sending the message).
+      
+      <p>Upon a new SMS message being received, the <a>user agent</a> MUST:
+        <ol>
+          <li>create a new instance of <code>SmsMessage</code>
+          <li>generate a unique identifier for this message
+          <li>set the <code>id</code> of the <code>SmsMessage</code> to the generated identifier
+          <li>set the <code>delivery</code> of the <code>SmsMessage</code> to 'received'
+          <li>set the <code>sender</code> of the <code>SmsMessage</code> to the sender of the SMS message
+          <li>set the <code>recipient</code> of the <code>SmsMessage</code> to the recipient of the SMS message
+          <li>set the <code>timestamp</code> of the <code>SmsMessage</code> to  the timestamp of the SMS message
+          <li>set the <code>read</code> of the <code>SmsMessage</code> to 'false'
+          <li>fill the <code>content</code> element of the <code>SmsMessage</code> as follows:
+          <ol>
+            <li>set the <code>text</code> element to the text of the received SMS message
+          </ol> 
+          <li><a>queue a task</a> to <a>fire an event</a> named <code><a>received</a></code> with the
+          <code>message</code> attribute set to the newly created <code>SmsMessage</code> instance.
+        </ol>
+      
+      <p>Upon a new MMS message being received, the <a>user agent</a> MUST:
+        <ol>
+          <li>create a new instance of <code>MmsMessage</code>
+          <li>generate a unique identifier for this message
+          <li>set the <code>id</code> of the <code>MmsMessage</code> to the generated identifier
+          <li>set the <code>delivery</code> of the <code>MmsMessage</code> to 'received'
+          <li>set the <code>sender</code> of the <code>MmsMessage</code> to the sender of the MMS message
+          <li>add a new element in the <code>recipients</code> array of the <code>MmsMessage</code> for each of recipients
+          of the MMS message (in any of the To, Cc or Bcc fields)
+          <li>set the <code>timestamp</code> of the <code>MmsMessage</code> to  the timestamp of the MMS message
+          <li>set the <code>read</code> of the <code>MmsMessage</code> to 'false'
+          <li>fill the <code>content</code> element of the <code>MmsMessage</code> as follows:
+          <ol>
+            <li>set the <code>subject</code> element to the subject of the received MMS message, if present
+            <li>create a new <code>Document</code> object containing the SMIL object of the received MMS message,
+            <li>set the <code>smil</code> element to the <code>Document</code> object generated in the previous step
+            <li>create a new instance of <code>Blob</code> object for each of the media files attached to the received MMS message,
+            including the media type and the actual content of the attachement.
+            <li>create a new instance of <code>MmsAttachments</code> and add the previous set of <code>Blob</code> objects to it.
+            <li>set the <code>attachments</code> element of the <code>MmsMessage</code> to the previously generated
+            <code>MmsAttachments</code> object.
+          </ol>
+          <li><a>queue a task</a> to <a>fire an event</a> named <code><a>received</a></code> with the
+          <code>message</code> attribute set to the newly created <code>MmsMessage</code> instance.
+        </ol>
+      
+      <p>Upon a delivery report of a previously sent message being received, the <a>user agent</a> MUST
+      <a>queue a task</a> to <a>fire a simple event</a> named <a>deliverysuccess</a> or <a>deliveryfailure</a> respectively
+      if the delivery was successfull or not,  with the <code>id</code> attribute set to the identifier of the
+      <code>SmsMessage</code> or <code>MmsMessage</code> to which this confirmation is related, and the <code>recipients</code>
+      attribute set to the subset of the original recipients of the message to which the delivery report is related.
+      
+      <section>
+        <h2>Event handlers</h2>
+        <p>The following are the <a>event handlers</a> (and their corresponding <a>event handler event types</a>) that
+        MUST be supported as attributes by the <a>MobileMessagingManager</a> object.
+        
+        <table class="simple">
+          <thead>
+            <tr>
+              <th>event handler</th>
+              <th>event handler event type</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong><code>onreceived</code></strong></td>
+              <td><code><dfn>received</dfn></code></td>
+            </tr>
+            <tr>
+              <td><strong><code>onsent</code></strong></td>
+              <td><code><dfn>sent</dfn></code></td>
+            </tr>
+            <tr>
+              <td><strong><code>ondeliverysuccess</code></strong></td>
+              <td><code><dfn>deliverysuccess</dfn></code></td>
+            </tr>
+            <tr>
+              <td><strong><code>ondeliveryfailure</code></strong></td>
+              <td><code><dfn>deliveryfailure</dfn></code></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <p>The <code>received</code> and <code>sent</code> <a>events</a> SHALL implement the <a>MessagingEvent</a> interface
+        whereas the <code>deliverysuccess</code> and <code>deliveryfailure</code> <a>events</a> SHALL implement the
+        <a>MessagingDeliveryReportEvent</a> interface.
+
+      </section>
+    </section>
+
+    <section>
+      <h2><a>MessagingRequest</a> Interface</h2>
+      <p>The <a>MessagingRequest</a> interface represents an ongoing operation. It provides callbacks that are called when
+      the operation completes, as well as a reference to the operation's result. A method that initiates an operation 
+      (e.g. delete message via the <code>delete</code> method in the <code>MobileMessagingManager</code> interface) MUST return a
+      MessagingRequest object that can be used to monitor the progress of that operation.
+      <dl title="[NoInterfaceObject]
+                 interface MessagingRequest"
+          class="idl">
+        <dt>readonly attribute DOMString readyState</dt>
+        <dd>Indicates the state of the request, with possible string values 'processing',if the request has been made and it
+        is progressing, or 'done', if the request has been already completed.</dd>
+
+        <dt>readonly attribute DOMError? error</dt>
+        <dd>An error that occured during the request. Errors are as defined in [[!DOM4]].</dd>
+
+        <dt>readonly attribute any? result</dt>
+        <dd>Indicates the result of the request. The type depends on the sort of request, and is specified in the
+        description of each method that returns a <code>MessagingRequest</code> object, e.g. <code>delete</code> method of the
+        <code>MobileMessagingManager</code> object.</dd>
+
+        <dt class="no-docs">
+          attribute EventHandler onsuccess
+        </dt>
+        <dd></dd>
+
+        <dt class="no-docs">
+          attribute EventHandler onerror
+        </dt>
+        <dd></dd>
+      </dl>
+
+      <section>
+        <h2>Event handlers</h2>
+        <p>
+          The following are the <a>event handlers</a> (and their corresponding <a>event handler event types</a>) that
+          MUST be supported as attributes by the <a>MessagingRequest</a> object:
+        <table class="simple">
+          <thead>
+            <tr>
+              <th>event handler</th>
+              <th>event handler event type</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong><code>onsuccess</code></strong></td>
+              <td><code><dfn>success</dfn></code></td>
+            </tr>
+            <tr>
+              <td><strong><code>onerror</code></strong></td>
+              <td><code><dfn>error</dfn></code></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+    </section>
+
+    <section>
+      <h2><a>MobileMessage</a> Interface</h2>
+      <p>The <a>MobileMessage</a> interface is a generic interface from which the <a>SmsMessage</a> and the <a>MmsMessage</a>
+      inherit and that includes the common attributes to both types of message.
+      <dl title="[NoInterfaceObject]
+                 interface MobileMessage"
+          class="idl">
+        <dt>readonly attribute long id</dt>
+        <dd>An identifier of the message that is unique in the frame of the user agent.</dd>
+
+        <dt>readonly attribute DOMString delivery</dt>
+        <dd>Indicates whether the message has been sent (string value 'sent') or received (string value 'received')
+        by the mobile subscription for which this API is being offered</dd>
+
+        <dt>readonly attribute DOMString sender</dt>
+        <dd>Indicates the sender of the message.</dd>
+
+        <dt>readonly attribute Date timestamp</dt>
+        <dd>Indicates the time the message was sent at.</dd>
+
+        <dt>readonly attribute boolean read</dt>
+        <dd>Indicates whether the message has been marked as read (value 'true') or not (value 'false').</dd>
+      </dl>
+    </section>
+
+    <section>
+      <h2><a>SmsMessage</a> Interface</h2>
+      <p>The <a>SmsMessage</a> interface represents a sent or received SMS message. This interface is not intended to
+      represent binary SMS, which are out of the scope of this API.
+      <dl title="[NoInterfaceObject]
+                 interface SmsMessage : MobileMessage"
+          class="idl">
+        <dt>readonly attribute DOMString recipient</dt>
+        <dd>Indicates the recipient of the message.</dd>
+
+        <dt>readonly attribute SmsContent content</dt>
+        <dd>Contains the content (i.e. the text) of the SMS message.</dd>
+      </dl>
+    </section>
+
+    <section>
+      <h2><a>SmsContent</a> Dictionary</h2>
+      <dl title="dictionary SmsContent" class="idl">
+        <dt>attribute DOMString text</dt>
+        <dd>Indicates the text of the SMS message.</dd>
+      </dl>    
+    </section>
+
+    <section>
+      <h2><a>MmsMessage</a> Interface</h2>
+      <p>The <a>MmsMessage</a> interface represents a sent or received SMS message.
+      <dl title="[NoInterfaceObject]
+                 interface MmsMessage : MobileMessage"
+          class="idl">
+        <dt>readonly attribute DOMString[] recipients</dt>
+        <dd>Indicates the recipient(s) of the message.</dd>
+
+        <dt>readonly attribute MmsContent content</dt>
+        <dd>Contains the content of the MMS message (subject, presentation element, attachments).</dd>
+      </dl>
+    </section>
+
+    <section>
+      <h2><a>MmsContent</a> Dictionary</h2>
+      <dl title="dictionary MmsContent" class="idl">
+        <dt>optional attribute DOMString subject</dt>
+        <dd>Indicates the subject of the MMS message.</dd>
+
+        <dt>optional attribute Document smil</dt>
+        <dd>Contains the SMIL component, i.e. the presentation element that determines the way the content of the
+        MMS message MUST be displayed.</dd>
+
+        <dt>attribute MmsAttachments attachments</dt>
+        <dd>Contains the set of attachements of the MMS message.</dd>
+      </dl>    
+    </section>
+
+    
+    <section>
+      <h2><a>MmsAttachments</a> Interface</h2>
+      <p>The <a>MmsAttachments</a> interface represents the set of media files in an MMS message.
+      <dl title="[NoInterfaceObject]
+                 interface MmsAttachments"
+          class="idl">
+
+       <dt>setter creator void setAttachment()</dt>
+        <dd>This method allows to add / modify to the <code>MmsAttachments</code> object a media to be identified by the
+        name passed in the <code>name</code> parameter. 
+          <dl class='parameters'>
+             <dt>DOMString name</dt>
+             <dd>
+               A name that identifies the attachment
+             </dd>
+             <dt>Blob attachment</dt>
+             <dd>
+               The Blob object containing the media type and the binary content of the attachement
+             </dd>
+         </dl>        
+        </dd>
+
+       <dt>getter Blob getAttachment()</dt>
+        <dd>This method allows to get from the <code>MmsAttachments</code> object the media of the MMS message which is
+        identified by the name passed in the <code>name</code> parameter. 
+          <dl class='parameters'>
+             <dt>DOMString name</dt>
+             <dd>
+               A name that identifies the attachment
+             </dd>
+         </dl>        
+        </dd>
+
+       <dt>deleter void deleteAttachment()</dt>
+        <dd>This method allows to delete from the <code>MmsAttachments</code> object the media of the MMS message which is
+        identified by the name passed in the <code>name</code> parameter. 
+          <dl class='parameters'>
+             <dt>DOMString name</dt>
+             <dd>
+               A name that identifies the attachment
+             </dd>
+         </dl>        
+        </dd>
+
+      </dl>
+    </section>
+
+    <section>
+      <h2><a>MessagingCursor</a> Interface</h2>
+      <p>The <a>MessagingCursor</a> interface allows to iterate through a list of <code>SmsMessage</code> and/or
+      <code>MmsMessage</code> elements.</p>
+      <p>A <a>MessagingCursor</a> always has, an <dfn>associated request</dfn> which is the <a>MessagingRequest</a> that created it.
+      In other words, a <a>MessagingCursor</a> is always the <code>result</code> of a <a>MessagingRequest</a> and can't be created in
+      any other way.</p>
+      <p>As soon as the <a>MessagingCursor</a> is <dfn>accessing the next message</dfn>, it MUST put its <a>associated request</a>
+      in the 'processing' <code>readyState</code>, and set the <code>result</code> to null. Then, the UA MUST fetch the
+      next message asynchronously. When the message is retrieved, the <a>associated request</a>'s <code>readyState</code>
+      must be set to 'done' and the <code>result</code> must point to the cursor. If no message was found, the cursor's
+      <code>message</code> property must return null.</p>
+      <dl title="[NoInterfaceObject]
+                 interface MessagingCursor"
+          class="idl">
+        <dt>readonly attribute MobileMessage? message</dt>
+        <dd>
+          This property MUST return the currently accessed message. If the cursor went past the last message or if it
+          is currently <a>accessing the next message</a>, it MUST return null.
+        </dd>
+        <dt>void continue()</dt>
+        <dd>
+          When this method is called, the cursor MUST change its internal state to <a>accessing the next message</a>.<br>
+          If this method is called while the cursor is <a>accessing the next message</a>, the method MUST throw an
+          <code>"InvalidStateError"</code> error as defined in [[!DOM4]].
+        </dd>
+      </dl>
+    </section>
+    
+    <section>
+      <h2><a>MessagingFilter</a> Interface</h2>
+      <p>The <a>MessagingFilter</a> interface represents a filter that is used to select a set of messages (e.g. to be
+      provided upon invoking a <code>getMessages</code> method in the <code>MobileMessagingManager</code> interface).
+      <dl title="[NoInterfaceObject]
+                 interface MessagingFilter"
+          class="idl">
+        <dt>attribute Date? startDate</dt>
+        <dd>Indicates that messages with timestamp previous to this date will not be provided in the results of this
+        filter.</dd>
+
+        <dt>attribute Date? endDate</dt>
+        <dd>Indicates that messages with timestamp after this date will not be provided in the results of this
+        filter.</dd>
+
+        <dt>attribute DOMString[]? numbers</dt>
+        <dd>Indicates that just messages sent from or received at one of this numbers are to be provided in the results
+        of this filter.</dd>
+
+        <dt>attribute DOMString? delivery</dt>
+        <dd>Indicates whether just the messages that have been sent or received, respectively if it is set to string
+        value 'sent' or 'received', by the SMS subscription for which this API is being offered are to be provided in
+        the results of this filter
+        </dd>
+
+        <dt>attribute boolean? read</dt>
+        <dd>Indicates whether just read or unread messages are to be provided in the results of this filter,
+        respectively if it is set to 'true' or 'false'</dd>
+
+        <dt>attribute DOMString? messageType</dt>
+        <dd>Indicates whether just the SMS or MMS messages are to be provided in the results of this filter, respectively
+        if it is set to string value 'SMS' or 'MMS'
+        </dd>
+
+      </dl>
+    </section>
+    
+    <section>
+      <h2><a>MessagingEvent</a> Interface</h2>
+      <p>The <a>MessagingEvent</a> interface represents events related to a message sent or received.
+      <dl title="[NoInterfaceObject]
+                 interface MessagingEvent : Event"
+          class="idl">
+        <dt>readonly attribute MobileMessage message</dt>
+        <dd>Indicates the SMS or MMS message to which this event is related.</dd>
+      </dl>
+    </section>
+
+    <section>
+      <h2><a>MessagingDeliveryReportEvent</a> Interface</h2>
+      <p>The <a>MessagingDeliveryReportEvent</a> interface represents events related to a delivery report of a sent message.
+      <dl title="[NoInterfaceObject]
+                 interface MessagingDeliveryReportEvent : Event"
+          class="idl">
+        <dt>readonly attribute long id</dt>
+        <dd>Indicates the identifier of the SMS or MMS message to which this delivery report event is related.</dd>
+        <dt>readonly attribute DOMString[] recipients</dt>
+        <dd>Indicates the addresses of the subset of the original recipients of the message to which this delivery report event is related.
+        As delivery reports related to just part of the message recipients are possible, this array may not contain the
+        full list of recipients to which the message was sent.
+        </dd>
+      </dl>
+    </section>
+
+    <section>
+      <h2>Acknowledgements</h2>
+      <p>The editors would like to express their gratitude to the Mozilla B2G Team for their technical guidance, implementation work and support</p>
+    </section>
+    
+    
+  </body>
+</html>
