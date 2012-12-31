@@ -41,7 +41,7 @@
 
 <div class="head">
             <h1>Web Messaging API Specification</h1>
-            <h2 class="no-num no-toc" id="editor-draft-29-december-2012">Editor Draft &mdash; 29 December 2012</h2>
+            <h2 class="no-num no-toc" id="editor-draft-31-december-2012">Editor Draft &mdash; 31 December 2012</h2>
 
             <dl>
                 <dt>This version:
@@ -75,15 +75,15 @@
    <p> This specification defines a System Level API which provides interface to
    manage messaging, such as SMS, MMS, USSD, email, instant messages,
    and group chat over multiple protocols, providers and user accounts.
-   For instance, SMS can be delivered via both GSM and SIP, and using multiple
-   SIM cards. Such scenarios are managed by using
+   For instance, SMS can be delivered via GSM or SIP, and using multiple
+   SIM cards or SIP accounts. Such scenarios are managed by using
    <a href="#messaging-service" title="messaging service">messaging services</a>. This API supports
    multiple messaging services, and defines default services for simplifying
-   basic usage for applications which e.g. just quickly want to send an SMS.
+   basic usage for applications which e.g. just want to send an SMS quickly.
    The various messaging types are all covered in this same specification
    because much of the functionality can be shared, for instance managing messaging
-   services, common properties, conversations, folders, labels, and messages.
-   A typical use case of the API is the implementation of standalone or unified
+   services, common properties, conversations, folders, labels, and messages.</p>
+   <p><p>A typical use case of the API is the implementation of standalone or unified
    messaging client applications.</p>
 </div>
 
@@ -129,9 +129,11 @@
  <li><a href="#data-filtering"><span class="secno">8 </span>Data filtering</a>
   <ol class="toc">
    <li><a href="#interface-abstractfilter"><span class="secno">8.1 </span>Interface <code title="">AbstractFilter</code></a></li>
-   <li><a href="#interface-compositefilter"><span class="secno">8.2 </span>Interface <code title="">CompositeFilter</code></a></li>
-   <li><a href="#interface-attributefilter"><span class="secno">8.3 </span>Interface <code title="">AttributeFilter</code></a></li>
-   <li><a href="#dictionary-filteroptions"><span class="secno">8.4 </span>Dictionary <code title="">FilterOptions</code></a></ol></li>
+   <li><a href="#interface-attributefilter"><span class="secno">8.2 </span>Interface <code title="">AttributeFilter</code></a></li>
+   <li><a href="#interface-attributerangefilter"><span class="secno">8.3 </span>Interface <code title="">AttributeRangeFilter</code></a></li>
+   <li><a href="#interface-compositefilter"><span class="secno">8.4 </span>Interface <code title="">CompositeFilter</code></a></li>
+   <li><a href="#dictionary-filteroptions"><span class="secno">8.5 </span>Dictionary <code title="">FilterOptions</code></a></li>
+   <li><a href="#interface-messagefilter"><span class="secno">8.6 </span>Interface <code title="">MessageFilter</code></a></ol></li>
  <li><a class="no-num" href="#references-0">References</a></li>
  <li><a class="no-num" href="#acknowledgments">Acknowledgements</a></ol>
 <!--end-toc-->
@@ -232,12 +234,12 @@
     </p>
     <pre class="idl">    [NoInterfaceObject]
     interface <dfn id="messaging">Messaging</dfn> {
-        readonly attribute <a href="#smsservice">SmsService</a>       <a href="#messaging-sms" title="Messaging-sms">sms</a>;
-        readonly attribute <a href="#mmsservice">MmsService</a>       <a href="#messaging-mms" title="Messaging-mms">mms</a>;
-        readonly attribute <a href="#ussdservice">UssdService</a>      <a href="#messaging-ussd" title="Messaging-ussd">ussd</a>;
-        readonly attribute <a href="#emailservice">EmailService</a>     <a href="#messaging-email" title="Messaging-email">email</a>;
-        readonly attribute <a href="#imservice">ImService</a>        <a href="#messaging-im" title="Messaging-im">im</a>;
-        readonly attribute <a href="#groupchatservice">GroupChatService</a> <a href="#messaging-groupchat" title="Messaging-groupchat">groupchat</a>;
+        attribute <a href="#smsservice">SmsService</a>       <a href="#messaging-sms" title="Messaging-sms">sms</a>;
+        attribute <a href="#mmsservice">MmsService</a>       <a href="#messaging-mms" title="Messaging-mms">mms</a>;
+        attribute <a href="#ussdservice">UssdService</a>      <a href="#messaging-ussd" title="Messaging-ussd">ussd</a>;
+        attribute <a href="#emailservice">EmailService</a>     <a href="#messaging-email" title="Messaging-email">email</a>;
+        attribute <a href="#imservice">ImService</a>        <a href="#messaging-im" title="Messaging-im">im</a>;
+        attribute <a href="#groupchatservice">GroupChatService</a> <a href="#messaging-groupchat" title="Messaging-groupchat">groupchat</a>;
     };
     </pre>
     <p>The <dfn id="messaging-sms" title="Messaging-sms"><code>sms</code></dfn>
@@ -276,16 +278,16 @@
 
   <div> <!-- interface MessagingUpdateEvent-->
     <h3 id="interface-messagingupdateevent"><span class="secno">5.3 </span>Interface <code title="">MessagingUpdateEvent</code></h3>
-    <p>Defines messaging update events, used for received messages, and updates
+    <p>Defines messaging update events, used for received messages, and
     for added, modified and changed objects in this API. Different objects
     implementing the <span>EventTarget</span> interface will specify what type
     of information the event SHOULD convey.</p>
     <pre class="idl">    [NoInterfaceObject]
     interface <dfn id="messagingupdateevent">MessagingUpdateEvent</dfn> : <span>Event</span> {
-        readonly attribute any <a href="#messagingupdateevent-update" title="MessagingUpdateEvent-update">update</a>;
+        readonly attribute any <a href="#messagingupdateevent-param" title="MessagingUpdateEvent-param">param</a>;
     };
     </pre>
-    <p>The <dfn id="messagingupdateevent-update" title="MessagingUpdateEvent-update"><code>update</code></dfn>
+    <p>The <dfn id="messagingupdateevent-param" title="MessagingUpdateEvent-param"><code>param</code></dfn>
     property can be <code>null</code>, a single value, an object, and an array
     of values or objects attached to the event. The value depends on the event
     target, and it is specified in the documentation of the specific event targets.
@@ -295,7 +297,7 @@
 
   <div class=""> <!-- interface MessagingServiceManager -->
     <h3 id="interface-messagingservicemanager"><span class="secno">5.4 </span> Interface <code title="">MessagingServiceManager</code></h3>
-    <p>Defines an interface to discover messaging services and monitor their
+    <p>Defines functionality to discover messaging services and monitor their
     changes. Implements the <a href="#livesearch"><code>LiveSearch</code></a> interface which
     provides filtered search of services and keeps the result set updated with
     later changes.
@@ -316,7 +318,7 @@
     <a href="#livesearch-onadded" title="LiveSearch-onadded"><code>onremoved</code></a> properties
     handle the <code>added</code>, <code>modified</code>, <code>removed</code>
     events, which MUST implement the <a href="#messagingupdateevent"><code>MessagingUpdateEvent</code></a>
-    interface, in which the <span title="LiveSearch-update"><code>update</code><span>
+    interface, in which the <span title="LiveSearch-param"><code>param</code><span>
     property MUST be a <span><code><a href="#messagingservice">MessagingService</a></code><span> object.
     </span></span></span></span></p>
     <p>The following example shows how to create a
@@ -332,15 +334,15 @@
 
     // set up event handlers for changes
     smsManager.onadded = function(event) {
-        smsServices.push(event.update); //'update' is an SmsService object
+        smsServices.push(event.param); //'param' is an SmsService object
     };
     smsManager.onmodified = function(event) {
         // most likely changed capabilities, or service was enabled/disabled
         // update the user interface according to the change
-        update_sms_service_ui(event.update); //'update' is an SmsService object
+        update_sms_service_ui(event.param); //'param' is an SmsService object
     };
     smsManager.onremoved = function(event) {
-        // received the id of the removed service from 'event.update' as DOMString
+        // received the id of the removed service from 'event.param' as DOMString
         // instead of searching what to remove, simply trigger reloading the list
         reloadSmsServices = true;
         // it means that 'find()' will be called again at a suitable time
@@ -402,6 +404,9 @@
   <h3 id="interface-messagingservice"><span class="secno">5.5 </span>Interface <code title="">MessagingService</code></h3>
     <p>Defines properties for messaging service functionality which are common
     to all supported messaging types.
+    If the <a href="#messagingservicemanager"><code>MessagingServiceManager</code></a> interface is
+    supported, then for any change in this object a <code>modified</code> event
+    MUST be fired on all service manager objects.
     </p>
     <pre class="idl">    [NoInterfaceObject]
     interface <dfn id="messagingservice">MessagingService</dfn> : <span>EventTarget</span> {
@@ -449,27 +454,44 @@
     <p>The <dfn id="messagingservice-capabilities" title="MessagingService-capabilities"> <code>capabilities</code> </dfn>
     property MUST return the list of capabilities of the messaging service, or
     <code>null</code> if the feature is not supported.
+    A capability represents a feature that a messaging service MAY support.
     The specific services define the valid values, e.g. email services may
     support folder synchronization, instant messaging services may support
-    roster, file transfer, call, etc. For instance if a messaging service
-    supports calling (e.g. a SIP service), then the application could use the
-    service <code>id</code> in the telephony API as a telephony service identifier.
-    Service types are considered to be capabilities, and are described here.
-    Other capabilities are described in the specific services which use them.
-    <p></p>
-    Service types map to one or multiple protocols through which the service is
-    delivered. The values for service type MAY be one of the following:<ul>
-    <li><code>"tel"</code>: used for telephony services such as SMS, MMS, USSD</li>
-    <li><code>"sip"</code>: used for SIP messaging services such as SMS, MMS, IM, group chat</li>
-    <li><code>"xmpp"</code>: used for XMPP messaging services such as IM, group chat</li>
-    <li><code>"pop3"</code>: used for email services where the mailbox is accessed using POP3</li>
-    <li><code>"imap"</code>: used for email services where the mailbox is accessed using IMAP</li>
-    <li><code>"exchange"</code>: used for email services where the mailbox is accessed using
-      Microsoft Exchange</li>
-    <li><code>"http"</code>: used for web email services where the mailbox is accessed using HTTP.</li>
+    roster, file transfer, call, etc. Since many protocols support both messaging
+    and calling, for instance if a messaging service supports calling (e.g. a SIP
+    service), then the application could use the service <code>id</code> in the
+    Telephony API as a telephony service identifier.
+    The capability values used in the Messaging API MAY be from the following list:
+    <ul>
+    <li><code>"roster"</code>: support for contact list with presence information
+    on instant messaging and group chat;</li>
+    <li><code>"filetransfer"</code>: support for file transfer on instant messaging
+    and group chat;</li>
+    <li><code>"foldersync"</code>: support for email folder synchronization with
+    a remote server;
+    <li><code>"call"</code>: support for calls, i.e. the messaging service
+    identifier can be used as a telephony service identifier;</li>
+    <li>The service type MUST be listed as the first capability, and is related to
+    the properties of the protocol(s) through which the service is delivered.
+    The value for messaging service type MUST be one of the following:<ul>
+    <li><code>"tel"</code>: used for cellular services such as SMS, MMS, USSD</li>
+    <li><code>"sip"</code>: used for SIP messaging services such as SMS, IM,
+    group chat</li>
+    <li><code>"xmpp"</code>: used for XMPP messaging services such as IM,
+    group chat</li>
+    <li><code>"pop3"</code>: used for email services where the mailbox is
+    accessed using POP3</li>
+    <li><code>"imap"</code>: used for email services where the mailbox is
+    accessed using IMAP</li>
+    <li><code>"exchange"</code>: used for email services where the mailbox is
+    accessed using Microsoft Exchange</li>
+    <li><code>"http"</code>: used for web email services where the mailbox is
+    accessed using HTTP.</li>
     </ul>
-    Further messaging related capabilities are defined in the specific messaging
-    services.
+    Other messaging service types MAY be defined by the implementations.
+    </li>
+    </ul>
+    Other messaging capabilities MAY be defined by the implementations.
     Filtering MUST be supported for this property.
     <p></p>
     <p>The <dfn id="messagingservice-messages" title="MessagingService-messages"> <code>messages</code> </dfn>
@@ -486,7 +508,7 @@
     handle the <code>added</code>, <code>modified</code>, <code>removed</code>
     events, which MUST implement the <a href="#messagingupdateevent"><code>MessagingUpdateEvent</code></a>
     interface, in which the
-    <a href="#messagingupdateevent-update" title="MessagingUpdateEvent-update"><code>update</code></a> property
+    <a href="#messagingupdateevent-param" title="MessagingUpdateEvent-param"><code>param</code></a> property
     MUST be an array of <span><code><a href="#message">Message</a></code><span> objects of the
     same type as the service.
     If the message storage access feature is not supported, the value MUST be
@@ -502,7 +524,7 @@
     handle the <code>added</code>, <code>modified</code>, <code>removed</code>
     events, which MUST implement the <a href="#messagingupdateevent"><code>MessagingUpdateEvent</code></a>
     interface, in which the
-    <a href="#messagingupdateevent-update" title="MessagingUpdateEvent-update"><code>update</code></a> property
+    <a href="#messagingupdateevent-param" title="MessagingUpdateEvent-param"><code>param</code></a> property
     MUST be a <span><code><a href="#messageconversation">MessageConversation</a></code><span> object.
     If the conversation management feature is not supported, the value MUST be
     set to <code>null</code>.
@@ -517,7 +539,7 @@
     handle the <code>added</code>, <code>modified</code>, <code>removed</code>
     events, which MUST implement the <a href="#messagingupdateevent"><code>MessagingUpdateEvent</code></a>
     interface, in which the
-    <a href="#messagingupdateevent-update" title="MessagingUpdateEvent-update"><code>update</code></a> property
+    <a href="#messagingupdateevent-param" title="MessagingUpdateEvent-param"><code>param</code></a> property
     MUST be a <span><code><a href="#messagefolder">MessageFolder</a></code><span> object.
     If the folder management feature is not supported, the value MUST be set to
     <code>null</code>.
@@ -532,7 +554,7 @@
     handle the <code>added</code>, <code>modified</code>, <code>removed</code>
     events, which MUST implement the <a href="#messagingupdateevent"><code>MessagingUpdateEvent</code></a>
     interface, in which the
-    <a href="#messagingupdateevent-update" title="MessagingUpdateEvent-update"><code>update</code></a> property
+    <a href="#messagingupdateevent-param" title="MessagingUpdateEvent-param"><code>param</code></a> property
     MUST be a <span><code><a href="#messagelabel">MessageLabel</a></code><span> object.
     If the label management feature is not supported, the value MUST be set to
     <code>null</code>.
@@ -549,12 +571,12 @@
     property MUST provide the event handler for the <code>received</code> event,
     fired when a message is received. The event MUST implement the
     <a href="#messagingupdateevent"><code>MessagingUpdateEvent</code></a> interface, in which the
-    <a href="#messagingupdateevent-update" title="MessagingUpdateEvent-update"><code>update</code></a> property
+    <a href="#messagingupdateevent-param" title="MessagingUpdateEvent-param"><code>param</code></a> property
     MUST be a <span><code><a href="#message">Message</a></code><span> object.
     </span></span></p>
     <p>The <dfn id="messagingservice-onenabled" title="MessagingService-onenabled"><code>onenabled</code></dfn>
-    property is an event handler for the <code>enabled</code> event fired when
-    the service is enabled.
+    property is an event handler for the <code>enabled</code> simple event fired
+    when the service is enabled.
     </p>
     <p>The <dfn id="messagingservice-ondisabled" title="MessagingService-ondisabled"><code>ondisabled</code></dfn>
     property is an event handler for the <code>disabled</code> event fired when
@@ -570,10 +592,9 @@
 
   <div> <!-- interface SmsService -->
     <h3 id="interface-smsservice"><span class="secno">5.6 </span>Interface <code title="">SmsService</code></h3>
-    <p>The interface for SMS functionality accessed  through a service
-    provided by the network operator, connected to a subscriber account, usually
-    represented by a SIM card.
-    There may be multiple SIM cards in a device, and each will have
+    <p>Defines SMS functionality using a service provided by the network operator,
+    connected to a subscriber identity represented by a SIM card.
+    There may be multiple SIM cards in a device, and each MUST have
     an <code><a href="#smsservice">SmsService</a></code> object associated. If the SIM card is in use, the
     service MUST appear as enabled.
     </p>
@@ -645,15 +666,14 @@
 
   <div> <!-- interface UssdService -->
     <h3 id="interface-ussdservice"><span class="secno">5.7 </span>Interface <code title="">UssdService</code></h3>
-    <p>Defines the interface for USSD functionality, bound to a network operator
-    service and a SIM card.
-    There may be multiple SIM cards in a device, and each will have an UssdService
-    object associated. If a SIM card is in use, the corresponding
-    <code><a href="#ussdservice">UssdService</a></code> object MUST appear as enabled.
+    <p>Defines USSD functionality bound to a network operator service and a SIM
+    card. There may be multiple SIM cards in a device, and each MUST have an
+    <code><a href="#ussdservice">UssdService</a></code> object associated. If a SIM card is in use, the
+    corresponding <code><a href="#ussdservice">UssdService</a></code> object MUST appear as enabled.
     USSD can be mobile-originated (pull) or network-originated (push).
     A connection is managed with the network, but there is no store-and-forward
-    functionality, and there is no storage associated with USSD. Replies made to
-    a pull request are handled in the context of the same connection.
+    functionality, and there is no local storage associated with USSD. Replies
+    made to a pull request are handled in the context of the same connection.
     </p>
     <pre class="idl">    [NoInterfaceObject]
     interface <dfn id="ussdservice">UssdService</dfn> : <a href="#messagingservice">MessagingService</a> {
@@ -682,11 +702,11 @@
 
   <div> <!-- interface MmsService -->
     <h3 id="interface-mmsservice"><span class="secno">5.8 </span>Interface <code title="">MmsService</code></h3>
-    <p>Defines the interface for MMS v1.2 functionality, bound to a service provided
-    by the network operator, usually represented by a SIM card.
-    There may be multiple SIM cards in a device, and each will have an MmsService
-    object associated. If the SIM card is in use, the service MUST appear as
-    enabled.
+    <p>Provides access to MMS v1.2 functionality, bound to a service provided
+    by the network operator, with subscriber identity represented by a SIM card.
+    There may be multiple SIM cards in a device, and each MUST have an
+    <a href="#mmsservice"><code>MmsService</code></a> object associated. If the SIM card is
+    in use, the service MUST appear as enabled.
     The functionality covered by this interface includes message sending and
     automatic and manual message retrieval.
     </p>
@@ -719,9 +739,9 @@
 
   <div> <!-- interface EmailService -->
     <h3 id="interface-emailservice"><span class="secno">5.9 </span>Interface <code title="">EmailService</code></h3>
-    <p>Defines the interface for email functionality bound to a given email
+    <p>Provides access to email functionality bound to a given email
     account. There may be multiple email accounts configured with the same
-    provider; each will have a separate EmailService object associated. Then,
+    provider; each MUST have a separate EmailService object associated. Then,
     the same email address may be configured through different protocols (e.g.
     IMAP vs Exchange); each should be represented by a separate
     <code><a href="#emailservice">EmailService</a></code> object.
@@ -763,7 +783,10 @@
     <p>The <dfn id="emailservice-syncfolder" title="EmailService-syncFolder"><code>syncFolder</code></dfn>
     method synchronizes folder content with an external mail server. This method
     MUST perform the following actions:<ul>
-    <li>if both the <code>synchronizable</code> and the <code>exportLocalUpdates</code>
+    <li>if both the
+    <a href="#messagefolder-synchronizable" title="MessageFolder-synchronizable"><code>synchronizable</code></a>
+    and the
+    <a href="#messagefolder-exportlocalupdates" title="MessageFolder-exportLocalUpdates"><code>exportLocalUpdates</code></a>
     properties are <code>true</code> on the folder, then export local changes
     in the given folder to the server</li>
     <li>retrieve the list of available messages from within the given folder.</ul>
@@ -863,7 +886,7 @@
 
   <div> <!-- interface GroupChatService -->
     <h3 id="interface-groupchatservice"><span class="secno">5.11 </span>Interface <code title="">GroupChatService</code></h3>
-    <p>The interface for group chat functionality in a given service.</p>
+    <p>Defines group chat functionality bound to a given service.</p>
     <pre class="idl">    [NoInterfaceObject]
     interface <dfn id="groupchatservice">GroupChatService</dfn> : <a href="#messagingservice">MessagingService</a> {
         readonly attribute <a href="#livesearch">LiveSearch</a> <a href="#groupchatservice-chatrooms" title="GroupChatService-chatRooms">chatRooms</a>;
@@ -872,16 +895,18 @@
     <p>The <dfn id="groupchatservice-chatrooms" title="GroupChatService-chatRooms"> <code>chatRooms</code> </dfn>
     property provides a <a href="#livesearch"><code>LiveSearch</code></a> object handling
     searching and updates of objects of type <a href="#chatroom"><code>ChatRoom</code></a>,
-    representing chat rooms in the group chat service.
+    representing chat rooms provided by the group-chat service.
     </p>
   </div> <!-- interface GroupChatService -->
 
 
   <div> <!-- interface ChatRoom -->
     <h3 id="interface-chatroom"><span class="secno">5.12 </span>Interface <code title="">ChatRoom</code></h3>
-    <p>Defines an interface for managing chat rooms. Implements the
-    <a href="#messageconversation"><code>MessageConversation</code></a> interface and adds contact
-    manager functionality and a command interface.
+    <p>Defines functionality for chat rooms. Implements the
+    <a href="#messageconversation"><code>MessageConversation</code></a> interface for representing
+    messages in the chat room, adds contact manager functionality for managing
+    buddies with presence information, a generic command interface, and a method
+    for posting messages in the chat room.
     <pre class="idl">    [NoInterfaceObject]
     interface <dfn id="chatroom">ChatRoom</dfn> : MessageConversation {
         readonly attribute <span>ContactManager</span> <a href="#chatroom-roster" title="ChatRoom-roster">roster</a>;
@@ -1159,7 +1184,7 @@
 
   <div>  <!-- interface MessageLabel -->
     <h3 id="interface-messagelabel"><span class="secno">5.19 </span>Interface <code title="">MessageLabel</code></h3>
-    <p>Defines an interface for managing message labels.
+    <p>Defines message labels.
     </p>
     <pre class="idl">    [NoInterfaceObject]
     interface <dfn id="messagelabel">MessageLabel</dfn> {
@@ -1194,7 +1219,7 @@
 
   <div> <!-- interface MessageFolder -->
     <h3 id="interface-messagefolder"><span class="secno">5.20 </span>Interface <code title="">MessageFolder</code></h3>
-    <p>Defines a message folder.</p>
+    <p>Defines message folders.</p>
     <pre class="idl">    [NoInterfaceObject]
     interface <dfn id="messagefolder">MessageFolder</dfn> : <a href="#messagelabel">MessageLabel</a> {
         readonly attribute DOMString? <a href="#messagefolder-path" title="MessageFolder-path">path</a>;
@@ -1304,7 +1329,7 @@
 
   <div> <!-- interface LiveSearch -->
     <h3 id="interface-livesearch"><span class="secno">6.1 </span>Interface <code title="">LiveSearch</code></h3>
-    <p>Defines an interface for (optionally filtered) retrieval of data items
+    <p>Provides functionality for (optionally filtered) retrieval of data items
     from an implementation-defined storage, and maintaining the result set
     updated with later changes.
     The interface provides a possibility for notifying updates by events.
@@ -1353,9 +1378,9 @@
 
   <div> <!-- interface LiveModel -->
     <h3 id="interface-livemodel"><span class="secno">6.2 </span>Interface <code title="">LiveModel</code></h3>
-    <p>Defines an interface for writing data items to a storage defined by the
-    implementation: adding, modifying and deleting data items. Also, implements
-    the <a href="#livesearch"><code>LiveSearch</code></a> interface which provides filtered
+    <p>Provides functionality for adding, modifying and deleting data items to a
+    storage defined by the implementation. Also, implements the
+    <a href="#livesearch"><code>LiveSearch</code></a> interface which provides filtered
     search of data items and maintains the result set updated with later changes.
     This interface can be used for creating live data models synchronized
     with data changes done to the data backend, by first doing a filtered search
@@ -1430,10 +1455,9 @@
 
   <div> <!-- interface PendingRequest -->
     <h3 id="interface-pendingrequest"><span class="secno">7.1 </span>Interface <code title="">PendingRequest</code></h3>
-    <p>Defines the object handling asynchronous operations and iterating over the
-    result set. When the size of the result set is larger than the limit set by
-    the client, the implementation MUST support provide the results in chunks of
-    size set by the client, as described in this interface.
+    <p>Defines the object handling asynchronous operations and providing iterator
+    functionality over the result set when the size of the result set is larger
+    than the limit set by the client.
     </p>
     <pre class="idl">    [NoInterfaceObject]
     interface <dfn id="pendingrequest">PendingRequest</dfn> : EventTarget {
@@ -1560,8 +1584,7 @@
 
   <div> <!-- interface AbstractFilter -->
     <h3 id="interface-abstractfilter"><span class="secno">8.1 </span>Interface <code title="">AbstractFilter</code></h3>
-    <p><a href="#abstractfilter"><code>AbstractFilter</code></a> is the abstract interface
-    inherited by all filter types.
+    <p>Defines the abstract filter interface inherited by all filter types.
     </p>
     <pre class="idl">[NoInterfaceObject]
     [NoInterfaceObject]
@@ -1570,38 +1593,10 @@
     </pre>
   </div>
 
-
-  <div> <!-- interface CompositeFilter -->
-    <h3 id="interface-compositefilter"><span class="secno">8.2 </span>Interface <code title="">CompositeFilter</code></h3>
-    <p>The <a href="#compositefilter"><code>CompositeFilter</code></a> is a filter composed of
-    several other filters. It is used to filter contacts based on more than one
-    condition.
-    </p>
-    <pre class="idl">    enum <dfn id="compositefilteroperator">CompositeFilterOperator</dfn> { "and", "or" };
-
-    Constructor(DOMString <var title="">operator</var>, <a href="#abstractfilter">AbstractFilter</a>[] <var title="">filters</var>)]
-    interface <dfn id="compositefilter">CompositeFilter</dfn> : <a href="#abstractfilter">AbstractFilter</a> {
-        attribute <a href="#compositefilteroperator">CompositeFilterOperator</a> <a href="#compositefilter-operator" title="CompositeFilter-operator">operator</a>;
-        attribute <a href="#abstractfilter">AbstractFilter</a>[] <a href="#compositefilter-filters" title="CompositeFilter-filters">filters</a>;
-      };
-    </pre>
-    <p>The <dfn id="compositefilter-operator" title="CompositeFilter-operator"><code>operator</code></dfn>
-    property indicates how the filters SHOULD be joined together.
-    The <code>"and"</code> operator returns a record if it matched by <b>all</b>
-    filters. The <code>"or"</code> operator returns an item if it matched by
-    one of the filters.
-    </p>
-    <p>The <dfn id="compositefilter-filters" title="CompositeFilter-filters"><code>filters</code></dfn>
-    property is an array of filters that are part of this
-    <a href="#compositefilter"><code>CompositeFilter</code></a>.
-    </p>
-  </div> <!-- interface CompositeFilter -->
-
-
   <div> <!-- interface AttributeFilter -->
-    <h3 id="interface-attributefilter"><span class="secno">8.3 </span>Interface <code title="">AttributeFilter</code></h3>
-    <p>The <a href="#attributefilter"><code>AttributeFilter</code></a> is a filter used to return
-    items based on a condition on one of its attributes.
+    <h3 id="interface-attributefilter"><span class="secno">8.2 </span>Interface <code title="">AttributeFilter</code></h3>
+    <p>Defines a filter for matching items on a condition on one of the supported
+    objects attributes.
     </p>
     <pre class="idl">enum <dfn id="attributefilteroperator">AttributeFilterOperator</dfn> { "is", "contains", "startswith", "endswith", "exists" };
 
@@ -1631,11 +1626,60 @@
     </p>
   </div> <!-- interface AttributeFilter -->
 
+  <div> <!-- interface AttributeRangeFilter -->
+  <h3 id="interface-attributerangefilter"><span class="secno">8.3 </span>Interface <code title="">AttributeRangeFilter</code></h3>
+  <p>Defines filters representing conditions matching a range of property values.
+  <pre class="idl">  Constructor(DOMString <var title="">attributeName</var>, optional any <var title="">startValue</var>, optional any <var title="">endValue</var>)]
+  interface <dfn id="attributerangefilter">AttributeRangeFilter</dfn> : <a href="#abstractfilter">AbstractFilter</a> {
+      attribute DOMString <a href="#attributerangefilter-filterby" title="AttributeRangeFilter-filterBy">filterBy</a>;
+      attribute any <a href="#attributerangefilter-startvalue" title="AttributeRangeFilter-startValue">startValue</a>;
+      attribute any <a href="#attributerangefilter-endvalue" title="AttributeRangeFilter-endValue">endValue</a>;
+  };
+  </pre>
+  <p>The <dfn id="attributerangefilter-filterby" title="AttributeRangeFilter-filterBy"><code>filterBy</code></dfn>
+  attribute indicates which object attribute we should filter on, specified as
+  <code>DOMString</code> (e.g.<code>"from"</code>, <code>"name"</code>).
+  </p>
+  <p>The <dfn id="attributerangefilter-startvalue" title="AttributeRangeFilter-startValue"><code>startValue</code></dfn>
+  attribute should indicate the lower bound of the matching interval. This
+  attribute may be <code>null</code> for open ended intervals.
+  </p>
+  <p>The <dfn id="attributerangefilter-endvalue" title="AttributeRangeFilter-endValue"><code>endValue</code></dfn>
+  attribute should indicate the upper bound of the matching interval. This
+  attribute may be <code>null</code> for open ended intervals.
+  </p>
+</div> <!-- interface AttributeRangeFilter -->
+
+
+  <div> <!-- interface CompositeFilter -->
+    <h3 id="interface-compositefilter"><span class="secno">8.4 </span>Interface <code title="">CompositeFilter</code></h3>
+    <p>Defines a filter composed of several other filters to represent complex
+    search conditions.
+    </p>
+    <pre class="idl">    enum <dfn id="compositefilteroperator">CompositeFilterOperator</dfn> { "and", "or" };
+
+    Constructor(DOMString <var title="">operator</var>, <a href="#abstractfilter">AbstractFilter</a>[] <var title="">filters</var>)]
+    interface <dfn id="compositefilter">CompositeFilter</dfn> : <a href="#abstractfilter">AbstractFilter</a> {
+        attribute <a href="#compositefilteroperator">CompositeFilterOperator</a> <a href="#compositefilter-operator" title="CompositeFilter-operator">operator</a>;
+        attribute <a href="#abstractfilter">AbstractFilter</a>[] <a href="#compositefilter-filters" title="CompositeFilter-filters">filters</a>;
+      };
+    </pre>
+    <p>The <dfn id="compositefilter-operator" title="CompositeFilter-operator"><code>operator</code></dfn>
+    property indicates how the filters SHOULD be joined together.
+    The <code>"and"</code> operator returns a record if it matched by <b>all</b>
+    filters. The <code>"or"</code> operator returns an item if it matched by
+    one of the filters.
+    </p>
+    <p>The <dfn id="compositefilter-filters" title="CompositeFilter-filters"><code>filters</code></dfn>
+    property is an array of filters that are part of this
+    <a href="#compositefilter"><code>CompositeFilter</code></a>.
+    </p>
+  </div> <!-- interface CompositeFilter -->
+
 
   <div> <!-- dictionary FilterOptions -->
-    <h3 id="dictionary-filteroptions"><span class="secno">8.4 </span>Dictionary <code title="">FilterOptions</code></h3>
-    <p>The <a href="#filteroptions"><code>FilterOptions</code></a> dictionary is used to
-    customize the filtering behavior such as sorting.
+    <h3 id="dictionary-filteroptions"><span class="secno">8.5 </span>Dictionary <code title="">FilterOptions</code></h3>
+    <p>Defines a dictionary to customize sorting and retrieval of the result set.
     </p>
     <pre class="idl">enum <dfn id="sortorder">SortOrder</dfn> { "ascending", "descending" };
 
@@ -1662,7 +1706,81 @@
     </p>
   </div>
 
+  <div> <!-- interface MessageFilter -->
+    <h3 id="interface-messagefilter"><span class="secno">8.6 </span>Interface <code title="">MessageFilter</code></h3>
+    <p>Defines a special filter for message search, which can be used in
+    <a href="#compositefilter"><code>CompositeFilter</code></a> objects.
+    Generic <a href="#attributefilter"><code>AttributeFilter</code></a> and
+    <a href="#attributerangefilter"><code>AttributeRangeFilter</code></a> filters MAY also be used for
+    message search. This filter just explicitly defines and collects the
+    properties on which conditions may be formulated.
+    </p>
+    <pre class="idl">    dictionary <dfn id="messagefilterdict">MessageFilterDict</dfn> {
+        Date <a href="#messagefilter-startdate" title="MessageFilter-startDate">startDate</a>;
+        Date <a href="#messagefilter-enddate" title="MessageFilter-endDate">endDate</a>;
+        DOMString[] <a href="#messagefilter-destinations" title="MessageFilter-destinations">destinations</a>;
+        DOMString[] <a href="#messagefilter-from" title="MessageFilter-from">from</a>;
+        DOMString <a href="#messagefilter-status" title="MessageFilter-status">status</a>;
+        DOMString <a href="#messagefilter-conversation" title="MessageFilter-conversation">conversation</a>;
+        DOMString <a href="#messagefilter-folder" title="MessageFilter-folder">folder</a>;
+        DOMString[] <a href="#messagefilter-labels" title="MessageFilter-labels">labels</a>;
+        boolean <a href="#messagefilter-read" title="MessageFilter-read">read</a>;
+        boolean <a href="#messagefilter-hasattachments" title="MessageFilter-hasAttachments">hasAttachments</a>;
+    };
+
+    [Constructor(MessageFilterDict initDict)]
+    interface <dfn id="messagefilter">MessageFilter</dfn> : <a href="#abstractfilter">AbstractFilter</a> {
+        // properties defined in MessageFilterDict
+    };
+    </pre>
+    <p>The <dfn id="messagefilter-startdate" title="MessageFilter-startDate"><code>startDate</code></dfn>
+    property specifies either the message
+    <a href="#message-timestamp" title="Message-timestamp"> <code>timestamp</code></a>,
+    or the start date of the interval in which the timestamp should be.
+    If the <code>endDate</code> property is specified, the <code>startDate</code>
+    property means the beginning of the time interval, otherwise it serves for
+    exact matching of the message time stamp.
+    </p>acts and
+    <p>The <dfn id="messagefilter-enddate" title="MessageFilter-endDate"><code>endDate</code></dfn>
+    property specifies the end date of the interval in which the message
+    <a href="#message-timestamp" title="Message-timestamp"> <code>timestamp</code></a> should be.
+    </p>
+    <p>The <dfn id="messagefilter-destinations" title="MessageFilter-destinations"><code>destinations</code></dfn>
+    property is an array containing the destinations of the message (including
+    the <code>to</code>, <code>cc</code> and <code>bcc</code> properties, any
+    of which the message should match (i.e. has OR semantics).
+    </p>
+    <p>The <dfn id="messagefilter-from" title="MessageFilter-from"><code>from</code></dfn>
+    property is an array containing the sources of the message, any of which the
+    message should match (i.e. has OR semantics).
+    </p>
+    <p>The <dfn id="messagefilter-status" title="MessageFilter-status"><code>status</code></dfn>
+    property matches against the message <code>status</code> property with an
+    exact matching.
+    </p>
+    <p>The <dfn id="messagefilter-conversation" title="MessageFilter-conversation"><code>conversation</code></dfn>
+    property matches against the message <code>conversationId</code> property
+    with an exact matching.
+    </p>
+    <p>The <dfn id="messagefilter-folder" title="MessageFilter-folder"><code>folder</code></dfn>
+    property against the message <code>folderId</code> property with an
+    exact matching.
+    </p>
+    <p>The <dfn id="messagefilter-labels" title="MessageFilter-labels"><code>labels</code></dfn>
+    property is an array containing the <code>labels</code> property of the
+    message, any of which the message should match (i.e. has OR semantics).
+    </p>
+    <p>The <dfn id="messagefilter-read" title="MessageFilter-read"><code>read</code></dfn>
+    property is matched against the message <code>isRead</code> property.
+    </p>
+    <p>The <dfn id="messagefilter-hasattachments" title="MessageFilter-hasAttachments"><code>hasAttachments</code></dfn>
+    property matches messages which do (for value <code>true</code>), or do not
+    have attachments (for value <code>false</code>).
+    </p>
+  </div> <!-- interface MessageFilter -->
+
 </div> <!-- "mainspec" -->
+
 
 <div id="references">
      <h2 class="no-num" id="references-0">References</h2>
@@ -1681,9 +1799,8 @@
      Thanks to Mikhail Pozdnyakov and Alexander Shalamov (Intel), as well as to
      Samsung for that work.
      </p>
-     <p>Thanks to Cristophe Dumez (Intel) for defining the generic and
-     expressive search filters used in the
-     <a href="#data-filtering">Data filtering</a> section.
+     <p>Thanks to Cristophe Dumez (Intel) for designing the generic search
+     filters used in the <a href="#data-filtering">Data filtering</a> section.
      </p>
      <p>Thanks to Jonas Sicking, Mounir Lamouri (Mozilla), and Eduardo Fullea
      (Telefonica) for the useful discussions.
