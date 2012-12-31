@@ -31,112 +31,105 @@
   </head>
   <body>
     <section id="abstract">
-      This specification defines a System Level API which offers a simple interface to manage SMS messages. A typical use case
-      of the SMS API is the implementation of a SMS client application.
+      This specification defines a System Level API to get access to a Short Message Service (SMS).
+      A typical use case of the SMS API is the implementation of a text messaging client application.
     </section>
-    
+
     <section id="sotd">
     </section>
-    
+
     <section class="informative">
       <h2>Introduction</h2>
       <p>
-        The SMS API allows applications to provide the functionality of a usual SMS client, i.e. send, receive,
-        mark message as read, etc.
-      
+        The SMS API provides operations to get access to all the primitives offered by a Short Message Service
+        (send, receive) as well as those that allow to manage a text message inbox (delete, store, mark).
       <p>
         An example of use is provided below:
-      
+
       <pre class="example highlight">
-            var call = navigator.sms.send('+34638883076','Enjoy the show!'));
-            call.onsuccess = function() { 
-                        window.console.log('Message Sent!'); 
-            }
-            
-            call.onerror = function(e) {
-                    window.console.error(e);
-            }
-            
-            call.connect();
+        var request = navigator.sms.send('+34638883076', 'Hi, How are you?');
+
+        request.onsuccess = function(e) {
+          window.console.log('Message Sent!');
+        }
+
+        request.onerror = function(e) {
+          window.console.error(e.target.error.name);
+        }
       </pre>
     </section>
-    
+
     <section id="conformance">
       <p>This specification defines conformance criteria that apply to a single product: the <dfn>user agent</dfn> that
       implements the interfaces that it contains.
-      
+
       <p>Implementations that use ECMAScript to implement the APIs defined in this specification MUST implement them in
       a manner consistent with the ECMAScript Bindings defined in the Web IDL specification [[!WEBIDL]], as this
       specification uses that specification and terminology.
-      
     </section>
-    
+
     <section>
       <h2>Terminology</h2>
       <p>The <code><a href="http://dev.w3.org/html5/spec/webappapis.html#eventhandler"> EventHandler</a></code>
       interface represents a callback used for event handlers as defined in [[!HTML5]].
-      
+
       <p>The concepts <dfn><a href="http://dev.w3.org/html5/spec/webappapis.html#queue-a-task"> queue a task</a></dfn>
       and <dfn><a href="http://dev.w3.org/html5/spec/webappapis.html#fire-a-simple-event"> fire a simple event</a></dfn>
       are defined in [[!HTML5]].
-      
+
       <p>The terms <dfn><a href="http://dev.w3.org/html5/spec/webappapis.html#event-handlers"> event handler</a></dfn>
       and <dfn><a href="http://dev.w3.org/html5/spec/webappapis.html#event-handler-event-type"> event handler event
       types</a></dfn> are defined in [[!HTML5]].
-      
     </section>
 
     <section>
       <h2>Security and privacy considerations</h2>
-      <p>This API must be only exposed to trusted content
-      
+      <p>This API must only be exposed to trusted content.
     </section>
 
     <section>
       <h2><a>NavigatorSMS</a> Interface</h2>
       <p>The <a>NavigatorSMS</a> interface is exposed on the <code>Navigator</code> object.
-      
+
       <div class="idl" title="Navigator implements NavigatorSMS"></div>
       <dl title="[NoInterfaceObject] interface NavigatorSMS" class="idl">
         <dt>readonly attribute SMSManager sms</dt>
         <dd>
-          The object that exposes the SMS functionality.
+          The object that exposes the interface to the Short Messaging Service.
         </dd>
       </dl>
     </section>
-    
+
     <section>
       <h2><a>SMSManager</a> Interface</h2>
-      <p>The <a>SMSManager</a> interface represents the initial entry point for getting access to SMS service.
-      
-      <dl title="[NoInterfaceObject]
-                 interface SMSManager : EventTarget"
-          class="idl">
+      <p>The <a>SMSManager</a> interface represents the initial entry point for getting access to the SMS service.
+
+      <dl title="[NoInterfaceObject] interface SMSManager : EventTarget" class="idl">
         <dt> SMSRequest send ()</dt>
-        <dd>This method allows to instantiate a new <code>SMSRequest</code> object intended to send an SMS message with
-        the text of the <code>message</code> parameter to the destination number indicated by the <code>number</code>
-        parameter.
+        <dd>This method issues a request to the messaging system to send an SMS
+        to the destination <code>number</code> containing the text of the <code>message</code> parameter.
+        A new <code>SMSRequest</code> object will be returned in order to notify the request result.
         <dl class='parameters'>
              <dt>DOMString number</dt>
              <dd>
-               Destination number for the SMS message 
+               Destination number for the SMS message
              </dd>
              <dt>DOMString message</dt>
              <dd>
-               Text to be sent in the SMS
+              The SMS content
              </dd>
          </dl>
         </dd>
 
-
         <dt> SMSRequest[] send ()</dt>
-        <dd>This method allows to instantiate an array of new <code>SMSRequest</code> objects intended to send an SMS
-        message with the text of the <code>message</code> parameter to each of the destination numbers indicated in the
-        <code>number</code> array parameter.
+        <dd>This method makes a request to the messaging system for sending an SMS message for each of the
+        destination <code>numbers</code> and with the content specified by the <code>message</code> parameter.
+        An array containing one <code>SMSRequest</code> object per destination number will be returned. The caller will be notified
+        of the result for each send operation through the corresponding <code>SMSRequest</code> object.
           <dl class='parameters'>
-             <dt>DOMString[] number</dt>
+             <dt>DOMString[] numbers</dt>
              <dd>
-               Array including the destination numbers for the SMS message 
+               Array of destination numbers for the SMS message
              </dd>
              <dt>DOMString message</dt>
              <dd>
@@ -150,15 +143,15 @@
           <dl class='parameters'>
              <dt>DOMString text</dt>
              <dd>
-               Text intended to be sent as an SMS, whose number of required concatenated SMS segments is checked by
+               Text intended to be sent as an SMS, whose number of required concatenated SMS segments is provided by
                this method
              </dd>
          </dl>
         </dd>
 
         <dt> SMSRequest delete ()</dt>
-        <dd>This method allows to instantiate a new <code>SMSRequest</code> object intended to delete the SMS message
-        with identifier equal to the indicated in the <code>id</code> parameter.
+        <dd>This method requests the deletion of the text message identified by the <code>id</code> parameter.
+        A new <code>SMSRequest</code> is returned in order to notify the request result (success or error) to the caller.
           <dl class='parameters'>
              <dt>long id</dt>
              <dd>
@@ -168,8 +161,8 @@
         </dd>
 
         <dt> SMSRequest delete ()</dt>
-        <dd>This method allows to instantiate a new <code>SMSRequest</code> object intended to delete the SMS message
-        indicated in the <code>message</code> parameter.
+        <dd>This method requests the deletion of the text message provided as parameter. A new <code>SMSRequest</code>
+        is returned in order to notify the request result (success or error) to the caller.
           <dl class='parameters'>
              <dt>SMSMessage  message</dt>
              <dd>
@@ -179,8 +172,8 @@
         </dd>
 
         <dt> SMSRequest get ()</dt>
-        <dd>This method allows to instantiate a new <code>SMSRequest</code> object intended to retrieve the SMS message
-        with identifier equal to the indicated in the <code>id</code> parameter.
+        <dd>This method makes a request to retrieve the SMS message identified by the <code>id</code> parameter. It returns a new
+        <code>SMSRequest</code> object which allows the caller to be notified about the operation result.
           <dl class='parameters'>
              <dt>long id</dt>
              <dd>
@@ -190,9 +183,10 @@
         </dd>
 
         <dt> SMSRequest get ()</dt>
-        <dd>This method allows to instantiate a new <code>SMSRequest</code> object intended to retrieve the SMS messages
-        matching the filter described by the <code>filter</code> parameter and sorted according to the
-        <code>reverse</code> parameter.
+        <dd>It allows to retrieve the SMS messages matching the filter described by the <code>filter</code> parameter
+        and ordering them by ascending or descending timestamp  (depending on the value of the <code>reverse</code> parameter).
+        It returns a new <code>SMSRequest</code> that will be used to notify the caller
+        about the result (success, error) of the operation.
           <dl class='parameters'>
              <dt>SMSFilter filter</dt>
              <dd>
@@ -200,15 +194,16 @@
              </dd>
              <dt>boolean reverse</dt>
              <dd>
-              Indicates whether the set of retrieved messages are to be sorted with the older message first (if 'false')
-              or last if (if 'true')
+              Indicates whether the set of retrieved messages are going to be sorted by timestamp in ascending  (if 'false')
+              or descending order (if 'true').
              </dd>
          </dl>
         </dd>
 
         <dt> SMSRequest markAsRead ()</dt>
-        <dd>This method allows to instantiate a new <code>SMSRequest</code> object intended to mark as read or unread
-        the SMS message with identifier equal to the indicated in the <code>id</code> parameter.
+        <dd>This method is intended to mark as read or unread the SMS message with identifier equal to the
+        indicated in the <code>id</code> parameter. The method returns a new <code>SMSRequest</code>
+        that will allow the caller to be notified about the result (success, error) of the operation .
           <dl class='parameters'>
              <dt>long id</dt>
              <dd>
@@ -218,7 +213,7 @@
              <dd>
               Indicates whether the SMS message is to be marked as read (if 'true') or unread (if 'false')
              </dd>
-         </dl>        
+         </dl>
         </dd>
 
         <dt class="no-docs">
@@ -236,7 +231,7 @@
         </dt>
         <dd></dd>
       </dl>
- 
+
       <p> The <dfn><code>send</code></dfn> method when invoked MUST run the following steps:
         <ol>
          <li>For each of the intended recipients: create a new instance of <code>SMSMessage</code> and a new instance of
@@ -254,9 +249,9 @@
           <li>set the <code>read</code> of the <code>SMSMessage</code> to 'true'
           <li>Make a request to the SMS system to send an SMS message with text passed in the <code>message</code>
          parameter to the number(s) indicated in the <code>number</code> parameter.
-          <li>set <code>readyState</code> of the <code>SMSRequest</code> object to 'processing'  
+          <li>set <code>readyState</code> of the <code>SMSRequest</code> object to 'processing'
           <li>return the <code>SMSRequest</code> to the caller and <a>queue a task</a> to monitor SMS sending progress
-         </ol>  
+         </ol>
          <li>If there is an error invoke the <code>onerror</code> <a>event handler</a> of the <code>SMSRequest</code>
          object
          <li>When each of the requests has been completed:
@@ -269,11 +264,11 @@
           <li>invoke the <code>onsuccess</code> <a>event handler</a> of the <code>SMSRequest</code>
          </ol>
         </ol>
-        
+
       <p>When the task in charge of monitoring the SMS sending progress is notified of SMS message being successfully
       sent it MUST <a>queue a task</a> to <a>fire a simple event</a> named <code>sent</code> with the
       <code>message</code> attribute set to the sent <code>SMSMessage</code>.
-      
+
       <p> The <dfn><code>delete</code></dfn> method when invoked with <code>id</code> as parameter MUST run the following
       steps:
         <ol>
@@ -281,7 +276,7 @@
          parameter passed in the request
          <li>Create a new <code>SMSRequest</code> object and set <code>readyState</code> of the
          <code>SMSRequest</code> object to 'processing' and return the <code>SMSRequest</code> to the caller
- 
+
          <li>If there is an error invoke the <code>onerror</code> <a>event handler</a> of the <code>SMSRequest</code>
          object
          <li>When the request has been completed:
@@ -291,7 +286,7 @@
           <li>invoke the <code>onsuccess</code> <a>event handler</a> of the <code>SMSRequest</code>
         </ol>
        </ol>
-     
+
       <p> The <dfn><code>delete</code></dfn> method when invoked with <code>message</code> as parameter MUST run the
       following steps:
         <ol>
@@ -314,7 +309,7 @@
          <li>Make a request to the SMS system to get the SMS message with identifier equal to the <code>id</code>
          parameter passed in the request.
          <li>Create a new <code>SMSRequest</code> object and set <code>readyState</code> of the
-         <code>SMSRequest</code> object to 'processing' and return the <code>SMSRequest</code> to the caller 
+         <code>SMSRequest</code> object to 'processing' and return the <code>SMSRequest</code> to the caller
          <li>If there is an error invoke the <code>onerror</code> <a>event handler</a> of the <code>SMSRequest</code>
          object
          <li>When the request has been completed:
@@ -325,12 +320,12 @@
           <li>invoke the <code>onsuccess</code> <a>event handler</a> of the <code>SMSRequest</code>
         </ol>
        </ol>
- 
+
       <p> The <dfn><code>getMessage</code></dfn> method when invoked with <code>filter</code> and <code>reverse</code> as
       parameters MUST run the following steps:
         <ol>
          <li>Make a request to the SMS system to get the SMS message(s) matching the resulting filter and to sort
-         them on timestamp with the older message first if the <code>reverse</code> parameter is 'false' or last if
+         them by timestamp with the older message first if the <code>reverse</code> parameter is 'false' or last if
          it is 'true'.
          <li>Create a new <code>SMSRequest</code> object and set <code>readyState</code> of the
          <code>SMSRequest</code> object to 'processing' and return the <code>SMSRequest</code> to the caller
@@ -344,13 +339,13 @@
           <li>invoke the <code>onsuccess</code> <a>event handler</a> of the <code>SMSRequest</code>
         </ol>
        </ol>
-         
+
       <p> The <dfn><code>markAsRead</code></dfn> method when invoked MUST run the following steps:
         <ol>
          <li>Make a request to the SMS system to mark the SMS message with identifier matching the <code>id</code>
          parameter as read/unread (depending on the <code>value</code> parameter being respectively 'true' or 'false').
          <li>Create a new <code>SMSRequest</code> object and set <code>readyState</code> of the
-         <code>SMSRequest</code> object to 'processing' and return the <code>SMSRequest</code> to the caller 
+         <code>SMSRequest</code> object to 'processing' and return the <code>SMSRequest</code> to the caller
          <li>If there is an error invoke the <code>onerror</code> <a>event handler</a> of the <code>SMSRequest</code>
          object
          <li>When the request has been completed:
@@ -368,7 +363,7 @@
       segment, but to send the full message in a single <code>send</code> request. However having information on the number of SMS segments
       may be required by the application in order to inform the user (e.g. in case the length of the text impacts on the price
       charged for sending the message).
-      
+
       <p>Upon a new message being received, the <a>user agent</a> MUST:
         <ol>
           <li>create a new instance of <code>SMSMessage</code>
@@ -383,16 +378,16 @@
           <li><a>queue a task</a> to <a>fire an event</a> named <code><a>received</a></code> with the
           <code>message</code> attribute set to the newly created <code>SMSMessage</code> instance.
         </ol>
-      
+
       <p>Upon a receipt confirmation of a previously sent message being received, the <a>user agent</a> MUST
       <a>queue a task</a> to <a>fire a simple event</a> named <code><a>delivered</a></code> with the
       <code>message</code> attribute set to the <code>SMSMessage</code> to which this confirmation is related.
-      
+
       <section>
         <h2>Event handlers</h2>
         <p>The following are the <a>event handlers</a> (and their corresponding <a>event handler event types</a>) that
         MUST be supported as attributes by the <a>SMSManager</a> object:
-        
+
         <table class="simple">
           <thead>
             <tr>
@@ -421,7 +416,7 @@
     <section>
       <h2><a>SMSRequest</a> Interface</h2>
       <p>The <a>SMSRequest</a> interface represents an ongoing operation. It provides callbacks that are called when
-      the operation completes, as well as a reference to the operation's result. A method that initiates an operation 
+      the operation completes, as well as a reference to the operation's result. A method that initiates an operation
       (e.g. delete message via the <code>delete</code> method in the <code>SMSManager</code> interface) may return a
       SMSRequest object that can be used to monitor the progress of that operation.
       <dl title="[NoInterfaceObject]
@@ -529,7 +524,7 @@
         </dd>
       </dl>
     </section>
-    
+
     <section>
       <h2><a>SMSFilter</a> Interface</h2>
       <p>The <a>SMSFilter</a> interface represents a filter that is used to select a set of messages (e.g. to be
@@ -562,7 +557,7 @@
         respectively if it is set to 'true' or 'false'</dd>
       </dl>
     </section>
-    
+
     <section>
       <h2><a>SMSEvent</a> Interface</h2>
       <p>The <a>SMSEvent</a> interface represents events related to SMS API.
@@ -578,6 +573,5 @@
       <h2>Acknowledgements</h2>
       <p>The editors would like to express their gratitude to the Mozilla B2G Team for their technical guidance, implementation work and support</p>
     </section>
-    
   </body>
 </html>
