@@ -58,7 +58,7 @@
   </head>
   <body>
     <section id='abstract'>
-      This document defines the secuirty requirements for <em>system 
+      This document defines the security requirements for <em>system 
       applications</em>, a class of web application which has access to APIs 
       not made available by a normal web browser.
     </section>
@@ -396,7 +396,7 @@
         <td>Malware: changing settings for novelty/amusement</td>
         <td>Malware is installed and annoys the user to the amusement of an attacker.
           No real harm is done.</td>
-        <td>Low - easily revertable</td>
+        <td>Low - easily revertible</td>
         <td>Low</td>
       </tr>
       <tr>
@@ -429,6 +429,14 @@
         <td>Low - few known attacks, not always a high success rate.</td>           
       </tr>
       <tr>
+        <td>Malware: installed through a malicious software update</td>
+        <td>An application is granted permission to access sensitive resources, but
+        is then updated and replaced by a malicious application authored by another
+        party.</td>
+        <td>Medium/low - depends on the application replaced</td>
+        <td>Medium/low - some history of exploiting update systems</td>
+      </tr>      
+      <tr>
         <td>NFC abuse - exploiting a device's NFC interface (through proximity) to
           impersonate a user</td>
         <td>The device's NFC capabilities are used by malware to perform a relay attack
@@ -459,6 +467,8 @@
         <td>Medium: loss of user data (contacts / media / etc) in one application</td>
         <td>Medium/low</td>
       </tr>
+
+      
     </table>
     <section>      
     <h3>Conclusions</h3>
@@ -514,7 +524,7 @@
         The execution environment SHALL reject invalid application signatures.  
         It SHALL by default disable applications with no signature or with 
         signatures from entities with unrecoginsed root certificates.  However, 
-        the exection environment MAY allow signatures from entities with an 
+        the execution environment MAY allow signatures from entities with an 
         unrecognised root certificate if a device owner explicitly permits 
         this.  The execution environment MAY 
         define a policy regarding whether an application is permitted to be 
@@ -669,8 +679,12 @@
       <h3>Restrictions on JavaScript</h3>
       <p>
         System applications SHALL NOT be allowed to execute inline javascript
-        nor shall they be able to execute string-to-JavaScript methods such as
-        <code>eval</code> and <code>function</code>.
+        nor shall they be able to execute the string-to-JavaScript methods such as
+        <code>eval</code> and <code>Function</code> nor shall they be able to use
+        <code>setTimeout</code> or <code>setInterval</code> functions with a 
+        non-callable first argument.  System applications SHALL follow javascript 
+        restrictions described in the [[CSP]] specification when the unsafe-eval 
+        directive is not enabled.
       </p>   
       </section>      
       <section>
