@@ -174,7 +174,7 @@
           </li>
 
           <li><dfn id="propdef-launch_path">launch_path</dfn>: The property's
-          value MUST be the path within the application's origin that is loaded
+          value MUST be the path within the <a>application's origin</a> that is loaded
           when the application is launched.</li>
 
           <li><dfn id="propdef-icons">icons</dfn>: A map of icon sizes to URIs of
@@ -394,6 +394,10 @@
           </ul>
 -->
         </ul>
+
+        <p>The <dfn>application's origin</dfn> is the origin of the <a>application
+        manifest</a>. [[!ORIGIN]]</p>
+
         </section>
       </section>
 
@@ -423,14 +427,7 @@
 
           <dl title='interface Application' class='idl'>
             <dt>readonly attribute DOMString origin</dt>
-            <dd>The attribute MUST return the origin of the application as
-                described in the <a>application manifest</a>. [[!ORIGIN]]</dd>
-            <todo>
-              <ul>
-                <li>Why do we expose this here instead of doing application.manifest.origin?</li>
-                <li>What if the application has no origin? Seems like this is not a required field</li>
-              </ul>
-            </todo>
+            <dd>The attribute MUST return the <a>application's origin</a>.</dd>
 
             <dt>readonly attribute Object manifest</dt>
             <dd>The attribute MUST return an object representing the parsed
@@ -1007,10 +1004,10 @@
       <h2>Navigation</h2>
 
       <p>Depending on the user interface around the application context,
-      navigating outside the application's origin might lock the user out of the
-      application. To prevent that, the UA SHOULD NOT allow navigation out of
-      the application's origin, unless the origin is specified in the following
-      <a>application manifest</a> property:
+      navigating outside the <a>application's origin</a> might lock the user out
+      of the application. To prevent that, the UA SHOULD NOT allow navigation
+      out of the <a>application's origin</a>, unless the origin is specified in
+      the following <a>application manifest</a> property:
       <ul>
         <li><dfn id='prop-allow-navigation'>allow-navigation</dfn>: the property
         SHOULD contain an array of origins that can be navigated to from the
