@@ -31,7 +31,7 @@
   </head>
   <body>
     <section id="abstract">
-      This specification defines a System Level API which offers a simple interface to manage mobile messaging services.
+      This specification defines a System Level API which offers a simple interface to get access to mobile messaging services.
       A typical use case of the Messaging API is the implementation of a messaging client application that allows the user
       send SMS and MMS messages as well as to access and manage the received SMS and MMS messages.
     </section>
@@ -42,9 +42,8 @@
     <section class="informative">
       <h2>Introduction</h2>
       <p>
-        The Messaging API allows applications to provide the functionality of a usual mobile messaging client, i.e. send, receive,
-        mark SMS or MMS message as read, etc.
-      
+        The Messaging API provides operations to get access to the primitives offered by mobile messaging services
+        (send, receive) as well as those that allow to manage a mobile messaging client inbox (delete, store, mark as read)
       <p>
         An example of use is provided below:
       
@@ -57,7 +56,7 @@
                         window.console.log('Message Sent!'); 
             }
             sms_send_request.onerror = function(e) {
-                    window.console.error(e);
+                    window.console.error(e.target.error.name);
             }
 
       </pre>
@@ -99,19 +98,17 @@
         <dl title="partial interface Navigator" class="idl">
           <dt>readonly attribute MobileMessagingManager messaging</dt>
           <dd>
-          The object that exposes the mobile messaging functionality.
+          The object that exposes the interface to mobile messaging services.
           </dd>
       </dl>
     </section>
     
     <section>
       <h2><a>MobileMessagingManager</a> Interface</h2>
-      <p>The <a>MobileMessagingManager</a> interface represents the initial entry point for getting access to mobile
+      <p>The <a>MobileMessagingManager</a> interface represents the initial entry point for getting access to the mobile
       messaging services, i.e. SMS and MMS.
       
-      <dl title="[NoInterfaceObject]
-                 interface MobileMessagingManager : EventTarget"
-          class="idl">
+      <dl title="[NoInterfaceObject] interface MobileMessagingManager : EventTarget" class="idl">
 
         <dt> unsigned short numberOfSmsSegments ()</dt>
         <dd>This method returns the number of concatenated SMS segments needed to send a given text.
@@ -125,9 +122,11 @@
         </dd>
         
         <dt> MessagingRequest[] send ()</dt>
-        <dd>This method allows to instantiate an array of new <code>MessagingRequest</code> objects intended to send an SMS
+        <dd>This method issues a request to the messaging system to send an SMS
         message with the text of the <code>text</code> attribute of the <code>content</code> parameter to each of the
         destination numbers indicated in the <code>to</code> array parameter.
+        An array containing one <code>MessagingRequest</code> object per destination number will be returned. The caller will
+        be notified of the result for each send operation through the corresponding <code>MessagingRequest</code> object.
           <dl class='parameters'>
              <dt>DOMString[] to</dt>
              <dd>
@@ -141,13 +140,14 @@
         </dd>
 
         <dt> MessagingRequest send ()</dt>
-        <dd>This method allows to instantiate a new <code>MessagingRequest</code> object intended to send an MMS message with
-        the content included in the <code>content</code> parameter to the destination numbers indicated by the <code>to</code>
-        parameter.
+        <dd>This method issues a request to the messaging system to send an MMS
+        message with the content included in the <code>content</code> parameter to the destination numbers indicated
+        in the <code>to</code> array parameter.
+        An <code>MessagingRequest</code> object will be returned in order to notify the result of the request.
         <dl class='parameters'>
              <dt>DOMString[] to</dt>
              <dd>
-               Destination numbers for the MMS message 
+               Destination numbers for the MMS message
              </dd>
              <dt>MmsContent content</dt>
              <dd>
@@ -157,8 +157,8 @@
         </dd>
 
         <dt> MessagingRequest getMessage ()</dt>
-        <dd>This method allows to instantiate a new <code>MessagingRequest</code> object intended to retrieve the SMS or MMS
-        message with identifier equal to the indicated in the <code>id</code> parameter.
+        <dd>This method makes a request to retrieve the SMS or MMS message identified by the <code>id</code> parameter.
+        It returns a new <code>MessagingRequest</code> object which allows the caller to be notified about the result of the operation.
           <dl class='parameters'>
              <dt>long id</dt>
              <dd>
@@ -168,8 +168,10 @@
         </dd>
 
         <dt> MessagingRequest getMessages ()</dt>
-        <dd>This method allows to instantiate a new <code>MessagingRequest</code> object intended to retrieve the set of
-        messages matching the filter described by the <code>filter</code> parameter and sorted according to the
+        <dd>This method allows to retrieve the SMS and/or MMS messages matching the filter described by the
+        <code>filter</code> parameter and ordering them by ascending or descending timestamp (depending on the value of
+        the <code>reverse</code> parameter).
+        It returns a new <code>MessagingRequest</code> that will be used to notify the caller about the result of the operation.
         <code>reverse</code> parameter.
           <dl class='parameters'>
              <dt>MessagingFilter filter</dt>
@@ -178,15 +180,16 @@
              </dd>
              <dt>boolean reverse</dt>
              <dd>
-              Indicates whether the set of retrieved messages are to be sorted with the older message first (if 'false')
-              or last if (if 'true')
+              Indicates whether the set of retrieved messages are going to be sorted by timestamp in ascending  (if 'false')
+              or descending order (if 'true').
              </dd>
          </dl>
         </dd>
 
         <dt> MessagingRequest delete ()</dt>
-        <dd>This method allows to instantiate a new <code>MessagingRequest</code> object intended to delete the SMS or MMS
-        messages with identifiers equal to the indicated in the <code>id</code> array parameter.
+        <dd>This method requests the deletion of the SMS or MMS messages with identifiers equal to the indicated in the
+        <code>id</code> array parameter.
+        A new <code>MessagingRequest</code> is returned in order to notify the request result (success or error) to the caller.
           <dl class='parameters'>
              <dt>long[] id</dt>
              <dd>
@@ -196,6 +199,9 @@
         </dd>
 
         <dt> MessagingRequest markAsRead ()</dt>
+        <dd>This method is intended to mark as read or unread the SMS or MMS message with identifier equal to the
+        indicated in the <code>id</code> parameter. The method returns a new <code>MessagingRequest</code>
+        that will allow the caller to be notified about the result (success, error) of the operation.
         <dd>This method allows to instantiate a new <code>MessagingRequest</code> object intended to mark as read or unread
         the SMS or MMS message with identifiers equal to the indicated in the <code>id</code> array parameter.
           <dl class='parameters'>
@@ -207,7 +213,7 @@
              <dd>
               Indicates whether the SMS or MMS messages are to be marked as read (if 'true') or unread (if 'false')
              </dd>
-         </dl>        
+         </dl>
         </dd>
 
         <dt class="no-docs">
@@ -249,9 +255,9 @@
           <li>set the <code>read</code> of the <code>SmsMessage</code> to 'true'
           <li>Make a request to the system to send an SMS message with text passed in the <code>message</code>
          parameter to the number(s) of the corresponding recipient indicated in the <code>to</code> parameter.
-          <li>set <code>readyState</code> of the <code>MessagingRequest</code> object to 'processing'  
+          <li>set <code>readyState</code> of the <code>MessagingRequest</code> object to 'processing'
           <li>return the <code>MessagingRequest</code> to the caller and <a>queue a task</a> to monitor SMS sending progress
-         </ol>  
+         </ol>
          <li>If there is an error invoke the <code>onerror</code> <a>event handler</a> of the <code>MessagingRequest</code>
          object
          <li>When each of the requests has been completed:
@@ -282,9 +288,9 @@
           <li>set the <code>read</code> of the <code>MmsMessage</code> to 'true'
           <li>Make a request to the system to send an MMS message with the content passed in the <code>content</code>
          parameter to the number(s) of indicated in the <code>to</code> parameter.
-          <li>set <code>readyState</code> of the <code>MessagingRequest</code> object to 'processing'  
+          <li>set <code>readyState</code> of the <code>MessagingRequest</code> object to 'processing'
           <li>return the <code>MessagingRequest</code> to the caller and <a>queue a task</a> to monitor MMS sending progress
-         </ol>  
+         </ol>
          <li>If there is an error invoke the <code>onerror</code> <a>event handler</a> of the <code>MessagingRequest</code>
          object
          <li>When the requests has been completed:
@@ -318,7 +324,7 @@
       <p> The <dfn><code>getMessages</code></dfn> method when invoked MUST run the following steps:
         <ol>
          <li>Make a request to the system to get the SMS and/or MMS message(s) matching the resulting filter and to sort
-         them on timestamp with the older message first if the <code>reverse</code> parameter is 'false' or last if
+         them by timestamp with the older message first if the <code>reverse</code> parameter is 'false' or last if
          it is 'true'.
          <li>Create a new <code>MessagingRequest</code> object and set <code>readyState</code> of the
          <code>MessagingRequest</code> object to 'processing' and return the <code>MessagingRequest</code> to the caller
@@ -343,7 +349,6 @@
          included in the <code>id</code> parameter passed in the request
          <li>Create a new <code>MessagingRequest</code> object and set <code>readyState</code> of the
          <code>MessagingRequest</code> object to 'processing' and return the <code>MessagingRequest</code> to the caller
- 
          <li>If there is an error invoke the <code>onerror</code> <a>event handler</a> of the <code>MessagingRequest</code>
          object
          <li>When the request has been completed:
@@ -360,7 +365,7 @@
          respectively 'true' or 'false') the set of messages with identifiers equal to the identifiers
          included in the <code>id</code> parameter passed in the request.
          <li>Create a new <code>MessagingRequest</code> object and set <code>readyState</code> of the
-         <code>MessagingRequest</code> object to 'processing' and return the <code>MessagingRequest</code> to the caller 
+         <code>MessagingRequest</code> object to 'processing' and return the <code>MessagingRequest</code> to the caller
          <li>If there is an error invoke the <code>onerror</code> <a>event handler</a> of the <code>MessagingRequest</code>
          object
          <li>When the request has been completed:
@@ -472,7 +477,7 @@
     <section>
       <h2><a>MessagingRequest</a> Interface</h2>
       <p>The <a>MessagingRequest</a> interface represents an ongoing operation. It provides callbacks that are called when
-      the operation completes, as well as a reference to the operation's result. A method that initiates an operation 
+      the operation completes, as well as a reference to the operation's result. A method that initiates an operation
       (e.g. delete message via the <code>delete</code> method in the <code>MobileMessagingManager</code> interface) MUST return a
       MessagingRequest object that can be used to monitor the progress of that operation.
       <dl title="[NoInterfaceObject]
