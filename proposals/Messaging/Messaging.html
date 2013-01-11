@@ -168,11 +168,10 @@
         </dd>
 
         <dt> MessagingRequest getMessages ()</dt>
-        <dd>This method allows to retrieve the SMS and/or MMS messages matching the filter described by the
+        <dd>This method makes a request to retrieve the SMS and/or MMS messages matching the filter described by the
         <code>filter</code> parameter and ordering them by ascending or descending timestamp (depending on the value of
         the <code>reverse</code> parameter).
         It returns a new <code>MessagingRequest</code> that will be used to notify the caller about the result of the operation.
-        <code>reverse</code> parameter.
           <dl class='parameters'>
              <dt>MessagingFilter filter</dt>
              <dd>
@@ -199,11 +198,9 @@
         </dd>
 
         <dt> MessagingRequest markAsRead ()</dt>
-        <dd>This method is intended to mark as read or unread the SMS or MMS message with identifier equal to the
+        <dd>This method requests to mark as read or unread the SMS or MMS message with identifier equal to the
         indicated in the <code>id</code> parameter. The method returns a new <code>MessagingRequest</code>
         that will allow the caller to be notified about the result (success, error) of the operation.
-        <dd>This method allows to instantiate a new <code>MessagingRequest</code> object intended to mark as read or unread
-        the SMS or MMS message with identifiers equal to the indicated in the <code>id</code> array parameter.
           <dl class='parameters'>
              <dt>long[] id</dt>
              <dd>
