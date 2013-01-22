@@ -36,7 +36,7 @@
 <div class="head">
 	<h1>Web Alarms API Specification</h1>
 	
-	<h2 class="no-num no-toc" id="editor-draft-20-november-2012">Editor Draft &mdash; 20 November 2012</h2>
+	<h2 class="no-num no-toc" id="editor-draft-21-january-2013">Editor Draft &mdash; 21 January 2013</h2>
 	
 	<dl>
 		<dt>This version:
@@ -61,7 +61,7 @@
 	
         <div class="w3conly">
 <!--begin-copyright-->
-<p class="copyright"><a href="http://www.w3.org/Consortium/Legal/ipr-notice#Copyright">Copyright</a> &copy; 2012 <a href="http://www.w3.org/"><abbr title="World Wide Web Consortium">W3C</abbr></a><sup>&reg;</sup> (<a href="http://www.csail.mit.edu/"><abbr title="Massachusetts Institute of Technology">MIT</abbr></a>, <a href="http://www.ercim.eu/"><abbr title="European Research Consortium for Informatics and Mathematics">ERCIM</abbr></a>, <a href="http://www.keio.ac.jp/">Keio</a>), All Rights Reserved. W3C <a href="http://www.w3.org/Consortium/Legal/ipr-notice#Legal_Disclaimer">liability</a>, <a href="http://www.w3.org/Consortium/Legal/ipr-notice#W3C_Trademarks">trademark</a> and <a href="http://www.w3.org/Consortium/Legal/copyright-documents">document use</a> rules apply.</p>
+<p class="copyright"><a href="http://www.w3.org/Consortium/Legal/ipr-notice#Copyright">Copyright</a> &copy; 2013 <a href="http://www.w3.org/"><abbr title="World Wide Web Consortium">W3C</abbr></a><sup>&reg;</sup> (<a href="http://www.csail.mit.edu/"><abbr title="Massachusetts Institute of Technology">MIT</abbr></a>, <a href="http://www.ercim.eu/"><abbr title="European Research Consortium for Informatics and Mathematics">ERCIM</abbr></a>, <a href="http://www.keio.ac.jp/">Keio</a>), All Rights Reserved. W3C <a href="http://www.w3.org/Consortium/Legal/ipr-notice#Legal_Disclaimer">liability</a>, <a href="http://www.w3.org/Consortium/Legal/ipr-notice#W3C_Trademarks">trademark</a> and <a href="http://www.w3.org/Consortium/Legal/copyright-documents">document use</a> rules apply.</p>
 <!--end-copyright--></div>
 </div>
 
@@ -83,7 +83,11 @@
    <li><a href="#interface-alarmmanager"><span class="secno">4.2 </span>Interface <code title="">AlarmManager</code></a></li>
    <li><a href="#interface-alarm"><span class="secno">4.3 </span>Interface <code title="">Alarm</code></a></li>
    <li><a href="#interface-alarmrequest"><span class="secno">4.4 </span>Interface <code title="">AlarmRequest</code></a></li>
-   <li><a href="#interface-alarmevent"><span class="secno">4.5 </span>Interface <code title="AlarmEvent">AlarmEvent</code></a></ol></li>
+   <li><a href="#interface-alarmevent"><span class="secno">4.5 </span>Interface <code title="AlarmEvent">AlarmEvent</code></a></li>
+   <li><a href="#timezone-dst"><span class="secno">4.6 </span>Timezones and daylight savings</a>
+    <ol class="toc">
+     <li><a href="#crossing-daylight-savings-time-boundaries"><span class="secno">4.6.1 </span>Crossing daylight savings time boundaries</a></li>
+     <li><a href="#crossing-timezone-boundaries"><span class="secno">4.6.2 </span>Crossing timezone boundaries</a></ol></ol></li>
  <li><a class="no-num" href="#references">References</a></li>
  <li><a class="no-num" href="#acknowledgments">Acknowledgements</a></ol>
 <!--end-toc-->
@@ -185,14 +189,32 @@ interface <dfn id="alarmmanager">AlarmManager</dfn> : <a class="external" href="
   attribute Function? <a href="#alarmmanager-onalarm" title="AlarmManager-onalarm">onalarm</a>;
 };</pre>
 
-<p>The <dfn id="alarmmanager-getall" title="AlarmManager-getAll"><code>getAll()</code></dfn> method is used to to retrieve all the alarms added to the device as an array of <a href="#alarm">Alarm</a> objects.
+<p>The <dfn id="alarmmanager-getall" title="AlarmManager-getAll"><code>getAll()</code></dfn> method is used to to retrieve all the alarms added to the device as an array of <a href="#alarm">Alarm</a> objects. 
+<p>The error cases must be handled as follows:
+<ol>
+<li>If any error is returned, the implementation must set the <code>error</code> attribute of the <code><a href="#alarmrequest">AlarmRequest</a></code> to a <code>DOMError</code> whose name is <code>"UnknownError"</code>, and <a class="external" href="http://dom.spec.whatwg.org/#concept-event-fire" title="concept-event-fire">fire an event</a> named <code>error</code> at the request.</li>
+</ol>
+
 <p>The <dfn id="alarmmanager-add" title="AlarmManager-add"><code>add(<var>date</var>, <var>respectTimezone</var>[, <var>data</var>])</code></dfn> method is used to register an alarm.
 <ol>
 <li>The first argument <code>date</code> can is a <code>Date</code> object indicating when the alarm should trigger.</li>
-<li>The second argument <code>respectTimezone</code> can be either <code>"respectTimezone"</code> or <code>"ignoreTimezone"</code> to specify if we need to ignore the timezone information of that <code>Date</code> object. When <code>"respectTimezone"</code> is passed, we will alert that application when that time happens in that timezone. I.e. if someone passes a <code>Date</code> object which has the timezone set to Pacific Standard Time (PST) and time set to 7am, we will alert the application when the time is 7am in the Pacific Standard Time, even if the user is in New York and currently in Eastern Standard Time (EST) and it's 10am for the user. When <code>"ignoreTimezone"</code> is passed, we will ignore the timezone part of the passed in <code>Date</code> object. I.e. if someone passes a Date object which has the timezone set to Pacific Standard Time and time set to 7am, we will alert the application when the time is 7am in whatever timezone the user happens to be in. So if the user is in New York, we will alert the user when it's 7am in that timezone.</li>
+<li>The second argument <code>respectTimezone</code> can be either <code>"respectTimezone"</code> or <code>"ignoreTimezone"</code> to specify if we need to ignore the timezone information of that <code>Date</code> object. When <code>"respectTimezone"</code> is passed, we will alert that application when that time happens in that timezone. See <a href="#timezone-dst">Timezones and daylight savings</a> section for examples.</li>
 <li>The third argument <code>data</code> can be optionally specified to pass the customized JSON object data for that alarm. Note that a unique ID will be returned to refer to the added alarm.</li>
 </ol>
+<p>The error cases must be handled as follows:
+<ol>
+<li>If the <code>date</code> argument is in the past, the implementation must set the <code>error</code> attribute of the <code><a href="#alarmrequest">AlarmRequest</a></code> to a <code>DOMError</code> whose name is <code>"InvalidStateError"</code>, and <a class="external" href="http://dom.spec.whatwg.org/#concept-event-fire" title="concept-event-fire">fire an event</a> named <code>error</code> at the request.</li>
+<li>For other error cases, a <code>DOMError</code> whose name is <code>"UnknownError"</code> is used.</li>
+</ol>
+
 <p>The <dfn id="alarmmanager-remove" title="AlarmManager-remove"><code>remove(<var>alarmId</var>)</code></dfn> method is used to remove an alarm that has been added in the device with a unique ID.
+<p>If the alarm was successfully removed, the implementation must set the <code>result</code> attribute of the <code><a href="#alarmrequest">AlarmRequest</a></code> to <code>true</code>, and <a class="external" href="http://dom.spec.whatwg.org/#concept-event-fire" title="concept-event-fire">fire an event</a> named <code>success</code> at the request.
+If there was no alarm with the given identifier, the implementation must follow the same steps but set the <code>result</code> attribute of the <code><a href="#alarmrequest">AlarmRequest</a></code> to <code>false</code>.
+<p>The error cases must be handled as follows:
+<ol>
+<li>If any error is returned, the implementation must set the <code>error</code> attribute of the <code><a href="#alarmrequest">AlarmRequest</a></code> to a <code>DOMError</code> whose name is <code>"UnknownError"</code>, and dispatch an <code>error</code> event at the request.</li>
+</ol>
+
 <p>The <dfn id="alarmmanager-onalarm" title="AlarmManager-onalarm"><code>onalarm</code></dfn> attribute is the event handler of type <code>Function</code> for the <code><a href="#alarm">alarm</a></code> event. This event uses the <a href="#alarmevent"><code>AlarmEvent</code></a> interface is fired when an alarm goes off.
 
 <h3 id="interface-alarm"><span class="secno">4.3 </span>Interface <code title="">Alarm</code></h3>
@@ -258,6 +280,34 @@ dictionary <dfn id="alarmeventinit">AlarmEventInit</dfn> : <a class="external" h
 };</pre>
 
 <p>The <dfn id="alarmevent-alarm" title="AlarmEvent-alarm"><code>alarm</code></dfn> attribute must return the alarm that is going off.
+
+<h3 id="timezone-dst"><span class="secno">4.6 </span>Timezones and daylight savings</h3>
+<p>The implementation needs to consider timezones and respect daylight savings. We will provide examples in this section to clarify how non-obvious cases should be handled.
+<h4 id="crossing-daylight-savings-time-boundaries"><span class="secno">4.6.1 </span>Crossing daylight savings time boundaries</h4>
+<div class="example">
+<p><b>Let's consider an alarm on March 10, 2013 at 2:00am in a timezone where daylight savings time starts at that time (e.g. in San Francisco, CA):</b>
+<pre>add(new Date(2013, 2, 10, 2, 00, 00), "ignoreTimezone");
+</pre>
+In San Francisco, CA, clocks are turned forward 1 hour on Sunday, March 10, 2013 at 2:00am due to daylight savings. In this case, the alarm must fire at 3:00am, i.e. one minute after 1:59am.
+
+<p><b>Let's consider an alarm on November 3, 2013 at 1:10am in a timezone where daylight savings time ends on that date (e.g. in San Francisco, CA):</b>
+<pre>add(new Date(2013, 10, 3, 1, 10, 00), "ignoreTimezone");
+</pre>
+<p>In San Francisco, CA, clocks are turned backward 1 hour on Sunday, November 3, 2013 at 2:00am. In this case, the alarm fires <em>once</em> the first time that the device is running and the local time is past 1:10am on November 3, 2013. After that the alarm is deleted.
+</div>
+
+<h4 id="crossing-timezone-boundaries"><span class="secno">4.6.2 </span>Crossing timezone boundaries</h4>
+<div class="example">
+<p><b>Let's consider an alarm set for January 21, 2013 at 7:00am in Pacific Standard Time (PST) with respectTimezone argument set to "ignoreTimezone":</b>
+<pre>add(new Date(2013, 0, 21, 7, 0, 00), "ignoreTimezone"); // User is currently in Pacific Standard Time (PST)
+</pre>
+If the user is traveling to New York on that day and currently in Eastern Standard Time (EST), the alarm must fire on January 21, 2013 when it is 7:00am in Eastern Standard Time (EST).
+
+<p><b>Let's consider an alarm set for January 21, 2013 at 7:00am in Pacific Standard Time (PST) with respectTimezone argument set to "respectTimezone":</b>
+<pre>add(new Date(2013, 0, 21, 7, 0, 00), "respectTimezone"); // User is currently in Pacific Standard Time (PST)
+</pre>
+If the user is traveling to New York on that day and currently in Eastern Standard Time (EST), the alarm must fire on January 21, 2013 when it is 7:00am in Pacific Standard Time (PST), that is 10:00am for the user in Eastern Standard Time (EST).
+</div>
 
 <h2 class="no-num" id="references">References</h2>
 <div id="anolis-references"><dl><dt id="refsB2G-ALARM">[B2G-ALARM]
