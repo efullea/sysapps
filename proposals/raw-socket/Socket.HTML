@@ -85,7 +85,7 @@
     <section class="informative">
       <h2>Introduction</h2>
       <p>
-        Use this API to send and receive data over the network using TCP and UDP connections. Further information TBD...
+        Use this API to send and receive data over the network using TCP and UDP. 
       </p>
       
       An example of use is provided below:
@@ -135,83 +135,55 @@
     </section>
 
     <section>
-      <h2>Interface Navigator</h2>
-      <p>
-        The <a>RawSocket</a> interface is exposed on the <code>Navigator</code> object.
-      </p>      
-      
-      <dl title="partial interface Navigator" class="idl">
-        <dt>readonly attribute RawSocket rawsocket</dt>
-        <dd>
-          The object that exposes the rawsocket functionality.
-        </dd>
-      </dl>
-      
-    </section>
-    
-    <section>
-      <h2><a>RawSocket</a> Interface</h2>
-      <p>The <a>RawSocket</a> interface exposes a method for creating a socket.</p> 
-     
-      <dl title="[NoInterfaceObject]
-                 interface RawSocket"
-          class="idl">                           
-        
-        <dt> Socket create()</dt>
-        <dd>
-          
-          <p>
-            Creates a socket of the specified type.
-          </p>
-        
-          <pre class="example highlight">
-            var socket = navigator.rawsocket.create('udp', {});        
-          </pre>
-          
-          <p>
-            Throws DOMException INVALID_ACCESS_ERR if any input parameter contains an invalid value or if the input parameter is not compatible with the expected type for that parameter. 
-          </p>
-        
-          <dl class='parameters'>
-             <dt>SocketType type</dt>
-             <dd>
-               The type of socket to create. Must be tcp or udp. 
-             </dd>
-
-             <dt>optional CreateOptions options</dt>
-             <dd>
-               The socket options. 
-             </dd>   
-          </dl>
-        </dd>                    
-
-      </dl>        
-      
-      <p class="issue">
-        This use of a Socket object, for which a set of methods is defined, is different from the Chrome Scoket API, which uses a "socket id" as 
-        input parmeter in all methods. 
-        An alternative would be to define a Socket interface constructor so that a Socket object for example is created with mySocket = new  Socket (’tcp’);. 
-      </p>   
-        
-            
-    </section>    
-
-    <section>
-      <h2>Interface <a>Socket</a></h2>
-      <p>The <a>Socket</a> interface defines the methods for a created tcp or udp socket</p> 
+      <h2>Interface <a>RawSocket</a></h2>
+      <p>The <a>RawSocket</a> interface defines the attributes and methods for a tcp or udp socket</p> 
       
       <pre class="example highlight">
-        TDB...         
+        // Create a TCP socket
+        mySocket = new RawSocket (’tcp’);         
       </pre>
       
-      <dl title="[NoInterfaceObject]
-                 interface Socket"
+      <p class="issue">
+        This use of a constructor for the Socket object, for which a set of methods is defined, is different from the Chrome Socket API, which uses a 
+        single socket object for all sockets and a "socket id" parameter to identify each socket in use.  
+      </p>         
+      
+      <dl title="[Constructor (SocketType type, optional CreateOptions options)] 
+                 interface RawSocket"
           class="idl">  
+          
+        <dt>readonly attribute SocketType type</dt>
+        <dd>The type of socket to create. Must be tcp or udp or the constructor must throw the DOMException INVALID_ACCESS_ERR.</dd>  
         
+        <dt>readonly attribute CreateOptions options</dt>
+        <dd>The socket options.</dd>          
+        
+        <dt> void accept()</dt>
+        <dd>        
+          <p>This method applies to TCP sockets only. Registers a callback function to be called when a connection is accepted on this listening server 
+             socket. Listen must be called first. If there is already an active accept callback, this callback will be invoked immediately with an error 
+             as the resultCode. </p>  
+          <p>
+            Throws DOMException INVALID_ACCESS_ERR if any input parameter is not compatible with the expected type for that parameter.<br /> 
+            Throws DOMException INVALID_STATE_ERR if the socket was not in "listen" state.
+          </p>   
+          <dl class='parameters'>
+          
+             <dt>AcceptCallback callback</dt>
+             <dd>
+               Called when a when a connection is accepted on this listening server socket.
+             </dd>            
+                
+          </dl>       
+        </dd>   
+
         <dt> void bind()</dt>
         <dd>        
-          <p>Binds the local address for a UDP socket. Can not be used for TCP sockets. </p>        
- 
+          <p>Binds the local address for a socket. </p>      
+          <p class="issue">
+            This is different from the Chrome socket API, which allows bind() only for UDP sockets. However, I assume that
+            bind() for TCP sockets is needed to support servers. 
+          </p>      
           <p>
             Throws DOMException INVALID_ACCESS_ERR if any input parameter is not compatible with the expected type for that parameter.
           </p>
@@ -224,11 +196,11 @@
              </dd>             
              <dt>optional DOMString address</dt>
              <dd>
-               The address of the local machine. TBD what applies when this par is not present (similar to '0.0.0.0' for Chrome Socket API)
+               The address of the local machine. If this parameter is omitted then any available local address is used.
              </dd>
              <dt>optional unsigned short port</dt>
              <dd>
-               The port of the local machine. TBD what applies when this par is not present (similar to 0 for Chrome Socket API)
+               The port of the local machine. If this parameter is omitted then any free port is used.
              </dd>    
                      
           </dl>
@@ -236,7 +208,7 @@
         
         <dt> void connect()</dt>
         <dd>        
-          <p>Connects the socket to the remote machine (for a tcp socket). For a udp socket, this sets the default address that is used for read() 
+          <p>For a TCP socket connects the socket to the remote machine. For a UDP socket, this sets the default address that is used for read() 
              and write() calls.</p>        
  
           <p>
@@ -261,34 +233,62 @@
           </dl>
         </dd>   
                  
-        <dt> void destroy()</dt>
+        <dt> void close()</dt>
         <dd>        
-          <p>Destroys the socket. Each socket created should be destroyed after use.</p>        
+          <p>Disconnects (for TCP) and closes this socket. A socket should be closed after use. A closed socker can not be used again by issuing a new 
+             bind() or connect(). A new socket instance has to be created. </p>  
+          <p class="issue">
+            This is different from the Chrome socket API, which has the two methods, disconnect() and destroy(). However, do we need to "destroy" a socket?
+            The assumption is that JS garbage collection will handle removal of unused RawSocket objects. 
+          </p>         
         </dd>     
         
-        <dt> void disconnect()</dt>
+        <dt> void listen()</dt>
         <dd>        
-          <p>Disconnects the socket. For UDP sockets, disconnect is a non-operation but is safe to call.</p>     
-          <p class="issue">
-            Is this method needed? Isn't it enough with destroy()? 
-          </p>   
-        </dd>  
-        
-        <dt> void read()</dt>
-        <dd>        
-          <p>Reads data from the given connected socket.</p>        
- 
+          <p>This method applies to TCP sockets only. Listens for connections on the specified port and address. This effectively makes this a server 
+             socket, and client socket functions (connect, read, write) can no longer be used on this socket. </p>  
           <p>
             Throws DOMException INVALID_ACCESS_ERR if any input parameter is not compatible with the expected type for that parameter.
+          </p>   
+          <dl class='parameters'>
+          
+             <dt>ListenCallback callback</dt>
+             <dd>
+               Called when a socket has been prepared for incoming connections.
+             </dd>            
+             <dt>DOMString address</dt>
+             <dd>
+               The address of the local machine.
+             </dd>
+             <dt>unsigned short port</dt>
+             <dd>
+               The port of the local machine.
+             </dd>      
+             <dt>optional unsigned short backlog</dt>
+             <dd>
+               The maximum number of connection requests that can be queued before the system starts rejecting incoming requests.
+             </dd>    
+                     
+          </dl>       
+        </dd>           
+              
+        <dt> void read()</dt>
+        <dd>        
+          <p>Reads data from the given "connected" UDP or TCP socket. For client sockets connect() must previously been called and for server sockets
+             accept() must previously been called.</p>        
+ 
+          <p>
+            Throws DOMException INVALID_ACCESS_ERR if any input parameter is not compatible with the expected type for that parameter.<br /> 
+            Throws DOMException INVALID_STATE_ERR if the socket is not "connected".
           </p>
         
           <dl class='parameters'>
           
              <dt>ReadCallback callback</dt>
              <dd>
-               Called when the read operation is complete.
+               Called when the read operation is complete, i.e. at max number of bytes have been received or end of file detected, or at an error condition.
              </dd>             
-             <dt>optional long bufferSize</dt>
+             <dt>optional long maxNoOfBytes</dt>
              <dd>
                The max number of bytes to receive before callback.
              </dd>
@@ -303,17 +303,17 @@
           <p>
             Throws DOMException INVALID_ACCESS_ERR if any input parameter is not compatible with the expected type for that parameter.
           </p>
+          <p class="issue">
+            The Chrome Socket API also has the parameter "bufferSize", which is the receive buffer size. However, the callback is issued when a 
+            datagram has been received so it does not seems necessary to define a specific buffer size.
+          </p> 
         
           <dl class='parameters'>
           
              <dt>RecvFromCallback callback</dt>
              <dd>
-               Called when the receive operation is complete.
+               Called when the receive operation is complete, i.e. a datagram has been received, or at an error condition.
              </dd>             
-             <dt>optional long bufferSize</dt>
-             <dd>
-               The max number of bytes to receive before callback.
-             </dd>
                      
           </dl>
         </dd>       
@@ -398,10 +398,12 @@
         
         <dt> void write()</dt>
         <dd>        
-          <p>Writes data on the given connected socket.</p>        
+          <p>Writes data on the given connected UDP or TCP socket. For client sockets connect() must previously been called and for server sockets
+             accept() must previously been called.</p>     
  
           <p>
-            Throws DOMException INVALID_ACCESS_ERR if any input parameter is not compatible with the expected type for that parameter.
+            Throws DOMException INVALID_ACCESS_ERR if any input parameter is not compatible with the expected type for that parameter.<br /> 
+            Throws DOMException INVALID_STATE_ERR if the socket is not "connected".
           </p>
         
           <dl class='parameters'>
@@ -422,9 +424,26 @@
             
     </section>      
     
-    <p class="issue">
-      So far support for server sockets through the methods listen() and accept() has been omitted. Not sure on use cases for server sockets. 
-    </p> 
+    <section>
+      <h2>Dictionary <a>AcceptInfo</a></h2>
+      <p>
+        Result of accept operation.
+      </p>      
+      <dl title="dictionary AcceptInfo"
+          class="idl">
+          
+        <dt>DOMError? error</dt>
+        <dd>Null if accept() was successful else a DOMError object detailing what went wrong. Error codes TBD.</dd>
+        <dt>RawSocket? socket</dt>
+        <dd>A new socket object for the accepted socket object or null if error. This new socket object is to be used for further communication with 
+            the remote host through subsequent read() and write() calls.</dd>
+        <dt>DOMString? address</dt>
+        <dd>The address of the remote machine or null if error.</dd>        
+        <dt>unsigned short? port</dt>
+        <dd>The port of the remote machine or null if error.</dd>            
+   
+      </dl>              
+    </section>      
     
     <section>
       <h2>Dictionary <a>CreateOptions</a></h2>
@@ -434,10 +453,15 @@
       <dl title="dictionary CreateOptions"
           class="idl">
           
+        <dt>boolean useSecureTransport</dt>
+        <dd>True if socket uses SSL or TLS. Default is false.</dd>
+        <dd>True allows the socket to be bound to an address that is already in use. This is for example needed for UPnP SSDP
+            which uses a fixed multicast channel and port reserved for SSDP. Default is False.</dd>
         <dt>boolean addressReuse</dt>
-        <dd>True (default) means that socket can reuse previously used address. Needed for UPnP SSDP. </dd>
+        <dd>True allows the socket to be bound to an address that is already in use. This is for example needed for UPnP SSDP
+            which uses a fixed multicast channel and port reserved for SSDP. Default is False.</dd>
         <dt>boolean loopback</dt>
-        <dd>False (default) means that sent multicast messages send on this socket is not received.</dd>
+        <dd>True means that data you send is looped back to your host. Default is True.</dd>
    
       </dl>              
     </section>      
@@ -450,10 +474,11 @@
       <dl title="dictionary ReadInfo"
           class="idl">
           
-        <dt>long resultCode</dt>
-        <dd>The resultCode returned from the underlying read() call. Values TBD. </dd>
-        <dt>ArrayBuffer data</dt>
-        <dd>The read data.</dd>
+        <dt>DOMError? error</dt>
+        <dd>Null if read() was successful else a DOMError object detailing what went wrong. Error codes TBD (for example ”socket disconnected”, 
+            “no byte available” )</dd>
+        <dt>ArrayBuffer? data</dt>
+        <dd>The read data or null if error.</dd>
    
       </dl>              
     </section>       
@@ -464,16 +489,16 @@
         Result of recvFrom() operation.
       </p>      
       <dl title="dictionary RecvFromInfo"
-          class="idl">
+          class="idl">          
           
-        <dt>long resultCode</dt>
-        <dd>The resultCode returned from the underlying RecvFrom() call. Values TBD. </dd>
-        <dt>ArrayBuffer data</dt>
-        <dd>The received data.</dd>
-        <dt>DOMString address</dt>
-        <dd>The address of the remote machine.</dd>        
-        <dt>unsigned short port</dt>
-        <dd>The port of the remote machine.</dd>
+        <dt>DOMError? error</dt>
+        <dd>Null if recvFrom() was successful else a DOMError object detailing what went wrong. Error codes TBD.</dd>
+        <dt>ArrayBuffer? data</dt>
+        <dd>The received data or null if error.</dd>
+        <dt>DOMString? address</dt>
+        <dd>The address of the remote machine or null if error.</dd>        
+        <dt>unsigned short? port</dt>
+        <dd>The port of the remote machine or null if error.</dd>
            
       </dl>              
     </section>        
@@ -486,8 +511,10 @@
       <dl title="dictionary WriteInfo"
           class="idl">
           
-        <dt>long bytesWritten</dt>
-        <dd>The number of bytes sent, or a negative error code. Values TBD. </dd>
+        <dt>DOMError? error</dt>
+        <dd>Null if sendTo() was successful else a DOMError object detailing what went wrong. Error codes TBD. </dd>
+        <dt>long? bytesWritten</dt>
+        <dd>The number of bytes sent, or null if error. </dd>
            
       </dl>              
     </section>       
@@ -496,12 +523,22 @@
       <h2> Callbacks </h2>
       
         <section>
+          <h3> AcceptCallback </h3>
+          <p> Called when when a connection is accepted on this listening server socket. </p>         
+             
+          <dl id='cb-less-basic' class='idl' title='callback AcceptCallback = void'>
+            <dt>AcceptInfo acceptInfo</dt>
+            <dd>Info for the accepted connection.</dd>
+          </dl>
+        </section>         
+      
+        <section>
           <h3> BindCallback </h3>
           <p> Called when the bind attempt is complete. </p>         
              
           <dl id='cb-less-basic' class='idl' title='callback BindCallback = void'>
-            <dt>integer result</dt>
-            <dd>TBD.</dd>
+            <dt>DOMError? error</dt>
+            <dd>Null if Bind() was successful else a DOMError object detailing what went wrong. Error codes TBD. </dd>
           </dl>
         </section>   
         
@@ -510,10 +547,20 @@
           <p> Called when the connection attempt is complete. </p>         
              
           <dl id='cb-less-basic' class='idl' title='callback ConnectCallback = void'>
-            <dt>integer result</dt>
-            <dd>TBD.</dd>
+            <dt>DOMError? error</dt>
+            <dd>Null if Connect() was successful else a DOMError object detailing what went wrong. Error codes TBD.</dd>
           </dl>
         </section>          
+        
+        <section>
+          <h3> ListenCallback </h3>
+          <p> Called when the listen attempt is complete. </p>         
+             
+          <dl id='cb-less-basic' class='idl' title='callback ListenCallback = void'>
+            <dt>DOMError? error</dt>
+            <dd>Null if socket was successfully prepared for incoming connections else a DOMError object detailing what went wrong. Error codes TBD.</dd>
+          </dl>
+        </section>            
         
         <section>
           <h3> ReadCallback </h3>
@@ -550,8 +597,8 @@
           <p>Called when the setKeepAlive attempt is complete.</p>         
              
           <dl id='cb-less-basic' class='idl' title='callback SetKeepAliveCallback = void'>
-            <dt>boolean result</dt>
-            <dd>TBD.</dd>
+            <dt>DOMError? error</dt>
+            <dd>Null if setKeepAlive() was successful else a DOMError object detailing what went wrong. Error codes TBD.</dd>
           </dl>
         </section>          
         
@@ -560,8 +607,8 @@
           <p>Called when the setNoDelay attempt is complete.</p>         
              
           <dl id='cb-less-basic' class='idl' title='callback SetNoDelayCallback = void'>
-            <dt>boolean result</dt>
-            <dd>TBD.</dd>
+            <dt>DOMError? error</dt>
+            <dd>Null if setNoDelay() was successful else a DOMError object detailing what went wrong. Error codes TBD.</dd>
           </dl>
         </section>        
         
