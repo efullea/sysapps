@@ -77,67 +77,55 @@
 <div class="example">
 <p>Example use of the Alarm API for adding, getting and removing and listening to alarms in the device:
 
-<p>How to add an alarm the ignore timezone information? 
-<pre>
- var date = new Date("May 15, 2012 16:20:00"),
-     request = navigator.alarms.add(date, "ignoreTimezone", {
-         message: "Your soup is ready!"
-     });
-
- request.onsuccess = function (e) {
-     console.log(e.alarm.data.message);
- };
- request.onerror = function (e) {
-     alert("Sorry, couldn't set the alarm: " + e);
- };
-</pre>
+<p>How to add an alarm the ignores timezone information? 
+<pre>var date = new Date("May 15, 2012 16:20:00");
+var request = navigator.alarms.add(date, "ignoreTimezone", {
+    message: "Your soup is ready!"
+});
+request.onsuccess = function (e) {
+    console.log(e.alarm.data.message);
+};
+request.onerror = function (e) {
+    alert("Sorry, couldn't set the alarm: " + e);
+};</pre>
 
 <p>How to add an alarm that respects timezone information?
-<pre>
- //Wake me up in 7 hours 
- var time = new Date(new Date(Date.now() + (3600000 * 7))),
-     request = navigator.alarms.add(time, "respectTimezone", {
-        message: "Yo, wake up!" 
-     });
-
- request.onsuccess = function (e) {
-    alert(e.alarm.data.message);
- };
- request.onerror = function (e) {
-     alert("Could not set the alarm, sorry. Error " + e);
- };
-</pre>
+<pre>// Wake me up in 7 hours 
+var time = new Date(new Date(Date.now() + (3600000 * 7)));
+var request = navigator.alarms.add(time, "respectTimezone", {
+  message: "Wake up!"
+});
+request.onsuccess = function (e) {
+  alert(e.alarm.data.message);
+};
+request.onerror = function (e) {
+   alert("Could not set the alarm, sorry. Error " + e);
+};</pre>
 
 <p>How to get all the alarms that have been set?
-<pre>
- var request = navigator.alarms.getAll();
- request.onsuccess = function (e) {
-     alert("There are " + e.target.result.length + " alarms set."));
- };
- request.onerror = function (e) {
-     alert("An error occurred getting the alarms.");
- };
-</pre>
+<pre>var request = navigator.alarms.getAll();
+request.onsuccess = function (e) {
+  alert("There are " + e.target.result.length + " alarms set."));
+};
+request.onerror = function (e) {
+  alert("An error occurred getting the alarms.");
+};</pre>
 
-<p>How to remove a existing alarm?
-<pre>
- var request = navigator.alarms.remove(id);
- request.onsuccess = function (e) {
-     alert("alarm removed");
- };
- request.onerror = function (e) {
-     alert("Sorry, can't remove the alarm.");
- };
+<p>How to remove an existing alarm?
+<pre>var request = navigator.alarms.remove(id);
+request.onsuccess = function (e) {
+  alert("alarm removed");
+};
+request.onerror = function (e) {
+  alert("Sorry, can't remove the alarm.");
+};
 </pre>
 
 <p>How to register a listener for an <span title="AlarmEvent">alarm event</span>?
-<pre>
- navigator.alarms.addEventListener("alarm", trigger);
-
- function trigger(e) {
-     alert("alarm fired at: " + e.alarm.date);
- }
-</pre>
+<pre>function trigger(e) {
+  alert("alarm fired at: " + e.alarm.date);
+}
+navigator.alarms.addEventListener("alarm", trigger);</pre>
 </div>
 
 <h2 id="conformance">Conformance</h2>
@@ -245,8 +233,8 @@ If there was no alarm with the given identifier, the implementation <em class="c
 <p>An <code>AlarmRequest</code> object represents an ongoing operation; it notifies the application when the operation completes using an <span>event handler IDL attribute</span> (<code>onsuccess</code>), as well as a reference to the operation's result. A DOM method that initiates an ongoing operation returns an <code>AlarmRequest</code> object that one can use to monitor the progress of that operation.
 
 <pre class="idl">
-  enum <dfn>AlarmReadyState</dfn> { "pending", "done" };
-  interface <dfn>AlarmRequest</dfn> : <span data-anolis-spec=dom>EventTarget</span>
+enum <dfn>AlarmReadyState</dfn> { "pending", "done" };
+interface <dfn>AlarmRequest</dfn> : <span data-anolis-spec=dom>EventTarget</span> {
   readonly attribute <span>AlarmReadyState</span> <span title="AlarmRequest-readyState">readyState</span>;
 
   readonly attribute any <span title="AlarmRequest-result">result</span>;
@@ -292,19 +280,15 @@ dictionary <dfn>AlarmEventInit</dfn> : <span data-anolis-spec=dom>EventInit</spa
 <div class="example">
 <p>Let's consider an alarm on March 10, 2013 at 2:00am in a timezone where daylight savings time starts at that time (e.g. in San Francisco, CA):
 
-<pre>
-var time = new Date(2013, 2, 10, 2, 00, 00)
-navigator.alarms.add(time, "ignoreTimezone");
-</pre>
+<pre>var time = new Date(2013, 2, 10, 2, 00, 00);
+navigator.alarms.add(time, "ignoreTimezone");</pre>
 
 <p>In San Francisco, CA, clocks are turned forward 1 hour on Sunday, March 10, 2013 at 2:00am due to daylight savings. In this case, the alarm needs to fire at 3:00am, i.e. one minute after 1:59am.
 
 <p>Let's consider an alarm on November 3, 2013 at 1:10am in a timezone where daylight savings time ends on that date (e.g. in San Francisco, CA):
 
-<pre>
-var time = new Date(2013, 10, 3, 1, 10, 00);
-navigator.alarms.add(time, "ignoreTimezone");
-</pre>
+<pre>var time = new Date(2013, 10, 3, 1, 10, 00);
+navigator.alarms.add(time, "ignoreTimezone");</pre>
 
 <p>In San Francisco, CA, clocks are turned backward 1 hour on Sunday, November 3, 2013 at 2:00am. In this case, the alarm fires <em>once</em> the first time that the device is running and the local time is past 1:10am on November 3, 2013. After that the alarm is deleted.
 </div>
@@ -313,19 +297,17 @@ navigator.alarms.add(time, "ignoreTimezone");
 <p><em>This section is non-normative.</em>
 <div class="example">
 <p>Let's consider an alarm set for January 21, 2013 at 7:00am in Pacific Standard Time (PST) with respectTimezone argument set to "ignoreTimezone":
-<pre>
-// User is currently in Pacific Standard Time (PST)
+<pre>// User is currently in Pacific Standard Time (PST)
 var time = new Date(2013, 0, 21, 7, 0, 00);
-navigator.alarms.add(time, "ignoreTimezone"); 
-</pre>
+navigator.alarms.add(time, "ignoreTimezone"); </pre>
+
 <p>If the user is traveling to New York on that day and currently in Eastern Standard Time (EST), the alarm needs to fire on January 21, 2013 when it is 7:00am in Eastern Standard Time (EST).
 
 <p>Let's consider an alarm set for January 21, 2013 at 7:00am in Pacific Standard Time (PST) with respectTimezone argument set to "respectTimezone":
-<pre>
-// User is currently in Pacific Standard Time (PST)
+<pre>// User is currently in Pacific Standard Time (PST)
 var time = new Date(2013, 0, 21, 7, 0, 00); 
-navigator.alarms.add(time, "respectTimezone");
-</pre>
+navigator.alarms.add(time, "respectTimezone");</pre>
+
 <p>If the user is traveling to New York on that day and currently in Eastern Standard Time (EST), the alarm needs to fire on January 21, 2013 when it is 7:00am in Pacific Standard Time (PST), that is 10:00am for the user in Eastern Standard Time (EST).
 </div>
 
