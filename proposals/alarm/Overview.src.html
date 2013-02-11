@@ -156,7 +156,7 @@ are defined in <span data-anolis-ref>HTML5</span>.
 <li>The returned ID is unique (within the application origin) and can be used to specify and remove the added alarm.</li>
 <li>Web applications can pass a <span>JSON-serializable object</span> to describe more details about each alarm setting.</li>
 <li>Web applications can only access their own alarms.</li>
-<li>When the alarm triggers, an alarm event is fired.</li>
+<li>When the alarm goes off, an alarm event is fired.</li>
 <li>All the alarms that have been added can be automatically restored after rebooting the system.</li>
 <li>Alarm API actually does more than <code>setTimeout()</code> because it can actively <em>wake</em> the system from sleeping.</li>
 <li>Whenever the system clock or timezone is adjusted at run-time, all the saved alarms will be rescheduled.</li>
@@ -209,7 +209,7 @@ If there was no alarm with the given identifier, the implementation <em class="c
 <li>If any error is returned, the implementation <em class="ct">must</em> set the <code>error</code> attribute of the <code>AlarmRequest</code> to a <code>DOMError</code> whose name is <code>"UnknownError"</code>, and dispatch an <code>error</code> event at the request.</li>
 </ol>
 
-<p>The <dfn title="AlarmManager-onalarm"><code>onalarm</code></dfn> attribute is the <span>event handler IDL attribute</span> of type <code>Function</code> for an <span id="interface-alarmevent">alarm event</span>. An <code>AlarmEvent</code> is fired at this <span>event handler</span> when an alarm triggers.
+<p>The <dfn title="AlarmManager-onalarm"><code>onalarm</code></dfn> attribute is the <span>event handler IDL attribute</span> of type <code>Function</code> for an <span id="interface-alarmevent">alarm event</span>. An <code>AlarmEvent</code> is fired at this <span>event handler</span> when an alarm goes off.
 
 <h3>Interface <code title="">Alarm</code></h3>
 <p>The <code>Alarm</code> interface captures the properties of a registered alarm.
@@ -256,7 +256,7 @@ interface <dfn>AlarmRequest</dfn> : <span data-anolis-spec=dom>EventTarget</span
 <p>The <dfn title="AlarmRequest-onerror"><code>onerror</code></dfn> attribute is the <span>event handler IDL attribute</span> for the <code>error</code> event.
 
 <h3>Interface <code title="AlarmEvent">AlarmEvent</code></h3>
-<p>An <code title="AlarmEvent">AlarmEvent</code> is fired when an alarm triggers.
+<p>An <code title="AlarmEvent">AlarmEvent</code> is fired when an alarm goes off.
 
 <p>When this happens, the user agent <em class="ct">must</em> <span>queue a task</span> to <span data-anolis-spec=dom title=concept-event-fire>fire an event</span> with the name <code title="AlarmEvent">alarm</code>, which does not bubble and is not cancelable, and which uses the <code>AlarmEvent</code> interface, at each <code>AlarmManager</code> object that is affected.
 
@@ -269,7 +269,7 @@ dictionary <dfn>AlarmEventInit</dfn> : <span data-anolis-spec=dom>EventInit</spa
   <span>Alarm</span> alarm;
 };</pre>
 
-<p>The <dfn title="AlarmEvent-alarm"><code>alarm</code></dfn> attribute returns the alarm that was triggered.
+<p>The <dfn title="AlarmEvent-alarm"><code>alarm</code></dfn> attribute returns the alarm that went off.
 
 <h3 id="timezone-dst">Timezones and daylight savings</h3>
 <p><em>This section is non-normative.</em>

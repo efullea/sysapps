@@ -176,7 +176,7 @@ are defined in <a href="#refsHTML5">[HTML5]</a>.
 <li>The returned ID is unique (within the application origin) and can be used to specify and remove the added alarm.</li>
 <li>Web applications can pass a <a href="#json-serializable-object">JSON-serializable object</a> to describe more details about each alarm setting.</li>
 <li>Web applications can only access their own alarms.</li>
-<li>When the alarm triggers, an alarm event is fired.</li>
+<li>When the alarm goes off, an alarm event is fired.</li>
 <li>All the alarms that have been added can be automatically restored after rebooting the system.</li>
 <li>Alarm API actually does more than <code>setTimeout()</code> because it can actively <em>wake</em> the system from sleeping.</li>
 <li>Whenever the system clock or timezone is adjusted at run-time, all the saved alarms will be rescheduled.</li>
@@ -229,7 +229,7 @@ If there was no alarm with the given identifier, the implementation <em class="c
 <li>If any error is returned, the implementation <em class="ct">must</em> set the <code>error</code> attribute of the <code><a href="#alarmrequest">AlarmRequest</a></code> to a <code>DOMError</code> whose name is <code>"UnknownError"</code>, and dispatch an <code>error</code> event at the request.</li>
 </ol>
 
-<p>The <dfn id="alarmmanager-onalarm" title="AlarmManager-onalarm"><code>onalarm</code></dfn> attribute is the <a href="#event-handler-idl-attribute">event handler IDL attribute</a> of type <code>Function</code> for an <span id="interface-alarmevent">alarm event</span>. An <code><a href="#alarmevent">AlarmEvent</a></code> is fired at this <a href="#event-handler">event handler</a> when an alarm triggers.
+<p>The <dfn id="alarmmanager-onalarm" title="AlarmManager-onalarm"><code>onalarm</code></dfn> attribute is the <a href="#event-handler-idl-attribute">event handler IDL attribute</a> of type <code>Function</code> for an <span id="interface-alarmevent">alarm event</span>. An <code><a href="#alarmevent">AlarmEvent</a></code> is fired at this <a href="#event-handler">event handler</a> when an alarm goes off.
 
 <h3 id="interface-alarm"><span class="secno">4.3 </span>Interface <code title="">Alarm</code></h3>
 <p>The <code><a href="#alarm">Alarm</a></code> interface captures the properties of a registered alarm.
@@ -275,7 +275,7 @@ interface <dfn id="alarmrequest">AlarmRequest</dfn> : <a class="external" href="
 <p>The <dfn id="alarmrequest-onerror" title="AlarmRequest-onerror"><code>onerror</code></dfn> attribute is the <a href="#event-handler-idl-attribute">event handler IDL attribute</a> for the <code>error</code> event.
 
 <h3 id="interface-alarmevent-0"><span class="secno">4.5 </span>Interface <code title="AlarmEvent"><a href="#alarmevent">AlarmEvent</a></code></h3>
-<p>An <code title="AlarmEvent"><a href="#alarmevent">AlarmEvent</a></code> is fired when an alarm triggers.
+<p>An <code title="AlarmEvent"><a href="#alarmevent">AlarmEvent</a></code> is fired when an alarm goes off.
 
 <p>When this happens, the user agent <em class="ct">must</em> <a href="#queue-a-task">queue a task</a> to <a class="external" href="http://dom.spec.whatwg.org/#concept-event-fire" title="concept-event-fire">fire an event</a> with the name <code title="AlarmEvent"><a href="#alarmevent">alarm</a></code>, which does not bubble and is not cancelable, and which uses the <code><a href="#alarmevent">AlarmEvent</a></code> interface, at each <code><a href="#alarmmanager">AlarmManager</a></code> object that is affected.
 
@@ -288,7 +288,7 @@ dictionary <dfn id="alarmeventinit">AlarmEventInit</dfn> : <a class="external" h
   <a href="#alarm">Alarm</a> alarm;
 };</pre>
 
-<p>The <dfn id="alarmevent-alarm" title="AlarmEvent-alarm"><code>alarm</code></dfn> attribute returns the alarm that was triggered.
+<p>The <dfn id="alarmevent-alarm" title="AlarmEvent-alarm"><code>alarm</code></dfn> attribute returns the alarm that went off.
 
 <h3 id="timezone-dst"><span class="secno">4.6 </span>Timezones and daylight savings</h3>
 <p><em>This section is non-normative.</em>
