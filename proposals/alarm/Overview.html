@@ -35,7 +35,7 @@
 <div class="head">
 	<h1>Web Alarms API Specification</h1>
 	
-	<h2 class="no-num no-toc" id="editor-draft-&mdash;-12-february-2013">Editor Draft &mdash; 12 February 2013</h2>
+	<h2 class="no-num no-toc" id="editor-draft-&mdash;-15-february-2013">Editor Draft &mdash; 15 February 2013</h2>
 	
 	<dl>
 		<dt>This version:
@@ -199,7 +199,7 @@ are defined in <a href="#refsHTML5">[HTML5]</a>.
 
 interface <dfn id="alarmmanager">AlarmManager</dfn> : <a class="external" href="http://dom.spec.whatwg.org/#eventtarget">EventTarget</a> {
   <a href="#alarmrequest">AlarmRequest</a> <a href="#alarmmanager-getall" title="AlarmManager-getAll">getAll</a>();
-  <a href="#alarmrequest">AlarmRequest</a> <a href="#alarmmanager-add" title="AlarmManager-add">add</a>(Date <var title="">date</var>, <a href="#timezonedirective">TimezoneDirective</a> <var title="">respectTimezone</var>, optional Object <var title="">data</var>);
+  <a href="#alarmrequest">AlarmRequest</a> <a href="#alarmmanager-add" title="AlarmManager-add">add</a>(Date <var title="">date</var>, <a href="#timezonedirective">TimezoneDirective</a> <var title="">respectTimezone</var>, optional any <var title="">data</var>);
   <a href="#alarmrequest">AlarmRequest</a> <a href="#alarmmanager-remove" title="AlarmManager-remove">remove</a>(DOMString <var title="">alarmId</var>);
 
   attribute EventHandler <a href="#alarmmanager-onalarm" title="AlarmManager-onalarm">onalarm</a>;
@@ -216,7 +216,7 @@ interface <dfn id="alarmmanager">AlarmManager</dfn> : <a class="external" href="
 <ol>
 <li>The first argument <code>date</code> is a <a href="#refsECMASCRIPT">[ECMASCRIPT]</a> <code>Date</code> object representing when the alarm will trigger.</li>
 <li>The second argument <code>respectTimezone</code> can be either <code>"respectTimezone"</code> or <code>"ignoreTimezone"</code> to specify if the user agent needs to ignore the timezone information of that <code>Date</code> object. When <code>"respectTimezone"</code> is passed, we will alert that application when that time happens in that timezone. See <a href="#timezone-dst">Timezones and daylight savings</a> section for examples.</li>
-<li>The third argument <code>data</code> can be optionally specified to pass the <a href="#json-serializable-object">JSON-serializable object</a> for that alarm. Note that a unique ID will be returned to refer to the added alarm.</li>
+<li>The third argument <code>data</code> can be optionally specified to pass the <span>JSON-serializable data</span> to be associated with the alarm. Note that a unique ID will be returned to refer to the added alarm.</li>
 </ol>
 <p>A user agent <em class="ct">must</em> handle the error cases in the following manner:
 <ol>
@@ -241,7 +241,7 @@ If there was no alarm with the given identifier, the implementation <em class="c
   readonly attribute DOMString <a href="#alarm-id" title="Alarm-id">id</a>;
   attribute Date <a href="#alarm-date" title="Alarm-date">date</a>;
   attribute <a href="#timezonedirective">TimezoneDirective</a> <a href="#alarm-respecttimezone" title="Alarm-respectTimezone">respectTimezone</a>;
-  attribute Object <a href="#alarm-data" title="Alarm-data">data</a>;
+  attribute any <a href="#alarm-data" title="Alarm-data">data</a>;
 };</pre>
 
 <p>The <dfn id="alarm-id" title="Alarm-id"><code>id</code></dfn> attribute returns an identifier for the given <code><a href="#alarm">Alarm</a></code> object that is unique within the origin. An implementation <em class="ct">must</em> maintain this identifier when a <code><a href="#alarm">Alarm</a></code> is added.
@@ -250,7 +250,7 @@ If there was no alarm with the given identifier, the implementation <em class="c
 
 <p>The <dfn id="alarm-respecttimezone" title="Alarm-respectTimezone"><code>respectTimezone</code></dfn> attribute indicates if the timezone information of the <code>Date</code> object is ignored.
 
-<p>The <dfn id="alarm-data" title="Alarm-data"><code>data</code></dfn> attribute optionally represents the <a href="#json-serializable-object">JSON-serializable object</a> to be associated with the alarm.
+<p>The <dfn id="alarm-data" title="Alarm-data"><code>data</code></dfn> attribute optionally represents the <span>JSON-serializable data</span> associated with the alarm.
 
 <h3 id="interface-alarmrequest"><span class="secno">4.4 </span>Interface <code title="">AlarmRequest</code></h3>
 <p>An <code><a href="#alarmrequest">AlarmRequest</a></code> object represents an ongoing operation; it notifies the application when the operation completes using an <a href="#event-handler-idl-attribute">event handler IDL attribute</a> (<code>onsuccess</code>), as well as a reference to the operation's result. A DOM method that initiates an ongoing operation returns an <code><a href="#alarmrequest">AlarmRequest</a></code> object that one can use to monitor the progress of that operation.

@@ -179,7 +179,7 @@ are defined in <span data-anolis-ref>HTML5</span>.
 
 interface <dfn>AlarmManager</dfn> : <span data-anolis-spec=dom>EventTarget</span> {
   <span>AlarmRequest</span> <span title="AlarmManager-getAll">getAll</span>();
-  <span>AlarmRequest</span> <span title="AlarmManager-add">add</span>(Date <var title>date</var>, <span>TimezoneDirective</span> <var title>respectTimezone</var>, optional Object <var title>data</var>);
+  <span>AlarmRequest</span> <span title="AlarmManager-add">add</span>(Date <var title>date</var>, <span>TimezoneDirective</span> <var title>respectTimezone</var>, optional any <var title>data</var>);
   <span>AlarmRequest</span> <span title="AlarmManager-remove">remove</span>(DOMString <var title>alarmId</var>);
 
   attribute EventHandler <span title="AlarmManager-onalarm">onalarm</span>;
@@ -196,7 +196,7 @@ interface <dfn>AlarmManager</dfn> : <span data-anolis-spec=dom>EventTarget</span
 <ol>
 <li>The first argument <code>date</code> is a <span data-anolis-ref>ECMASCRIPT</span> <code>Date</code> object representing when the alarm will trigger.</li>
 <li>The second argument <code>respectTimezone</code> can be either <code>"respectTimezone"</code> or <code>"ignoreTimezone"</code> to specify if the user agent needs to ignore the timezone information of that <code>Date</code> object. When <code>"respectTimezone"</code> is passed, we will alert that application when that time happens in that timezone. See <a href="#timezone-dst">Timezones and daylight savings</a> section for examples.</li>
-<li>The third argument <code>data</code> can be optionally specified to pass the <span>JSON-serializable object</span> for that alarm. Note that a unique ID will be returned to refer to the added alarm.</li>
+<li>The third argument <code>data</code> can be optionally specified to pass the <span>JSON-serializable data</span> to be associated with the alarm. Note that a unique ID will be returned to refer to the added alarm.</li>
 </ol>
 <p>A user agent <em class="ct">must</em> handle the error cases in the following manner:
 <ol>
@@ -221,7 +221,7 @@ If there was no alarm with the given identifier, the implementation <em class="c
   readonly attribute DOMString <span title="Alarm-id">id</span>;
   attribute Date <span title="Alarm-date">date</span>;
   attribute <span>TimezoneDirective</span> <span title="Alarm-respectTimezone">respectTimezone</span>;
-  attribute Object <span title="Alarm-data">data</span>;
+  attribute any <span title="Alarm-data">data</span>;
 };</pre>
 
 <p>The <dfn title="Alarm-id"><code>id</code></dfn> attribute returns an identifier for the given <code>Alarm</code> object that is unique within the origin. An implementation <em class="ct">must</em> maintain this identifier when a <code>Alarm</code> is added.
@@ -230,7 +230,7 @@ If there was no alarm with the given identifier, the implementation <em class="c
 
 <p>The <dfn title="Alarm-respectTimezone"><code>respectTimezone</code></dfn> attribute indicates if the timezone information of the <code>Date</code> object is ignored.
 
-<p>The <dfn title="Alarm-data"><code>data</code></dfn> attribute optionally represents the <span>JSON-serializable object</span> to be associated with the alarm.
+<p>The <dfn title="Alarm-data"><code>data</code></dfn> attribute optionally represents the <span>JSON-serializable data</span> associated with the alarm.
 
 <h3>Interface <code title="">AlarmRequest</code></h3>
 <p>An <code>AlarmRequest</code> object represents an ongoing operation; it notifies the application when the operation completes using an <span>event handler IDL attribute</span> (<code>onsuccess</code>), as well as a reference to the operation's result. A DOM method that initiates an ongoing operation returns an <code>AlarmRequest</code> object that one can use to monitor the progress of that operation.
