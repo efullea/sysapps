@@ -79,13 +79,13 @@
   </head>
   <body>
     <section id='abstract'>
-      This API provides an interface to raw TCP and UDP sockets.
+      This API provides interfaces to raw TCP and UDP sockets.
     </section>
     
     <section class="informative">
       <h2>Introduction</h2>
       <p>
-        Use this API to send and receive data over the network using TCP and UDP. 
+        Use this API to send and receive data over the network using TCP or UDP. 
       </p>
       
       An example of use is provided below:
@@ -136,47 +136,31 @@
 
     <section>
       <h2>Interface <a>RawSocket</a></h2>
-      <p>The <a>RawSocket</a> interface defines the attributes and methods for a tcp or udp socket</p> 
+      <p>The <a>RawSocket</a> interface defines the attributes and methods that are common for TCP and UDP sockets</p> 
       
-      <pre class="example highlight">
-        // Create a TCP socket
-        mySocket = new RawSocket (’tcp’);         
-      </pre>
-      
-      <p class="issue">
-        This use of a constructor for the Socket object, for which a set of methods is defined, is different from the Chrome Socket API, which uses a 
-        single socket object for all sockets and a "socket id" parameter to identify each socket in use.  
-      </p>         
-      
-      <dl title="[Constructor (SocketType type, optional CreateOptions options)] 
+      <dl title="[NoInterfaceObject] 
                  interface RawSocket"
           class="idl">  
           
-        <dt>readonly attribute SocketType type</dt>
-        <dd>The type of socket to create. Must be tcp or udp or the constructor must throw the DOMException INVALID_ACCESS_ERR.</dd>  
-        
         <dt>readonly attribute CreateOptions options</dt>
-        <dd>The socket options.</dd>          
+        <dd>The socket create options.</dd>   
         
-        <dt> void accept()</dt>
-        <dd>        
-          <p>This method applies to TCP sockets only. Registers a callback function to be called when a connection is accepted on this listening server 
-             socket. Listen must be called first. If there is already an active accept callback, this callback will be invoked immediately with an error 
-             as the resultCode. </p>  
-          <p>
-            Throws DOMException INVALID_ACCESS_ERR if any input parameter is not compatible with the expected type for that parameter.<br /> 
-            Throws DOMException INVALID_STATE_ERR if the socket was not in "listen" state.
-          </p>   
-          <dl class='parameters'>
-          
-             <dt>AcceptCallback callback</dt>
-             <dd>
-               Called when a when a connection is accepted on this listening server socket.
-             </dd>            
-                
-          </dl>       
-        </dd>   
-
+        <dt>readonly attribute boolean connected</dt>
+        <dd>True when the underlying socket is connected, i.e. connect() has been called. For udp sockets, this just represents whether a default 
+        remote address has been specified for reading and writing packets.</dd>   
+        
+        <dt>readonly attribute DOMString? peerAddress</dt>
+        <dd>If the underlying socket is connected, contains the IPv4/6 address of the peer, else this attribute is null.</dd>   
+        
+        <dt>readonly attribute unsigned short? peerPort</dt>
+        <dd>If the underlying socket is connected, contains the port of the peer, else this attribute is null. </dd>     
+        
+        <dt>readonly attribute DOMString? localAddress</dt>
+        <dd>If the underlying socket is bound or connected, contains its local IPv4/6 address, else this attribute is null.</dd>   
+        
+        <dt>readonly attribute unsigned short? localPort</dt>
+        <dd>If the underlying socket is bound or connected, contains its local port, else this attribute is null. </dd>                                 
+        
         <dt> void bind()</dt>
         <dd>        
           <p>Binds the local address for a socket. </p>      
@@ -194,11 +178,11 @@
              <dd>
                Called when the bind attempt is complete.
              </dd>             
-             <dt>optional DOMString address</dt>
+             <dt>optional DOMString localAddress</dt>
              <dd>
                The address of the local machine. If this parameter is omitted then any available local address is used.
              </dd>
-             <dt>optional unsigned short port</dt>
+             <dt>optional unsigned short localPort</dt>
              <dd>
                The port of the local machine. If this parameter is omitted then any free port is used.
              </dd>    
@@ -208,8 +192,8 @@
         
         <dt> void connect()</dt>
         <dd>        
-          <p>For a TCP socket connects the socket to the remote machine. For a UDP socket, this sets the default address that is used for read() 
-             and write() calls.</p>        
+          <p>For a TCP socket connects the socket to the remote machine. For a UDP socket, this sets the default peer address that is used for subsequent 
+             read() and write() calls.</p>        
  
           <p>
             Throws DOMException INVALID_ACCESS_ERR if any input parameter is not compatible with the expected type for that parameter.
@@ -221,11 +205,11 @@
              <dd>
                Called when the connection attempt is complete.
              </dd>            
-             <dt>DOMString address</dt>
+             <dt>DOMString peerAddress</dt>
              <dd>
                The hostname or IP address of the remote machine.
              </dd>
-             <dt>unsigned short port</dt>
+             <dt>unsigned short peerPort</dt>
              <dd>
                The port of the remote machine.
              </dd>      
@@ -233,45 +217,16 @@
           </dl>
         </dd>   
                  
-        <dt> void close()</dt>
+        <dt> void destroy()</dt>
         <dd>        
-          <p>Disconnects (for TCP) and closes this socket. A socket should be closed after use. A closed socker can not be used again by issuing a new 
-             bind() or connect(). A new socket instance has to be created. </p>  
+          <p> Disconnects and destroys this socket. A socket should be destroyed after use. A destroyed socket can not be used again by 
+             issuing any method call. A new socket instance has to be created. </p>  
           <p class="issue">
-            This is different from the Chrome socket API, which has the two methods, disconnect() and destroy(). However, do we need to "destroy" a socket?
-            The assumption is that JS garbage collection will handle removal of unused RawSocket objects. 
+            This is different from the Chrome socket API, which has the two methods, disconnect() and destroy(). However, do we need disconnect()? 
+            Are there any use cases for issuing a disconnect() without destroy()? A new socket instance call always be created. 
           </p>         
         </dd>     
         
-        <dt> void listen()</dt>
-        <dd>        
-          <p>This method applies to TCP sockets only. Listens for connections on the specified port and address. This effectively makes this a server 
-             socket, and client socket functions (connect, read, write) can no longer be used on this socket. </p>  
-          <p>
-            Throws DOMException INVALID_ACCESS_ERR if any input parameter is not compatible with the expected type for that parameter.
-          </p>   
-          <dl class='parameters'>
-          
-             <dt>ListenCallback callback</dt>
-             <dd>
-               Called when a socket has been prepared for incoming connections.
-             </dd>            
-             <dt>DOMString address</dt>
-             <dd>
-               The address of the local machine.
-             </dd>
-             <dt>unsigned short port</dt>
-             <dd>
-               The port of the local machine.
-             </dd>      
-             <dt>optional unsigned short backlog</dt>
-             <dd>
-               The maximum number of connection requests that can be queued before the system starts rejecting incoming requests.
-             </dd>    
-                     
-          </dl>       
-        </dd>           
-              
         <dt> void read()</dt>
         <dd>        
           <p>Reads data from the given "connected" UDP or TCP socket. For client sockets connect() must previously been called and for server sockets
@@ -294,8 +249,50 @@
              </dd>
                      
           </dl>
-        </dd>           
+        </dd>          
         
+        <dt> void write()</dt>
+        <dd>        
+          <p>Writes data on the given connected UDP or TCP socket. For client sockets connect() must previously been called and for server sockets
+             accept() must previously been called.</p>     
+ 
+          <p>
+            Throws DOMException INVALID_ACCESS_ERR if any input parameter is not compatible with the expected type for that parameter.<br /> 
+            Throws DOMException INVALID_STATE_ERR if the socket is not "connected".
+          </p>
+        
+          <dl class='parameters'>
+
+             <dt>WriteCallback callback</dt>
+             <dd>
+               Called when the send operation completes without blocking or an error occurs.
+             </dd> 
+             <dt>ArrayBuffer data</dt>
+             <dd>
+               The data to write.
+             </dd>      
+                     
+          </dl>
+        </dd>                           
+                            
+      </dl>  
+            
+    </section>     
+    
+    <section>
+      <h2>Interface <a>UDPSocket</a></h2>
+      <p>The <a>UDPSocket</a> interface defines the attributes and methods for a UDP socket</p> 
+      
+      <pre class="example highlight">
+        // Create a UDP socket
+        mySocket = new UDPSocket ();  
+        // Further code TBD..       
+      </pre>
+      
+      <dl title="[Constructor (optional CreateOptions options)] 
+                 interface UDPSocket : RawSocket"
+          class="idl">  
+          
         <dt> void recvFrom()</dt>
         <dd>        
           <p>Receives data from the given UDP socket.</p>        
@@ -336,18 +333,84 @@
              <dd>
                The data to write.
              </dd>
-             <dt>DOMString address</dt>
+             <dt>DOMString peerAddress</dt>
              <dd>
                The address of the remote machine.
              </dd> 
-             <dt>unsigned short port</dt>
+             <dt>unsigned short peerPort</dt>
              <dd>
                The port of the remote machine.
              </dd>                          
                      
           </dl>
-        </dd>          
-        
+        </dd>            
+                            
+      </dl>  
+            
+    </section>    
+    
+    <section>
+      <h2>Interface <a>TCPSocket</a></h2>
+      <p>The <a>TCPSocket</a> interface defines the attributes and methods for a TCP socket</p> 
+      
+      <pre class="example highlight">
+        // Create a TCP socket
+        mySocket = new TCPSocket ();
+        // Further code TBD...........        
+      </pre>
+      
+      <dl title="[Constructor (optional CreateOptions options)] 
+                 interface TCPSocket : RawSocket "
+          class="idl">  
+          
+        <dt> void accept()</dt>
+        <dd>        
+          <p>This method applies to TCP sockets only. Registers a callback function to be called when a connection is accepted on this listening server 
+             socket. Listen must be called first. If there is already an active accept callback, this callback will be invoked immediately with an error 
+             as the resultCode. </p>  
+          <p>
+            Throws DOMException INVALID_ACCESS_ERR if any input parameter is not compatible with the expected type for that parameter.<br /> 
+            Throws DOMException INVALID_STATE_ERR if the socket was not in "listen" state.
+          </p>   
+          <dl class='parameters'>
+          
+             <dt>AcceptCallback callback</dt>
+             <dd>
+               Called when a when a connection is accepted on this listening server socket.
+             </dd>            
+                
+          </dl>       
+        </dd>   
+       
+        <dt> void listen()</dt>
+        <dd>        
+          <p>This method applies to TCP sockets only. Listens for connections on the specified port and address. This effectively makes this a server 
+             socket, and client socket functions (connect, read, write) can no longer be used on this socket. </p>  
+          <p>
+            Throws DOMException INVALID_ACCESS_ERR if any input parameter is not compatible with the expected type for that parameter.
+          </p>   
+          <dl class='parameters'>
+          
+             <dt>ListenCallback callback</dt>
+             <dd>
+               Called when a socket has been prepared for incoming connections.
+             </dd>            
+             <dt>DOMString localAddress</dt>
+             <dd>
+               The address of the local machine.
+             </dd>
+             <dt>unsigned short localPort</dt>
+             <dd>
+               The port of the local machine.
+             </dd>      
+             <dt>optional unsigned short backlog</dt>
+             <dd>
+               The maximum number of connection requests that can be queued before the system starts rejecting incoming requests.
+             </dd>    
+                     
+          </dl>       
+        </dd>           
+       
         <dt> void setKeepAlive()</dt>
         <dd>        
           <p>Enables or disables the keep-alive functionality for a TCP connection.</p>        
@@ -368,7 +431,7 @@
              </dd>
              <dt>optional long delay</dt>
              <dd>
-               The delay seconds between the last data packet received and the first keepalive probe. Default is 0..
+               The delay seconds between the last data packet received and the first keepalive probe. Default is 0.
              </dd>     
                                   
           </dl>
@@ -394,35 +457,11 @@
              </dd>
                                   
           </dl>
-        </dd>        
-        
-        <dt> void write()</dt>
-        <dd>        
-          <p>Writes data on the given connected UDP or TCP socket. For client sockets connect() must previously been called and for server sockets
-             accept() must previously been called.</p>     
- 
-          <p>
-            Throws DOMException INVALID_ACCESS_ERR if any input parameter is not compatible with the expected type for that parameter.<br /> 
-            Throws DOMException INVALID_STATE_ERR if the socket is not "connected".
-          </p>
-        
-          <dl class='parameters'>
-
-             <dt>WriteCallback callback</dt>
-             <dd>
-               Called when the send operation completes without blocking or an error occurs.
-             </dd> 
-             <dt>ArrayBuffer data</dt>
-             <dd>
-               The data to write.
-             </dd>      
-                     
-          </dl>
-        </dd>                           
+        </dd>                              
                             
       </dl>  
             
-    </section>      
+    </section>             
     
     <section>
       <h2>Dictionary <a>AcceptInfo</a></h2>
@@ -437,9 +476,9 @@
         <dt>RawSocket? socket</dt>
         <dd>A new socket object for the accepted socket object or null if error. This new socket object is to be used for further communication with 
             the remote host through subsequent read() and write() calls.</dd>
-        <dt>DOMString? address</dt>
+        <dt>DOMString? peerAddress</dt>
         <dd>The address of the remote machine or null if error.</dd>        
-        <dt>unsigned short? port</dt>
+        <dt>unsigned short? peerPort</dt>
         <dd>The port of the remote machine or null if error.</dd>            
    
       </dl>              
@@ -495,9 +534,9 @@
         <dd>Null if recvFrom() was successful else a DOMError object detailing what went wrong. Error codes TBD.</dd>
         <dt>ArrayBuffer? data</dt>
         <dd>The received data or null if error.</dd>
-        <dt>DOMString? address</dt>
+        <dt>DOMString? peerAddress</dt>
         <dd>The address of the remote machine or null if error.</dd>        
-        <dt>unsigned short? port</dt>
+        <dt>unsigned short? peerPort</dt>
         <dd>The port of the remote machine or null if error.</dd>
            
       </dl>              
@@ -624,22 +663,7 @@
    
             
     </section>
-    
-    <section>
-      <h2> Enums </h2>
-      <section>
-        <h3> SocketType</h3>
-      
-        <dl id='enum-basic' class='idl' title='enum SocketType'>
-          <dt>tcp</dt>
-          <dd>tcp socket</dd>
-          <dt>udp</dt>
-          <dd>udp socket</dd>
-        </dl>   
-      </section>   
-        
-    </section>
-        
+           
     <section class='appendix'>
       <h2>Acknowledgements</h2>
       <p>
