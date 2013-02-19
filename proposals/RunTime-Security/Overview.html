@@ -35,24 +35,6 @@
     </script>
     <style>
       todo { display: none; }
-      pre.privateidl {
-        border-top: 1px solid #90b8de;
-        border-bottom: 1px solid #90b8de;
-        padding: 1em;
-        line-height: 120%;
-      }
-
-      pre.privateidl::before {
-        content: "WebIDL";
-        display: block;
-        width: 150px;
-        background: #90b8de;
-        color: #fff;
-        font-family: initial;
-        padding: 3px;
-        font-weight: bold;
-        margin: -1em 0 1em -1em;
-      }
     </style>
   </head>
 
@@ -192,13 +174,13 @@
           </li>
 
           <li><dfn id="propdef-launch_path">launch_path</dfn>: The property's
-          value MUST be the path within the application's origin that is loaded
+          value MUST be the path within the <a>application's origin</a> that is loaded
           when the application is launched.</li>
 
           <li><dfn id="propdef-icons">icons</dfn>: A map of icon sizes to URIs of
           the icons (which may be absolute, relative or data URIs). Icons MUST be
-          square. Paths beginning with "<code>/</code>" are treated as relative
-          to the origin of the app.</li>
+          square. Relative URLs MUST use the <a>application manifest</a> URL as
+          base URL.</li>
 
           <li>
             <dfn id="propdef-developer">developer</dfn>: This property describe
@@ -412,6 +394,10 @@
           </ul>
 -->
         </ul>
+
+        <p>The <dfn>application's origin</dfn> is the origin of the <a>application
+        manifest</a>. [[!ORIGIN]]</p>
+
         </section>
       </section>
 
@@ -441,14 +427,7 @@
 
           <dl title='interface Application' class='idl'>
             <dt>readonly attribute DOMString origin</dt>
-            <dd>The attribute MUST return the origin of the application as
-                described in the <a>application manifest</a>. [[!ORIGIN]]</dd>
-            <todo>
-              <ul>
-                <li>Why do we expose this here instead of doing application.manifest.origin?</li>
-                <li>What if the application has no origin? Seems like this is not a required field</li>
-              </ul>
-            </todo>
+            <dd>The attribute MUST return the <a>application's origin</a>.</dd>
 
             <dt>readonly attribute Object manifest</dt>
             <dd>The attribute MUST return an object representing the parsed
@@ -769,7 +748,7 @@
               running.</li>
               <li>Replace the previous version with the new version of the
               application.</li>
-              <li>If an error was occured during the previous steps, the UA MUST
+              <li>If an error has occured during the previous steps, the UA MUST
               send an <a>error message</a> to the request with any appropriate
               value. Otherwise, the UA MUST send a <a>success message</a> to the
               request with an <a>Application</a> object representing the updated
@@ -990,8 +969,7 @@
 
       <p>The UA SHOULD regularly check if the <a>application manifest</a> of
       installed applications has not been updated. To know if the file has been
-      updated, HTTP semantics apply. The UA SHOULD also try to compare version
-      numbers if presents to prevent false-positives.</p>
+      updated, HTTP semantics apply.</p>
 
       <p>For <a>package applications</a>, both <a>application manifest</a>s
       (outside and inside the package) SHOULD be updated. However, the
@@ -1026,10 +1004,10 @@
       <h2>Navigation</h2>
 
       <p>Depending on the user interface around the application context,
-      navigating outside the application's origin might lock the user out of the
-      application. To prevent that, the UA SHOULD NOT allow navigation out of
-      the application's origin, unless the origin is specified in the following
-      <a>application manifest<a> property:
+      navigating outside the <a>application's origin</a> might lock the user out
+      of the application. To prevent that, the UA SHOULD NOT allow navigation
+      out of the <a>application's origin</a>, unless the origin is specified in
+      the following <a>application manifest</a> property:
       <ul>
         <li><dfn id='prop-allow-navigation'>allow-navigation</dfn>: the property
         SHOULD contain an array of origins that can be navigated to from the
@@ -1184,12 +1162,6 @@
             <th>Permission Name</th>
             <th>Permission Description</th>
             <th>Access Type</th>
-          </tr>
-          <tr>
-            <td><code>backgroundservice</code></td>
-            <td>Allow a web application to run in the background and perform
-            tasks like syncing or respond to incoming messages.</td>
-            <td>N/A</td>
           </tr>
           <tr>
             <td><code>desktop-notification</code></td>
