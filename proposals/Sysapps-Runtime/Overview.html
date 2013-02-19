@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>System Application Runtime: Execution and Security Model</title>
+    <meta http-equiv='Content-Type' content='text/html;charset=utf-8' />
+    <script src='http://www.w3.org/Tools/respec/respec-w3c-common' class='remove' async></script>
+    <script class='remove'>
+      var respecConfig = {
+          // document info
+          specStatus:           "ED",
+          shortName:            "sysapps-runtime",
+          // publishDate:   "",
+          previousMaturity: "",
+          previousPublishDate:  "",
+          previousURI : "",
+          copyrightStart:       "2013",
+          edDraftURI:           "http://sysapps.github.com/sysapps/proposals/Sysapps-Runtime/Overview.html",
+          // lcEnd:  "2010-08-06",
+          // extraCSS:             ["../css/respec.css"],
+          extraCSS:             ["http://dev.w3.org/2009/dap/ReSpec.js/css/respec.css"],
+
+          // editors
+          editors:  [
+              { name: "金明(Ming Jin)", url: "",
+                company: "Samsung Electronics, Co., Ltd", companyURL: "http://www.samsung.com/sec" },
+              { name: "송정기(Jungkee Song)", url: "",
+                company: "Samsung Electronics, Co., Ltd", companyURL: "http://www.samsung.com/sec" },
+              { name: "Janusz Majnert", url: "",
+                company: "Samsung Electronics, Co., Ltd", companyURL: "http://www.samsung.com/sec" },
+          ],
+          
+          // WG
+          wg:           "System Applications WG",
+          wgURI:        "http://www.w3.org/2012/sysapps/",
+          wgPublicList: "public-sysapps",
+          wgPatentURI:  "",
+      };
+    </script>
+  </head>
+  <body>
+    <section id='abstract'>
+      The execution and security model defines the runtime environment, as well as associated APIs, in which installable web applications are securely executed. This specification particularly describes how the execution and security model differs from the traditional browser-based execution and security model.
+    </section>
+    <section id='sotd'>
+      <p>
+        This paragraph is here to demonstrate that it is possible to add a completely custom
+        piece of HTML inside the SotD.
+      </p>
+    </section>
+    <section class='informative'>
+      <h2>Introduction</h2>
+      <p>
+        Unlike traditional websites, web applications are installable on the device and executed in a runtime environment as a standalone application without any traditional Browser UI chrome. While the Browser-based behavior is well established for normal websites throughout the past decades, little is done for web applications. 
+      </p>
+      <p>
+        This proposal will define the core requirements of the installable web application runtime environment with the focus on management, execution, and security model. 
+      </p>
+      <p>
+        However, this proposal will not cover the detailed specifications for following aspects:
+        <ul>
+          <li>Packaging format</li>
+          <li>Manifest format</li>
+          <li>Inter-app communication protocols, such as <a href='http://dvcs.w3.org/hg/web-intents/raw-file/tip/spec/Overview.html'>Web Intents</a> [[!WEBINTENTS]] and <a href='https://wiki.mozilla.org/WebAPI/WebActivities'>Web Activities</a></li>
+        </ul>
+        Instead, we will highlight some of important requirements of these aspects whenever it's necessary to support the core arguments of this proposal.
+      </p>
+    </section>      
+
+    <section>
+      <h2>Definitions</h2>
+      <p>
+        A <dfn id='system-application'>system application</dfn> is an installable web application that is implemented using 
+        web technologies like (but not limited to) HTML, JavaScript, CSS and can access to the set 
+        of system and service APIs with certain privileges granted by the runtime environment.
+      </p>
+      <div class='issue'>
+        Can the term "system application" normatively represent the installable web application 
+        distinguished from normal "web application" used in W3C specification context? This proposal 
+        tried to so since it should be the reason why the WG has been named on the term.
+      </div>
+      <p>
+        A <dfn id='runtime'>runtime</dfn> is a management and execution environment for system applications.
+      </p>
+      <p>
+        An <dfn id='application-service'>application service</dfn> is an "Android intent" like service that provides inter-app invokation and communication mechanism.
+      </p>
+      <div class='note'>
+        At the time of this proposal, <a href='http://dvcs.w3.org/hg/web-intents/raw-file/tip/spec/Overview.html'>Web Intents</a> [[!WEBINTENTS]] and <a href='https://wiki.mozilla.org/WebAPI/WebActivities'>Web Activities</a> are still work in progress. Hence, this proposal specifies <a href='#application=service'>application service</a> to cover inter-app communication capability.
+      </div>
+    </section>
+    
+    <section>
+      <h2>System Application Management</h2>
+      <section>
+        <h2>Packaging</h2>
+        <p>
+          A system application MUST be packaged if the installation of the system application involves delivery of more than one file.
+        </p>
+        <p>
+          A system application package MUST be compliant to a <dfn id='packaging-format'>packaging format</dfn>.
+        </p>
+        <div class='note'>
+          Existing web application packaging formats:
+          <ul>
+            <li>Chrome <a href="http://developer.chrome.com/extensions/packaging.html">CRX</a> packaging. </li>
+            <li>Mozilla <a href="https://wiki.mozilla.org/Apps/Security#Packaged_apps">packaged web apps</a>. </li>
+            <li>W3C Widget <a href="http://www.w3.org/TR/widgets/">packaging</a>. [[!WIDGETS]]</li>
+          </ul>
+        </div>
+        <p>
+          A system application package MUST have file extension and MIME type defined.
+        </p>
+        <p>
+          A system application package MUST include one manifest file.
+        </p>
+        <p>
+          A system application package MUST include one or more digital signature files if the system application is signed by one or more entities.
+        </p>
+      </section>
+      
+      <section>
+        <h2>Manifest</h2>
+        <p>
+          A system application MUST have a manifest file associated with the system application.
+        </p>
+        <p>
+          A manifest file MUST have file extension and MIME type defined.
+        </p>
+        <p>
+          A <dfn id='manifest'>manifest format</dfn> MUST define fields for developers to specify following properties (or equivalent):
+        </p>
+        <ul>
+          <li><dfn>name</dfn>: string (optional), defines the name of the system application </li>
+          <li><dfn>icons</dfn>: list of icon locations (optional), defines the location of the system application icons with respect to different resolutions </li>
+          <li><dfn>startup_page</dfn>: url (mandatory), defines the first page of the system application (displayed at launch time) </li>
+          <li><dfn>version</dfn>: string (optional), indicates the version of the system application</li>
+          <li><dfn>permissions</dfn>: array of strings (optional), defines the list of permissions that the system application requires at runtime</li>
+          <li><dfn>csp</dfn>: string (optional), defines the content security policy for the domain [[!CSP]]</li>
+          <li><dfn>services</dfn>: defines the list of service specifications (optional), the registration information of services that the system application can handle. Each service is specified with following properties:
+            <ul>
+              <li><dfn>operation</dfn>: url (mandatory), defines the action to be performed by the application service page.</li>
+              <li><dfn>service_page</dfn>: url (mandatory), defines the the page that will handle requests.</li>
+              <li><dfn>description</dfn>: string (optional), description of the application service. </li>
+              <li><dfn>uri_scheme</dfn>: string (optional), defines the scheme of the data on which the action will be performed.</li>
+              <li><dfn>mime_type</dfn>: string (optional), defines the mime type of the data on which the action will be performed.</li>
+            </ul>
+          </li>
+        </ul>
+        <div class='note'>
+          Existing manifest formats:
+          <ul>
+            <li>Chrome Web App <a href="https://developer.chrome.com/extensions/manifest.html">manifest</a>. </li>
+            <li>Mozilla Apps <a href="https://developer.mozilla.org/en-US/docs/Apps/Manifest">manifest</a>. </li>
+            <li>W3C Widget <a href="http://www.w3.org/TR/widgets/">configuration</a>. </li>
+          </ul>
+        </div>
+        <p>
+          A system application manifest MUST define the startup page of the system application.
+        </p>
+        <section class='informative'>
+          <h2>Example</h2>
+          <div><div class="example-title"></div> 
+          <pre class="example">
+          {
+            "name": "My Image Works",
+            "icons": {
+              "48x48": "img/icon_48.png",
+              "128x128": "img/icon_128.png"
+            },
+            "startup_page": "index.html",
+            "version": "1.2",
+            "permissions": ["application.launch", "content.read", "content.write"],
+            "csp": "script-src 'self'; default-src https://myimageworks.com;",
+            "services": {
+              "http://appservice.org/operation/view": {
+                "service_page": "view.html",
+                "description": "My Image Viewer",
+                "uri_scheme": "http",
+                "mime_type": "image/jpeg"
+              },
+              "http://appservice.org/operation/edit": {
+                "service_page": "edit.html",
+                "description": "My Image Editor",
+                "uri_scheme": "http",
+                "mime_type": "image/jpeg"
+              }
+            }
+          }
+        </pre></div>
+        </section>
+      </section>
+      
+      <section class='informative'>
+        <h2>Delivery</h2>
+        <p>
+          A system application shall be delivered in a package if the system application requires to deliver more than one file to the device at installation time. Otherwise, if the manifest file is sufficient to install the system application on the device, the system application will not be packaged.
+        </p>
+        <p>
+          There can be multiple channels for system application delivery:
+          <ul>
+            <li><dfn>App store</dfn>, which will provide a trusted gateway for system application discovery and delivery.</li>
+            <li><dfn>Open online distribution</dfn>, such as distribution of packages or manifests on websites.</li>
+            <li><dfn>Export from Browser</dfn>, which will export and install a website as a system application via the manifest.</li>
+          </ul>
+        </p>
+      </section>
+      
+      <section>
+        <h2>Installation</h2>
+        <p>
+          The runtime MUST prompt user the list of privileges that the system applications will obtain upon installation.
+        </p>
+        <p>
+          The runtime MUST support the processing of <a>packaging format</a> as part of system application installation procedure.
+        </p>
+        <p>
+          The runtime MUST support the processing of <a>manifest format</a> as part of system application installation procedure.
+        </p>
+        <p>
+          The runtime MUST support validation of digital signature(s) if the system application package contains one or more digital signature files.
+        </p>
+        <p>
+          The runtime MUST register the system application as application service handlers if the manifest specifies one or more services.
+        </p>
+      </section>
+
+      <section>
+        <h2>Update</h2>
+        <p>
+          The runtime SHOULD support updating of an installed system application.
+        </p>
+        <p>
+          The new system application MUST have higher version than the system application to be updated.
+        </p>
+        <p>
+          The update of a system application MUST preserve the system application's private data, such as settings, cookies, local storage, etc.
+        </p>
+      </section>
+
+      <section>
+        <h2>Uninstallation</h2>
+        <p>
+          The runtime MUST support system application uninstallation.
+        </p>
+        <p>
+          All of system application's private data MUST be erased during the uninstallation.
+        </p>
+      </section>
+      
+      <section>
+      	 <h2><code>WindowRuntime</code> interface</h2>
+	      <dl title='[NoInterfaceObject] interface WindowRuntime' class='idl'>
+	        <dt>readonly attribute Runtime runtime</dt>
+	        <dd>
+	          This attribute SHOULD be a unique instance of the <a href='#runtime-interface'><code>Runtime</code></a> interface that a user agent implements.
+	        </dd>
+	      </dl>
+	      <dl title='Window implements WindowRuntime' class='idl'>
+	      </dl>
+	      <p>
+	      	 <a href='http://www.w3.org/TR/html5/browsers.html#window'><code>Window</code></a> interface of the user agents implementing the <a href='#system-application'>system application</a> <a href='#runtime'>runtime</a> MUST 
+	        implement <a href='#windowruntime-interface'><code>WindowRuntime</code></a> interface as the <code>runtime</code> attribute of the <code>window</code> object.
+	      </p>
+      </section>
+      
+      <section>
+      	<h2><code>Runtime</code> interface</h2>
+        <dl title='interface Runtime' class='idl'>
+          <dt>readonly attribute DOMString name</dt>
+          <dd>
+            This attribute specifies the name of the <a href='#runtime'>runtime</a>.
+          </dd>
+          <dt>readonly attribute DOMString version</dt>
+          <dd>
+            This attribute specifies the version of the <a href='#runtime'>runtime</a>.
+          </dd>
+          <dt>readonly attribute DOMString platform</dt>
+          <dd>
+            This attribute specifies the platform on which the <a href='#runtime'>runtime</a> is executing.
+          </dd>
+          <dt>readonly attribute Application application</dt>
+          <dd>
+            This attribute represents the <a href='#application-interface'><code>Application</code></a> interface of the <a href='#main-browsing-context'>main browsing context</a> of the <a href='#system-application'>system application</a>.
+          </dd>
+        </dl>
+        <div class='note'>
+        	 <code>runtime</code> object MUST only be accessible from the <a href='#main-browsing-context'>main browsing context</a> of a <a href='#system-application'>system application</a>.
+        </div>
+        <p>
+        	 To make the Runtime interface be resuable in functional level upon different requirements 
+        	 of user agents, two interfaces, <a href='#runtimeinstaller-interface'><code>RuntimeInstaller</code></a> and 
+        	 <a href='#runtimeexecutionmanager-interface'><code>RuntimeExecutionManager</code></a>, are separately defined.
+        </p>
+        <dl title='Runtime implements RuntimeInstaller' class='idl'>
+	      </dl>
+	      <p>
+	      	 <a href='#runtime-interface'><code>Runtime</code></a> interface of the user agents implementing the <a href='#system-application'>system application</a> 
+	      	 <a href='#runtime'>runtime</a> MAY implement <a href='#runtimeinstaller-interface'><code>RuntimeInstaller</code></a> interface to provide install, update 
+	      	 and uninstall capabilities of the <a href='#system-application'>system applications</a>.
+	      </p>
+	      <dl title='Runtime implements RuntimeExecutionManager' class='idl'>
+	      </dl>
+	      <p>
+	      	 <a href='#runtime-interface'><code>Runtime</code></a> interface of the user agents implementing the <a href='#system-application'>system application</a> 
+	      	 <a href='#runtime'>runtime</a> MUST implement <a href='#runtimeexecutionmanager-interface'><code>RuntimeExecutionManager</code></a> interface to provide launch, 
+	      	 pause, resume and terminate capabilities of the <a href='#system-application'>system applications</a>.
+	      </p>
+      </section>
+      
+      <section>
+        <h2><code>RuntimeInstaller</code> interface</h2>
+        <div class='note'>
+        	 This proposal referred to and used Mozilla's <a href='http://mounirlamouri.github.com/sysapps/proposals/RunTime-Security/Overview.html#domrequest-interface'><code>DOMRequest</code></a> interface that 
+        	 provides decent interface to handle asynchronous method calls. The interface definition is
+        	 currently found in Mounir's <a href="http://mounirlamouri.github.com/sysapps/proposals/RunTime-Security/Overview.html#idl-def-DOMRequest">
+        	 Runtime and Security Model for Web Applications</a> proposal.
+        </div>
+        <dl title='interface RuntimeInstaller' class='idl'>
+          <dt>DOMRequest install (in DOMString manifestUrl, Object? parameters)</dt>
+          <dd>
+            This method MUST return a <a href='http://mounirlamouri.github.com/sysapps/proposals/RunTime-Security/Overview.html#domrequest-interface'><code>DOMRequest</code></a> object and install application asynchronously.
+          </dd>
+          <dt>DOMRequest uninstall (in DOMString applicationId)</dt>
+          <dd>
+            This method MUST return a <a href='http://mounirlamouri.github.com/sysapps/proposals/RunTime-Security/Overview.html#domrequest-interface'><code>DOMRequest</code></a> object and uninstall application asynchronously.
+          </dd>
+          <dt>DOMRequest update (in DOMString applicationId)</dt>
+          <dd>
+            This method MUST return a <a href='http://mounirlamouri.github.com/sysapps/proposals/RunTime-Security/Overview.html#domrequest-interface'><code>DOMRequest</code></a> object and update the application asynchronously.
+          </dd>
+          <dt>attribute EventHandler oninstall</dt>
+          <dd>
+            This <code>EventHandler</code> attribute is invoked when <code>install</code> event is fired by the runtime.
+          </dd>
+          <dt>attribute EventHandler onuninstall</dt>
+          <dd>
+            This <code>EventHandler</code> attribute is invoked when <code>uninstall</code> event is fired by the runtime.
+          </dd>
+          <dt>attribute EventHandler onupdate</dt>
+          <dd>
+            This <code>EventHandler</code> attribute is invoked when <code>update</code> event is fired by the runtime.
+          </dd>
+        </dl>
+      </section>
+      
+      <section>
+        	 <h2><code>Application</code> interface</h2>
+	        <dl title='interface Application : EventTarget' class='idl'>
+	          <dt>readonly attribute DOMString id</dt>
+	          <dd>
+	            This attribute specifies the unique ID of the <a href='#system-application'>system application</a>.
+	          </dd>
+	          <dt>readonly attribute DOMString name</dt>
+	          <dd>
+	            This attribute specifies the name of the <a href='#system-application'>system application</a>.
+	          </dd>
+	          <dt>readonly attribute DOMString description</dt>
+	          <dd>
+	            This attribute specifies the description of the <a href='#system-application'>system application</a>.
+	          </dd>
+	          <dt>readonly attribute DOMString version</dt>
+	          <dd>
+	            This attribute specifies the version of the <a href='#system-application'>system application</a>.
+	          </dd>
+	          <dt>readonly attribute Date installDate</dt>
+	          <dd>
+	            This attribute specifies the installation date of the <a href='#system-application'>system application</a>n.
+	          </dd>
+	          <dt>readonly attribute Date updateDate</dt>
+	          <dd>
+	            This attribute specifies the update date of the <a href='#system-application'>system application</a>.
+	          </dd>
+	          <dt>readonly attribute unsigned long size</dt>
+	          <dd>
+	            This attribute specifies the size of the <a href='#system-application'>system application</a>.
+	          </dd>
+	          <dt>readonly attribute DOMString manifestUrl</dt>
+	          <dd>
+	            This attribute specifies the manifest url of the <a href='#system-application'>system application</a> from which addtional application information can be referred to.
+	          </dd>
+	          <dt>readonly attribute boolean show</dt>
+	          <dd>
+	            This attribute returns boolean value to indicate whether the application is visible.
+	          </dd>
+	          <dt>void exit ()</dt>
+	          <dd>
+	            This method MUST terminate the <a href='#system-application'>system application</a> itself.
+	          </dd>
+	          <dt>void hide ()</dt>
+	          <dd>
+	            This method MUST hide the <a href='#system-application'>system application</a> itself in background.
+	          </dd>
+	          <dt>attribute EventHandler onlaunch</dt>
+	          <dd>
+	            This <code>EventHandler</code> attribute is invoked when <code>launch</code> event is fired by the <a href='#runtime'>runtime</a>.
+	          </dd>
+	          <dt>attribute EventHandler onterminate</dt>
+	          <dd>
+	            This <code>EventHandler</code> attribute is invoked when <code>terminate</code> event is fired by the <a href='#runtime'>runtime</a>.
+	          </dd>
+	          <dt>attribute EventHandler onpause</dt>
+	          <dd>
+	            This <code>EventHandler</code> attribute is invoked when <code>pause</code> event is fired by the <a href='#runtime'>runtime</a>.
+	          </dd>
+	          <dt>attribute EventHandler onresume</dt>
+	          <dd>
+	            This <code>EventHandler</code> attribute is invoked when <code>resume</code> event is fired by the <a href='#runtime'>runtime</a>.
+	          </dd>
+                  <dt>attribute EventHandler onrequest</dt>
+	          <dd>
+	            This <code>EventHandler</code> attribute is invoked when <code>request</code> event is fired by the <a href='#runtime'>runtime</a>.
+	          </dd>
+	        </dl>
+        </section>  
+        
+        <div class='note'>
+          <a href='#application-interface'><code>Application</code></a> interface has been inherited from <a href='http://dvcs.w3.org/hg/domcore/raw-file/tip/Overview.html#eventtarget'><code>EventTarget</code></a> interface such that 
+          the <a href='#application-interface'><code>Application</code></a> object can add relevant event handlers to monitor system 
+          generated events, e.g. "lowbattery", etc., as well as application lifecycle events.
+        </div>
+    </section>
+
+    <section>
+      <h2>System Application Origin</h2>
+      <section>
+        <h2>URI Scheme</h2>
+        <p>A <code>sysapp:</code> URI scheme is used to define the origin [[!ORIGIN]] of an installed web application. All <code>sysapp:</code> URL must follow this ABNF (<a href="http://www.ietf.org/rfc/rfc5234.txt">RFC5234</a> defines ABNF):
+        </p>
+        <div class="block">
+          <pre class="code">
+            <code>
+              webApplicationUri = scheme "://" uniqueId path ["?" query] ["#" fragment]
+              scheme = "sysapp"
+              uniqueId = *unreserved
+            </code>
+          </pre>
+        </div>
+        <p>
+          Where <a href="http://tools.ietf.org/html/rfc3986#section-3.3">path</a>, <a href="http://tools.ietf.org/html/rfc3986#section-3.4">query</a>, <a href="http://tools.ietf.org/html/rfc3986#section-3.5">fragment</a>, and <a href="http://tools.ietf.org/html/rfc3986#section-2.3">unreserved</a> are defined in <a href="http://tools.ietf.org/html/rfc3986">URI</a> 
+        </p>
+        <p>
+          When synthesizing a <code>webApplicationUri</code> string, the runtime MUST normalize it using syntax-based normalization defined in [<a href="http://tools.ietf.org/html/rfc3987">IRI</a>].
+        </p>
+        <p>
+          The <code>uniqueId</code> is a string uniquely identifying a system application.
+        </p>
+        <p>
+          The <code>query</code> and <code>fragment</code> components complement the path component but play no role in identifying a resource within the system application package.
+        </p>
+      </section>
+      <section>
+        <h2>Dereferencing Rules</h2>
+        <p>
+          The rules for dereferencing a <code>webApplicationUri</code> are as follows:
+        </p>
+        <p>
+          <ol>
+            <li>Resolve URI into an absolute URL using the <a href="http://www.w3.org/TR/html5/urls.html#resolving-urls">algorithm</a> defined in [[!HTML5]]. </li>
+            <li>If the URI does not conform to the <code>webApplicationUri</code> ABNF, return an error and terminate this algorithm.</li>
+            <li>If the <code>uniqueId</code> does not match the one assigned to this system application, return an error and terminate this algorithm.</li>
+            <li>
+              Let <var>file-entry</var> be the result of running an algorithm for finding a file within the system application package using the <code>path</code> component as the argument.
+              <div class='note'>
+                An example algorithm for <a href="http://www.w3.org/TR/widgets/#rule-for-finding-a-file-within-a-widget-package-0">finding a file within a package</a> can be found in W3C <a href="http://www.w3.org/TR/widgets">Widgets</a> specification.
+              </div>
+            </li>
+            <li>If <var>file-entry</var> is not found at the given path, return an error and terminate this algorithm.</li>
+            <li>
+              Let <var>content-type</var> be the result of running an algorithm for identifying the media type of a file within the system application package using the <var>file-entry</var> component as the argument.
+              <div class='note'>
+                An example algorithm for <a href="http://www.w3.org/TR/widgets/#rule-for-identifying-the-media-type-of-a-file">identifying the mime type of a file within a package</a> can be found in W3C <a href="http://www.w3.org/TR/widgets">Widgets</a> specification.
+              </div>
+            </li>
+            <li>Return <var>file-entry</var> and <var>content-type</var> to the runtime.</li>
+          </ol>
+        </p>
+        <p> 
+          The runtime MUST treat the <code>webApplicationUri</code> pointing to the system application package root directory as the local document's origin.
+        </p>
+        <p> 
+          All DOM objects' properties that reference system application's local resources MUST use <code>webApplicationUri</code> scheme.
+          <div class='note'>
+            For example, if the runtime loads a system application whose unique ID is "my-unique-webapp-id", then the following Javascript statement evaluates to true:
+            <pre>window.location.href=="sysapp://my-unique-webapp-id/"</pre>
+            Consequently, if this document contains an image element loaded from within the system application package, then the following statement evaluates to true:
+            <pre>img.src=="sysapp://my-unique-webapp-id/path/to/image/image_filename.png"</pre>
+          </div>
+        </p>
+        <p>
+          Any attempt to access resources from within the system application's package using URI scheme other than <code>webApplicationUri</code> MUST be blocked by the runtime. This includes, but is not limited to, attempts to access system application package with the use of <code>file://</code> scheme.
+        </p>
+        <p>
+          When dereferencing a <code>webApplicationUri</code>, the runtime MUST make sure that the resulting <var>file-entry</var> is located within the requesting system application's package. Any attempts to break out of the package (for example by using symbolic links) MUST be blocked.
+        </p>
+      </section>
+
+    </section>
+
+    <section>
+      <h2>Execution Model</h2>
+      <section>
+        <h2>Execution Lifecycle: States and Events</h2>
+        <p>
+          A system application SHALL be in one of following application states during its execution lifecycle:
+          <ul>
+            <li><code>Running</code></li>
+            <li><code>Paused</code></li>
+            <li><code>Terminated</code></li>
+          </ul>
+        </p>
+        <p>
+          <code>Running</code> state indicates that the system application instance is ready. The main browsing context is initialized, the application logic can be executed, and application/system events can be handled by the system application. A system application SHOULD immediately enter the <code>running</code> state as soon as the launching finishes. 
+        </p>
+        <p><code>Paused</code> state indicates that the system application is suspended and cannot handle any events. </p>
+        <p><code>Terminated</code> state indicates that the system application instance is destroyed. </p>
+        <p>
+          The runtime MUST support triggering of following application events:
+          <ul>
+            <li><code>launch</code></li>
+            <li><code>request</code></li>
+            <li><code>pause</code></li>
+            <li><code>resume</code></li>
+            <li><code>terminate</code></li>
+          </ul>  
+        </p>
+        <p>
+          <code>launch</code> event MUST be triggered immediately after the system application transits from <code>terminated</code> state to <code>running</code> state. 
+          <div class='note'>
+            It's important to note that <code>launch</code> event is triggered even before <code>document</code> events such as <code>DOMContentLoaded</code>, <code>onLoad</code>.
+          </div>
+          <div class='issue'>
+            What will be the real world usage for <code>launch</code> event? 
+          </div>
+        </p>
+        <p>
+          <code>request</code> event MUST be triggered when the system application is in <code>running</code> state. 
+        </p>
+        <p>
+          <code>request</code> event MUST NOT be triggered before the <code>launch</code> event.
+        </p>
+        <p>
+          <code>pause</code> event MUST be triggered immediately before the system application transits from <code>running</code> state to <code>paused</code> state.
+        </p>
+        <p>
+          <code>resume</code> event MUST be triggered immediately after the system application transits from <code>paused</code> state to <code>running</code> state.
+        </p>
+        <p>
+          <code>terminate</code> event MUST be triggered immediately before the system application transits from <code>running</code> state to <code>terminated</code> state.
+        </p>
+      </section>
+      <section>
+        <h2>Launching</h2>
+        <p>
+          <dfn>Algorithm for launching a system application</dfn>:
+          <ol>
+            <li>If the system application is in <code>terminated</code> state:</li>
+            <ol type='A'>
+              <li>Initialize the system application instance and main browing context.</li>
+              <li>Load the startup page in main browsing context.</li>
+              <li>Trigger <code>launch</code> event on main browsing context.</li>
+            </ol>
+            <li>Else, if the system application is in <code>paused</code> state:</li>
+            <ol type='A'>
+              <li>Resume the system application.</li>
+              <li>Bring the main browsing context to the top of window stack.</li>
+              <li>Bring the system application to foreground.</li>
+              <li>Trigger <code>resume</code> event on the main browsing context.</li>
+            </ol>
+            <li>Else, if the system application is in background and in <code>running</code> state:</li>
+            <ol type='A'>
+              <li>Bring the system application to foreground.</li>
+            </ol>
+          </ol>
+        </p>
+        <p>
+          <dfn>Algorithm for launching a system application with service request</dfn>:
+          <ol>
+            <li>If the system application is in <code>terminated</code> state:</li>
+            <ol type='A'>
+              <li>Initialize the system application instance and main browing context.</li>
+              <li>Load the startup page in main browsing context.</li>
+              <li>Trigger <code>launch</code> event on main browsing context.</li>
+              <li>Trigger <code>request</code> event on main browsing context (with the request data).</li>
+              <div class='note'>
+                The runtime MUST ensure that the <code>request</code> event handler is called after the system application registers the handler via <code>window.runtime.application.onrequest = function(){};</code>
+              </div>
+            </ol>
+            <li>Else, if the system application is in <code>paused</code> state:</li>
+            <ol type='A'>
+              <li>Resume the system application.</li>
+              <li>Bring the main browsing context to the top of window stack.</li>
+              <li>Bring the system application to foreground.</li>
+              <li>Trigger <code>resume</code> event on main browsing context.</li>
+              <li>Trigger <code>request</code> event on main browsing context.</li>
+            </ol>
+            <li>Else, if the system application is in background and in <code>running</code> state:</li>
+            <ol type='A'>
+              <li>Bring the main browsing context to the top of window stack.</li>
+              <li>Bring the system application to foreground.</li>
+              <li>Trigger <code>request</code> event on main browsing context.</li>
+            </ol>
+          </ol>
+        </p>
+
+      </section>
+      <section>
+        <h2>Service Request Handling</h2>
+        <p>
+          <dfn>Algorithm for handling a service request</dfn>:
+          <ol>
+            <li>If the system application is in <code>terminated</code> state:</li>
+            <ol type='A'>
+              <li>Initialize the system application instance and main browing context.</li>
+              <li>Load the service page in main browsing context.</li>
+              <li>Trigger <code>launch</code> event on main browsing context.</li>
+              <li>Trigger <code>request</code> event on main browsing context (with the request data).</li>
+              <div class='note'>
+                The runtime MUST ensure that the <code>request</code> event handler is called after the system application registers the handler via <code>window.runtime.application.onrequest = function(){};</code>
+              </div>
+            </ol>  
+            <li>Else, if the system application is in background and in <code>paused</code> state:</li>
+            <ol type='A'>
+              <li>Resume the system application.</li>
+              <li>Trigger <code>resume</code> event on main browsing context.</li>
+              <li>If the service page is already created:</li>
+              <ol type='a'>
+                <li>Bring the main browsing context to the top of window stack.</li>
+                <li>Bring the system application to foreground.</li>
+                <li>Trigger <code>request</code> event on main browsing context.</li>
+              </ol>
+              <li>Else, (if the service page is not created yet): </li>
+              <ol type='a'>
+                <li>Load the service page in main browsing context.</li>
+                <div class='issue'>
+                  We probably need an event to allow the application to save current main browsing context before it's get replaced by the new service page browsing context. Can <code>unload</code> event be used for this purpose?
+                </div>
+                <li>Bring the main browsing context to the top of window stack.</li>
+                <li>Bring the system application to foreground.</li>
+                <li>Trigger <code>request</code> event on main browsing context.</li>
+              </ol>
+            </ol>          
+            <li>Else, if the system application is in background and in <code>running</code> state:</li>
+            <ol type='A'>
+              <li>If the service page is already created:</li>
+              <ol type='a'>
+                <li>Bring the main browsing context to the top of window stack.</li>
+                <li>Bring the system application to foreground.</li>
+                <li>Trigger <code>request</code> event on main browsing context.</li>
+              </ol>
+              <li>Else, (if the service page is not created yet): </li>
+              <ol type='a'>
+                <li>Load the service page in main browsing context.</li>
+                <li>Bring the main browsing context to the top of window stack.</li>
+                <li>Bring the system application to foreground.</li>
+                <li>Trigger <code>request</code> event on main browsing context.</li>
+              </ol>
+            </ol>
+            <li>Else, </li>
+            <ol type='A'>
+              <li>If the service page is already created:</li>
+              <ol type='a'>
+                <li>Bring the main browsing context to the top of window stack.</li>
+                <li>Trigger <code>request</code> event on main browsing context.</li>
+              </ol>
+              <li>Else, (if the service page is not created yet): </li>
+              <ol type='a'>
+                <li>Load the service page in main browsing context.</li>
+                <li>Bring the main browsing context to the top of window stack.</li>
+                <li>Trigger <code>request</code> event on main browsing context.</li>
+              </ol>
+            </ol>            
+          </ol>
+        </p>
+      </section>
+      <section>
+        <h2>Pause and Resume</h2>
+        <p>
+          <dfn>Algorithm for pausing a system application</dfn>:
+        </p>
+        <p>
+          If the system application is in <code>running</code> state: 
+          <ol>
+            <li>Trigger <code>pause</code> event on main browsing context.</li>
+            <li>Pause the system application.</li>
+          </ol>
+        </p>
+        <p>
+          <dfn>Algorithm for resuming a system application</dfn>:
+        </p>
+        <p>
+          If the system application is in <code>paused</code> state: 
+          <ol>
+            <li>Resume the system application.</li>
+            <li>Trigger <code>resume</code> event on main browsing context.</li>
+          </ol>
+        </p>
+      </section>
+
+      <section>
+        <h2>Terminate</h2>
+        <p>
+          <dfn>Algorithm for terminating a system application</dfn>:
+          <ol>
+            <li>If the system application is in <code>running</code> state:</li>
+            <ol type='A'>
+              <li>Trigger <code>terminate</code> event on main browsing context.</li>
+              <li>Close the main browsing context.</li>
+              <li>Close the system application.</li>
+            </ol>
+            <li>Else, if the system application is in <code>paused</code> state:</li>
+            <ol type='A'>
+              <li>Close the main browsing context.</li>
+              <li>Close the system application.</li>
+            </ol>
+          </ol>
+        </p>
+       
+      </section>
+      
+      <section>
+        <h2><code>RuntimeExecutionManager</code> interface</h2>
+        <dl title='interface RuntimeExecutionManager' class='idl'>
+          <dt>DOMRequest launch (in DOMString applicationId)</dt>
+          <dd>
+            This method MUST return a <a href='http://mounirlamouri.github.com/sysapps/proposals/RunTime-Security/Overview.html#domrequest-interface'><code>DOMRequest</code></a> object and launch the designated <a href='#system-application'>system application</a> asynchronously.
+          </dd>
+          <dt>DOMRequest terminate (in DOMString applicationId)</dt>
+          <dd>
+            This method MUST return a <a href='http://mounirlamouri.github.com/sysapps/proposals/RunTime-Security/Overview.html#domrequest-interface'><code>DOMRequest</code></a> object and terminate the designated <a href='#system-application'>system application</a> asynchronously.
+          </dd>
+          <dt>DOMRequest pause (in DOMString applicationId)</dt>
+          <dd>
+            This method MUST return a <a href='http://mounirlamouri.github.com/sysapps/proposals/RunTime-Security/Overview.html#domrequest-interface'><code>DOMRequest</code></a> object and pause the designated <a href='#system-application'>system application</a> asynchronously.
+          </dd>
+          <dt>DOMRequest resume (in DOMString applicationId)</dt>
+          <dd>
+            This method MUST return a <a href='http://mounirlamouri.github.com/sysapps/proposals/RunTime-Security/Overview.html#domrequest-interface'><code>DOMRequest</code></a> object and resume the designated <a href='#system-application'>system application</a> asynchronously.
+          </dd>
+          <dt>DOMRequest getApplications (in ApplicationState state, applicationListCallback? callback)</dt>
+          <dd>
+            This method MUST return a <a href='http://mounirlamouri.github.com/sysapps/proposals/RunTime-Security/Overview.html#domrequest-interface'><code>DOMRequest</code></a> object and get the list of <a href='#system-application'>system application</a>s 
+            asynchronously. The <code>state</code> parameter passes to the <a href='#runtime'>runtime</a> the state of the 
+            <a href='#system-application'>system application</a>s to look up.
+          </dd>
+        </dl>
+      </section>
+      
+      <section>
+      	 <h2>enum <code>ApplicationState</code></h2>
+        <dl id='enum-basic' class='idl' title='enum ApplicationState'>
+          <dt>installed</dt>
+          <dd>The system application is in installed state.</dd>
+          <dt>running</dt>
+          <dd>The system application is in running state.</dd>
+          <dt>paused</dt>
+          <dd>The system application is in paused state.</dd>
+        </dl>
+      </section>
+       
+      <section>
+        <h2><code>applicationListCallback</code> callback</h2>
+        <dl id='cb-less-basic' class='idl' title='callback applicationListCallback = void'>
+          <dt>optional Application[] applications</dt>
+          <dd>array of <a href='#application-interface'><code>Application</code></a> objects</dd>
+        </dl>
+      </section>
+      
+    </section>
+
+      <section>
+        <h2>Runtime Browsing Context</h2>
+        <p>
+          <a href='#system-application'>System application</a>s MAY consist of multiple <a href='http://www.w3.org/TR/html5/browsers.html#windows'>browsing context</a>s:
+        </p>
+        <ul>
+          <li><dfn id='main-browsing-context'>Main <a href='http://www.w3.org/TR/html5/browsers.html#windows'>browsing context</a></dfn> [[!HTML5]] (created by <a href='#runtime'>runtime</a>)</li>
+          <p>
+          	 <a href='#main-browsing-context'>Main browsing context<a> is the default top level 
+          	 browsing context that MUST be created by <a href='#runtime'>runtime</a> through three 
+          	 possible routes: user interaction (e.g. touch application icon in device idle screen), 
+          	 script execution (e.g. application launch() function) or service request by other 
+          	 system applications.
+          </p>
+          <li><a href='http://www.w3.org/TR/html5/browsers.html#auxiliary-browsing-context'><dfn id='auxiliary'>Auxiliary browsing context</dfn></a> [[!HTML5]] (created by window.open)</li>
+          <p>
+          	 Auxiliary browsing context is allowed to be opened by the browsing contexts that consist of the system application.
+          </p>
+          <li><a href='http://www.w3.org/TR/html5/browsers.html#nested-browsing-contexts'><dfn id='nested'>Nested browsing context</dfn></a> [[!HTML5]] (created by iframe)</li>
+          <p>
+          	 Nested browsing context is allowed to be inserted in the top browsing contexts that consist of the system application.
+          </p>
+        </ul>
+        <p>
+        	 <a href='#runtime'>Runtime</a> provides runtime browsing context in which system 
+        	 application executes throughout its lifecycle. Basically, system application runtime 
+        	 context exactly conforms to the model of browsing context defined in HTML5 specification. 
+        	 (All the terminologies and the corresponding definitions from HTML5 specification 
+        	 [[!HTML5]] are used in this proposal.)
+        </p>
+        <p>
+        	 A system application is composed of at least one browsing context. A default top browsing 
+        	 context, called <a href='#main-browsing-context'>main browsing context</a>, MUST be created by the runtime when a system 
+        	 application is launched. A system application MAY have only a single <a href='#main-browsing-context'>main browsing context</a> 
+        	 which represents the system application's main runtime context. A system application MAY 
+        	 have nested browsing contexts as well as auxiliary browsing contexts.
+        </p>
+        <div class="note">
+          A significant difference comes in the security policy: the nested browsing context and 
+          auxiliary browsing context are isolated within their own separate sandboxes.
+        </div>
+        <p>
+        	 The <a href='runtime'>runtime</a> MUST fire system application's lifecycle events and relevant system defined 
+        	 events only to the <a href='#main-browsing-context'>main browsing context</a>. The nested browsing contexts and auxiliary 
+        	 browsing context SHOULD NOT catch the lifecycle events and runtime system events.
+        </p>
+        <p>
+        	 Each browsing context of a system application MAY receive its own DOM events as normal 
+        	 web browsing context's active Document object does. 
+        </p>
+      </section>
+
+    </section>
+    
+    <section>
+      <h2>Security Model</h2>
+      <section>
+        <h2>Application Trust Model</h2>
+        <p>
+          The runtime MUST install a system application as an <dfn>untrusted</dfn> system application if it is unsigned.
+        </p>
+        <p>
+          The runtime MUST install a system application as a <dfn>trusted</dfn> system application if it is signed with one or more valid signatures. 
+        </p>
+        <p>
+          The runtime MUST install a system application as a <dfn>privileged</dfn> system application if it is trusted and signed by a privileged domain.
+        </p>
+      </section>
+      <section>
+        <h2>Browsing Context Trust Model</h2>
+        <p>
+          A browsing context is <a>untrusted</a> if the browsing context is created from a remote URL or from a local file of an <a>untrusted</a> system application.
+        </p>
+        <p>
+          A browsing context is <a>trusted</a> if the browsing context is created from a local file of a <a>trusted</a> system application.
+        </p>
+        <p>
+          A browsing context is <a>privileged</a> if the browsing context is created from a local file of a <a>privileged</a> system application.
+        </p>
+      </section>
+
+      <section>
+      	<h2>Content and Network Security</h2>
+        <p>
+        	 The runtime MUST ensure csp policies specified in manifest for every system application pages.
+        </p>
+        <div class='issue'>
+        	 How to resolve the conflicts between manifest csp and http header csp?
+        </div>
+        <div class='issue'>
+        	 Can the runtime relax the same origin policy for cross origin requests if the following conditions are met?
+        	 <ul>
+        	 	 <li>Relevant CSP directives are enforced; connect-src, etc.</li>
+        	 	 <li>Basically all the system applications running in the runtime are sandboxed.</li>
+        	 	 <li>The system application is authenticated in a secure route. (signature, store audit process, etc.)</li>
+        	 </ul>
+        </div>
+        <p>
+        	 The runtime MUST support iframe sandbox attribute.
+        </p>
+        <p>
+        	 The runtime MUST support CORS specification.
+        </p>
+      </section>
+      
+      <section>
+      	<h2>API Security</h2>
+        <p>
+           The runtime MUST control API access according to the predefined security policy.
+        </p>
+      	<div class='note'>
+          <p>
+            It's important to define a fine-grained API security policy. Packaged system applications are usually verified extensively by an Application Store and have specific update procedure after installation. But system applications installed from a manifest are different: they are usually not verifiable by an Application Store and the contents on remote server can be changed anytime after installation without any user notification.
+          </p>
+          <p>
+            Possible security policy can be as following:
+          </p>
+      		 <p>
+            <b>Untrusted</b>: <code>geolocation</code>, <code>localstorage</code>, etc.
+          </p>
+          <p>
+            <b>Trusted</b>: <code>alarm</code>, <code>application.launch</code>, <code>bluetooth</code>, <code>contact</code>, <code>calendar</code>, <code>camera</code>, <code>notification</code>, etc.
+          </p>
+          <p>
+            <b>Privileged</b>: <code>audio.manager</code>, <code>application.kill</code>, <code>notification.manager</code>, <code>system.setting</code>, etc.
+           </p>
+      	</div>
+      </section>
+      
+      <section>
+      	<h2>Private Storage</h2>
+        <p>
+        	 The runtime MUST protect access of HTML5 storage (web storage, file/db storage, etc.) from different origins. 
+        </p>
+        <p>
+          The runtime MUST NOT share the cookie database among different origins.
+        </p>
+      </section>
+    </section> 
+  </body>
+</html>
