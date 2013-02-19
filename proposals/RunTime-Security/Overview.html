@@ -536,8 +536,73 @@
             </ol>
             </dd>
 
+            <!-- Execution states related API -->
+
+            <dt>readonly attribute DOMString state;</dt>
+            <dd>The attribute MUST return <code>running</code> if the
+            current application state is <a>running</a>. Otherwise, if the
+            current application state is <a>paused</a>, it MUST return
+            <code>paused</code>. Otherwise, it MUST return
+            <code>terminated</code>.</dd>
+
+            <dt>void hide()</dt>
+            <dd>When this method is called, the UA SHOULD hide the application
+            from the user. Hiding the application SHOULD fire visibility events
+            as described in [[!PAGE-VISIBILITY]].<br>
+            If the application was already not visible, this method MUST be a
+            no-op.</dd>
+
+            <dt>void exit()</dt>
+            <dd>When this method is called, the UA MUST put the application
+            state to <a>terminated</a> and fire the appropriate events.<br>
+            If the application was already in the <a>terminated</a> state, this
+            method MUST be a no-op.</dd>
+
+            <dt>attribute EventHandler onlaunch</dt>
+            <dd></dd>
+
+            <dt>attribute EventHandler onpause</dt>
+            <dd></dd>
+
+            <dt>attribute EventHandler onresume</dt>
+            <dd></dd>
+
+            <dt>attribute EventHandler onterminate</dt>
+            <dd></dd>
+
           </dl>
           </section>
+
+          <p>The following are the <a>event handlers</a> (and their
+          corresponding <a>event handler event types</a>) that MUST be supported
+          as attributes by the <code>Application</code> objects:</p>
+
+          <table class="simple">
+            <thead>
+              <tr>
+                <th>event handler</th>
+                <th>event handler event type</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong><code>onlaunch</code></strong></td>
+                <td><code>launch</code></td>
+              </tr>
+              <tr>
+                <td><strong><code>onpause</code></strong></td>
+                <td><code>pause</code></td>
+              </tr>
+              <tr>
+                <td><strong><code>onresume</code></strong></td>
+                <td><code>resume</code></td>
+              </tr>
+              <tr>
+                <td><strong><code>onterminate</code></strong></td>
+                <td><code>terminate</code></td>
+              </tr>
+            </tbody>
+          </table>
         </section>
 
         <section>
@@ -1318,12 +1383,58 @@
     <section>
       <h2>Application life-cycle</h2>
 
-      <section class='note'>
-        This section still requires some work. We need to define how to prevent
-        having the application being paused, how to get stuff done in the
-        background, what kind of events are sent when the application is going
-        to be killed by the system. Actually, how and why it should be killed
-        (might be implementation specific though).
+      <section>
+        <h2>Application states</h2>
+
+        <p>At any time, an application MUST be in one of the following states:
+        <a>running</a>, <a>paused</a>, <a>terminated</a>.</p>
+
+        <p>An application is <dfn>running</dfn> when it has been launched by the
+        UA and has not been put in <a>paused</a>. A <a>running</a> application
+        can transition to <a>paused</a> or <a>terminated</a> states.</p>
+
+        <p>If a <a>running</a> application transitions to a
+        <a>paused</a> state, the UA MUST <a>fire a simple event</a> named
+        <code>pause</code> on the <a>Application</a> object before switching its
+        state.</p>
+
+        <p>If a <a>running</a> application transitions to a <a>terminated</a>
+        state, the UA MUST <a>fire a simple event</a> named <code>terminate</code>
+        on the <a>Application</a> object before shutting down the application.
+        </p>
+
+        <p>An application is <dfn>paused</dfn> when the UA stops the execution
+        of an application without terminating it. A <a>paused</a> application
+        SHOULD have all its scripts no longer running, such as rendering,
+        parsing, processing media files and any action that requires CPU and
+        memory or would distract the user. A <a>paused</a> application can
+        transition to <a>running</a> or <a>terminated</a> states.
+
+        <p>If a <a>paused</a> application transitions to a <a>running</a> state,
+        the UA MUST <a>fire a simple event</a> named <code>resume</code> on the
+        <a>Application</a> object after changing its state.</p>
+
+        <p>An application is <dfn>terminated</dfn> when the application has been
+        stopped and is no longer loaded in the system. The state of a
+        <a>terminated</a> application can only be changed to
+        <a>running</a> if the application is launched again.</p>
+
+        <p>If a <a>terminated</a> application transitions to a <a>running<a>
+        state, the UA MUST <a>fire a simple event</a> named <code>launch</code>
+        on the <a>Application</a> object after the main browsing context is
+        created but before the <code>load</code> and <code>DOMContentLoaded</code>
+        events are fired.</p>
+      </section>
+
+      <section class='issue'>
+          <p>The specification currently assumes that one will save important
+          when paused so there is no terminate event when transitionning from
+          pause to terminate.</p>
+      </section>
+
+      <section class='issue'>
+      <p>Do we have real use cases for <code>launch</code>?<br>
+         Is firing before <code>load</code> a hard thing to do?</p>
       </section>
 
       <section>
@@ -1334,9 +1445,7 @@
         the visibility status of the application changes.</p>
 
         <p>In addition, when the application becomes fully hidden, the UA MAY
-        put the application in a <dfn>pause state</dfn>. That means all script
-        SHOULD stop running, such as rendering, parsing, processing media files,
-        any action that requires CPU and memory or would distract the user.</p>
+        put the application in a <a>paused</a> state.</p>
       </section>
 
     </section>
@@ -1480,9 +1589,13 @@
     <section class="appendix">
       <h2>Acknowledgments</h2>
 
+      <p>Thanks to the Samsung team, especially 金明(Ming Jin), Janusz Majnert
+      and 송정기(Jungkee Song) for their work on the <i>System Application
+      Runtime: Execution and Security Model</i> specification.</p>
+
       <p>Special thanks to Anant Narayanan for his <i>Web Application Manifest
-      Format and Management APIs</i> that this specification reuse shamlesly.</p>
-      <p>Special thanks to Jonas Sicking for being awesome, as always.</p>
+      Format and Management APIs</i> that this specification reuse shamlesly and
+      to Jonas Sicking for being awesome, as always.</p>
     </section>
   </body>
 </html>
