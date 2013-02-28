@@ -167,7 +167,7 @@
              read() and write() calls.</p>        
  
           <p>
-            Throws DOMException INVALID_ACCESS_ERR if any input parameter is not compatible with the expected type for that parameter.
+            Throws DOMException <code>InvalidAccessError</code> if any input parameter is not compatible with the expected type for that parameter.
           </p>
         
           <dl class='parameters'>
@@ -204,8 +204,8 @@
              accept() must previously been called.</p>        
  
           <p>
-            Throws DOMException INVALID_ACCESS_ERR if any input parameter is not compatible with the expected type for that parameter.<br /> 
-            Throws DOMException INVALID_STATE_ERR if the socket is not "connected".
+            Throws DOMException <code>InvalidAccessError</code> if any input parameter is not compatible with the expected type for that parameter.<br /> 
+            Throws DOMException <code>InvalidStateError</code> if the socket is not "connected".
           </p>
         
           <dl class='parameters'>
@@ -228,8 +228,8 @@
              accept() must previously been called.</p>     
  
           <p>
-            Throws DOMException INVALID_ACCESS_ERR if any input parameter is not compatible with the expected type for that parameter.<br /> 
-            Throws DOMException INVALID_STATE_ERR if the socket is not "connected".
+            Throws DOMException <code>InvalidAccessError</code> if any input parameter is not compatible with the expected type for that parameter.<br /> 
+            Throws DOMException <code>InvalidStateError</code> if the socket is not "connected".
           </p>
         
           <dl class='parameters'>
@@ -269,7 +269,7 @@
           <p>Binds the local address for a UDP socket. </p>      
     
           <p>
-            Throws DOMException INVALID_ACCESS_ERR if any input parameter is not compatible with the expected type for that parameter.
+            Throws DOMException <code>InvalidAccessError</code> if any input parameter is not compatible with the expected type for that parameter.
           </p>
         
           <dl class='parameters'>
@@ -295,7 +295,7 @@
           <p>Receives data from the given UDP socket.</p>        
  
           <p>
-            Throws DOMException INVALID_ACCESS_ERR if any input parameter is not compatible with the expected type for that parameter.
+            Throws DOMException <code>InvalidAccessError</code> if any input parameter is not compatible with the expected type for that parameter.
           </p>
           <p class="issue">
             The Chrome Socket API also has the parameter "bufferSize", which is the receive buffer size. However, the callback is issued when a 
@@ -317,7 +317,7 @@
           <p>Sends data on the given UDP socket to the given address and port.</p>        
  
           <p>
-            Throws DOMException INVALID_ACCESS_ERR if any input parameter is not compatible with the expected type for that parameter.
+            Throws DOMException <code>InvalidAccessError</code> if any input parameter is not compatible with the expected type for that parameter.
           </p>
         
           <dl class='parameters'>
@@ -366,8 +366,8 @@
              socket. Listen must be called first. If there is already an active accept callback, this callback will be invoked immediately with an error 
              as the resultCode. </p>  
           <p>
-            Throws DOMException INVALID_ACCESS_ERR if any input parameter is not compatible with the expected type for that parameter.<br /> 
-            Throws DOMException INVALID_STATE_ERR if the socket was not in "listen" state.
+            Throws DOMException <code>InvalidAccessError</code> if any input parameter is not compatible with the expected type for that parameter.<br /> 
+            Throws DOMException <code>InvalidStateError</code> if the socket was not in "listen" state.
           </p>   
           <dl class='parameters'>
           
@@ -384,7 +384,7 @@
           <p>This method applies to TCP sockets only. Listens for connections on the specified port and address. This effectively makes this a server 
              socket, and client socket functions (connect, read, write) can no longer be used on this socket. </p>  
           <p>
-            Throws DOMException INVALID_ACCESS_ERR if any input parameter is not compatible with the expected type for that parameter.
+            Throws DOMException <code>InvalidAccessError</code> if any input parameter is not compatible with the expected type for that parameter.
           </p>   
           <dl class='parameters'>
           
@@ -413,7 +413,7 @@
           <p>Enables or disables the keep-alive functionality for a TCP connection.</p>        
  
           <p>
-            Throws DOMException INVALID_ACCESS_ERR if any input parameter is not compatible with the expected type for that parameter.
+            Throws DOMException <code>InvalidAccessError</code> if any input parameter is not compatible with the expected type for that parameter.
           </p>
         
           <dl class='parameters'>
@@ -439,7 +439,7 @@
           <p>Sets or clears TCP_NODELAY for a TCP connection. Nagle's algorithm will be disabled when TCP_NODELAY is set.</p>        
  
           <p>
-            Throws DOMException INVALID_ACCESS_ERR if any input parameter is not compatible with the expected type for that parameter.
+            Throws DOMException <code>InvalidAccessError</code> if any input parameter is not compatible with the expected type for that parameter.
           </p>
         
           <dl class='parameters'>
