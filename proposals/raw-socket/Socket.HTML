@@ -161,42 +161,13 @@
         <dt>readonly attribute unsigned short? localPort</dt>
         <dd>If the underlying socket is bound or connected, contains its local port, else this attribute is null. </dd>                                 
         
-        <dt> void bind()</dt>
-        <dd>        
-          <p>Binds the local address for a socket. </p>      
-          <p class="issue">
-            This is different from the Chrome socket API, which allows bind() only for UDP sockets. However, I assume that
-            bind() for TCP sockets is needed to support servers. 
-          </p>      
-          <p>
-            Throws DOMException INVALID_ACCESS_ERR if any input parameter is not compatible with the expected type for that parameter.
-          </p>
-        
-          <dl class='parameters'>
-          
-             <dt>BindCallback callback</dt>
-             <dd>
-               Called when the bind attempt is complete.
-             </dd>             
-             <dt>optional DOMString localAddress</dt>
-             <dd>
-               The address of the local machine. If this parameter is omitted then any available local address is used.
-             </dd>
-             <dt>optional unsigned short localPort</dt>
-             <dd>
-               The port of the local machine. If this parameter is omitted then any free port is used.
-             </dd>    
-                     
-          </dl>
-        </dd>     
-        
         <dt> void connect()</dt>
         <dd>        
           <p>For a TCP socket connects the socket to the remote machine. For a UDP socket, this sets the default peer address that is used for subsequent 
              read() and write() calls.</p>        
  
           <p>
-            Throws DOMException INVALID_ACCESS_ERR if any input parameter is not compatible with the expected type for that parameter.
+            Throws DOMException <code>InvalidAccessError</code> if any input parameter is not compatible with the expected type for that parameter.
           </p>
         
           <dl class='parameters'>
@@ -233,8 +204,8 @@
              accept() must previously been called.</p>        
  
           <p>
-            Throws DOMException INVALID_ACCESS_ERR if any input parameter is not compatible with the expected type for that parameter.<br /> 
-            Throws DOMException INVALID_STATE_ERR if the socket is not "connected".
+            Throws DOMException <code>InvalidAccessError</code> if any input parameter is not compatible with the expected type for that parameter.<br /> 
+            Throws DOMException <code>InvalidStateError</code> if the socket is not "connected".
           </p>
         
           <dl class='parameters'>
@@ -257,8 +228,8 @@
              accept() must previously been called.</p>     
  
           <p>
-            Throws DOMException INVALID_ACCESS_ERR if any input parameter is not compatible with the expected type for that parameter.<br /> 
-            Throws DOMException INVALID_STATE_ERR if the socket is not "connected".
+            Throws DOMException <code>InvalidAccessError</code> if any input parameter is not compatible with the expected type for that parameter.<br /> 
+            Throws DOMException <code>InvalidStateError</code> if the socket is not "connected".
           </p>
         
           <dl class='parameters'>
@@ -293,12 +264,38 @@
                  interface UDPSocket : RawSocket"
           class="idl">  
           
+        <dt> void bind()</dt>
+        <dd>        
+          <p>Binds the local address for a UDP socket. </p>      
+    
+          <p>
+            Throws DOMException <code>InvalidAccessError</code> if any input parameter is not compatible with the expected type for that parameter.
+          </p>
+        
+          <dl class='parameters'>
+          
+             <dt>BindCallback callback</dt>
+             <dd>
+               Called when the bind attempt is complete.
+             </dd>             
+             <dt>optional DOMString localAddress</dt>
+             <dd>
+               The address of the local machine. If this parameter is omitted then any available local address is used.
+             </dd>
+             <dt>optional unsigned short localPort</dt>
+             <dd>
+               The port of the local machine. If this parameter is omitted then any free port is used.
+             </dd>    
+                     
+          </dl>
+        </dd>     
+
         <dt> void recvFrom()</dt>
         <dd>        
           <p>Receives data from the given UDP socket.</p>        
  
           <p>
-            Throws DOMException INVALID_ACCESS_ERR if any input parameter is not compatible with the expected type for that parameter.
+            Throws DOMException <code>InvalidAccessError</code> if any input parameter is not compatible with the expected type for that parameter.
           </p>
           <p class="issue">
             The Chrome Socket API also has the parameter "bufferSize", which is the receive buffer size. However, the callback is issued when a 
@@ -320,7 +317,7 @@
           <p>Sends data on the given UDP socket to the given address and port.</p>        
  
           <p>
-            Throws DOMException INVALID_ACCESS_ERR if any input parameter is not compatible with the expected type for that parameter.
+            Throws DOMException <code>InvalidAccessError</code> if any input parameter is not compatible with the expected type for that parameter.
           </p>
         
           <dl class='parameters'>
@@ -369,8 +366,8 @@
              socket. Listen must be called first. If there is already an active accept callback, this callback will be invoked immediately with an error 
              as the resultCode. </p>  
           <p>
-            Throws DOMException INVALID_ACCESS_ERR if any input parameter is not compatible with the expected type for that parameter.<br /> 
-            Throws DOMException INVALID_STATE_ERR if the socket was not in "listen" state.
+            Throws DOMException <code>InvalidAccessError</code> if any input parameter is not compatible with the expected type for that parameter.<br /> 
+            Throws DOMException <code>InvalidStateError</code> if the socket was not in "listen" state.
           </p>   
           <dl class='parameters'>
           
@@ -387,7 +384,7 @@
           <p>This method applies to TCP sockets only. Listens for connections on the specified port and address. This effectively makes this a server 
              socket, and client socket functions (connect, read, write) can no longer be used on this socket. </p>  
           <p>
-            Throws DOMException INVALID_ACCESS_ERR if any input parameter is not compatible with the expected type for that parameter.
+            Throws DOMException <code>InvalidAccessError</code> if any input parameter is not compatible with the expected type for that parameter.
           </p>   
           <dl class='parameters'>
           
@@ -416,7 +413,7 @@
           <p>Enables or disables the keep-alive functionality for a TCP connection.</p>        
  
           <p>
-            Throws DOMException INVALID_ACCESS_ERR if any input parameter is not compatible with the expected type for that parameter.
+            Throws DOMException <code>InvalidAccessError</code> if any input parameter is not compatible with the expected type for that parameter.
           </p>
         
           <dl class='parameters'>
@@ -442,7 +439,7 @@
           <p>Sets or clears TCP_NODELAY for a TCP connection. Nagle's algorithm will be disabled when TCP_NODELAY is set.</p>        
  
           <p>
-            Throws DOMException INVALID_ACCESS_ERR if any input parameter is not compatible with the expected type for that parameter.
+            Throws DOMException <code>InvalidAccessError</code> if any input parameter is not compatible with the expected type for that parameter.
           </p>
         
           <dl class='parameters'>
@@ -473,13 +470,9 @@
           
         <dt>DOMError? error</dt>
         <dd>Null if accept() was successful else a DOMError object detailing what went wrong. Error codes TBD.</dd>
-        <dt>RawSocket? socket</dt>
+        <dt>TCPSocket? socket</dt>
         <dd>A new socket object for the accepted socket object or null if error. This new socket object is to be used for further communication with 
-            the remote host through subsequent read() and write() calls.</dd>
-        <dt>DOMString? peerAddress</dt>
-        <dd>The address of the remote machine or null if error.</dd>        
-        <dt>unsigned short? peerPort</dt>
-        <dd>The port of the remote machine or null if error.</dd>            
+            the remote host through subsequent read() and write() calls.</dd>       
    
       </dl>              
     </section>      
