@@ -78,8 +78,7 @@ Style guide to contributors:
   
   <pre class="example highlight">
         var sms_send_request = navigator.messaging.sms.send (
-          var sms_recipient = '+1234567890' ;
-          var sms_content = 'How are you?' );
+          '+1234567890', 'How are you?');
           
         sms_send_request.onsuccess = function() {
                 window.console.log('Message Sent!');
