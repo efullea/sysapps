@@ -627,7 +627,7 @@ Style guide to contributors:
   <h2><a>SmsService</a> Interface</h2>
   <p>The <a>SmsService</a> interface represents the SMS messaging service.
   
-  <dl title="[NoInterfaceObject] interface SmsService : MessagingService"
+  <dl title="interface SmsService : MessagingService"
   class="idl">
 
     <dt> SmsSegmentInfo getSegmentInfoForText ()</dt>
@@ -823,8 +823,7 @@ Style guide to contributors:
   <h2><a>SmsSegmentInfo</a> Interface</h2>
   <p>The <a>SmsSegmentInfo</a> interface contians information about the
   segmentation of a given text to be sent as SMS.
-  <dl title="[NoInterfaceObject]
-             interface SmsSegmentInfo"
+  <dl title="interface SmsSegmentInfo"
       class="idl">
     <dt>readonly attribute long segments</dt>
     <dd>MUST return the total number of SMS segments needed to send the input
@@ -852,7 +851,7 @@ Style guide to contributors:
   <h2><a>MmsService</a> Interface</h2>
   <p>The <a>MmsService</a> interface represents the MMS messaging service.
   
-  <dl title="[NoInterfaceObject] interface MmsService : MessagingService"
+  <dl title="interface MmsService : MessagingService"
   class="idl">
 
     <dt>attribute DOMString fetchMode</dt>
@@ -1062,8 +1061,7 @@ Style guide to contributors:
   (e.g. delete message via the <code>delete</code> method in the
   <code>Messaging</code> interface) MUST return a MessagingRequest object that
   can be used to monitor the progress of that operation.
-  <dl title="[NoInterfaceObject]
-             interface MessagingRequest"
+  <dl title="interface MessagingRequest"
       class="idl">
     <dt>readonly attribute DOMString readyState</dt>
     <dd>Indicates the state of the request, with possible string values
@@ -1167,8 +1165,7 @@ Style guide to contributors:
   <a href="http://www.3gpp.org/ftp/Specs/html-info/23040.htm">Technical
   realization of the Short Message Service (SMS)</a>. This interface is not
   intended to represent binary SMS, which are out of the scope of this API.
-  <dl title="[NoInterfaceObject]
-             interface SmsMessage : Message"
+  <dl title="interface SmsMessage : Message"
       class="idl">
     <dt>readonly attribute DOMString recipient</dt>
     <dd>MUST return the recipient of the message, i.e. the TP Destination
@@ -1205,8 +1202,7 @@ Style guide to contributors:
   <p>The <a>MmsMessage</a> interface represents an MMS message, as defined in <a
   href="http://technical.openmobilealliance.org/Technical/release_program/mms_v1_3.aspx">
   OMA MMS 1.3</a>.
-  <dl title="[NoInterfaceObject]
-             interface MmsMessage : Message"
+  <dl title="interface MmsMessage : Message"
       class="idl">
     <dt>readonly attribute DOMString[] to</dt>
     <dd>MUST return an array containing the recipient(s) included
@@ -1318,8 +1314,7 @@ Style guide to contributors:
   <p>The <a>Conversation</a> interface represents a set of messages that are
   grouped together either because they are exchanged among the same set of
   participants or because they have the same subject.
-  <dl title="[NoInterfaceObject]
-             interface Conversation"
+  <dl title="interface Conversation"
       class="idl">
     <dt>readonly attribute DOMString id</dt>
     <dd>MUST return the identifier of the conversation, which is unique in the
@@ -1381,8 +1376,7 @@ Style guide to contributors:
   retrieved, the <a>associated request</a>'s <code>readyState</code> must be set
   to 'done' and the <code>result</code> must point to the cursor. If no element
   was found, the cursor's <code>element</code> property must return null.</p>
-  <dl title="[NoInterfaceObject]
-             interface MessagingCursor"
+  <dl title="interface MessagingCursor"
       class="idl">
     <dt>readonly attribute any? element</dt>
     <dd>
@@ -1415,8 +1409,7 @@ Style guide to contributors:
   <h2><a>MessagingEvent</a> Interface</h2>
   <p>The <a>MessagingEvent</a> interface represents events related to a message
   sent or received.
-  <dl title="[NoInterfaceObject]
-             interface MessagingEvent : Event"
+  <dl title="interface MessagingEvent : Event"
       class="idl">
     <dt>readonly attribute any message</dt>
     <dd>MUST return the <code>SmsMessage</code> or <code>MmsMessage</code>
@@ -1429,8 +1422,7 @@ Style guide to contributors:
   <h2><a>SmsDeliveryReportEvent</a> Interface</h2>
   <p>The <a>SmsDeliveryReportEvent</a> interface represents events related to a
   delivery report of a sent SMS message.
-  <dl title="[NoInterfaceObject]
-             interface SmsDeliveryReportEvent : Event"
+  <dl title="interface SmsDeliveryReportEvent : Event"
       class="idl">
     <dt>readonly attribute DOMString id</dt>
     <dd>MUST return the identifier of the SMS message to which this delivery
@@ -1443,8 +1435,7 @@ Style guide to contributors:
   <h2><a>MmsDeliveryReportEvent</a> Interface</h2>
   <p>The <a>MmsDeliveryReportEvent</a> interface represents events related
   to a delivery report of a sent MMS message.
-  <dl title="[NoInterfaceObject]
-             interface MmsDeliveryReportEvent : Event"
+  <dl title="interface MmsDeliveryReportEvent : Event"
       class="idl">
     <dt>readonly attribute DOMString id</dt>
     <dd>MUST return the identifier of the MMS message to which this delivery
@@ -1467,8 +1458,7 @@ Style guide to contributors:
   select a set of messages (e.g. to be provided upon invoking the
   <code>findMessages</code> or the <code>findConversations</code> method in the
   <code>Messaging</code> interface).
-  <dl title="[NoInterfaceObject]
-             interface MessagingFilter : AbstractFilter"
+  <dl title="interface MessagingFilter : AbstractFilter"
       class="idl">
     <dt>attribute DOMString? type</dt>
     <dd>Indicates whether just the SMS or MMS messages are to be provided in the
@@ -1543,8 +1533,7 @@ Style guide to contributors:
   <h2><a>CompositeFilter</a> Interface</h2>
   <p>The <a>CompositeFilter</a> interface represents a filter that is the result
   of combining several filters with an operator ('and' / 'or').
-  <dl title="[NoInterfaceObject]
-             interface CompositeFilter : AbstractFilter"
+  <dl title="interface CompositeFilter : AbstractFilter"
       class="idl">
     <dt>attribute AbstractFilter[] filters</dt>
     <dd>The different filters that are combined in the composite
@@ -1557,13 +1546,12 @@ Style guide to contributors:
 </section>
     
 
-<!------------------------ Interface CompositeFilter-------------------------->
+<!------------------------ Interface AttributeFilter-------------------------->
 <section>
-  <h2><a>CompositeFilter</a> Interface</h2>
+  <h2><a>AttributeFilter</a> Interface</h2>
   <p>The <a>AttributeFilter</a> interface represents a filter of messages
   based on the value of a specific attribute.
-  <dl title="[NoInterfaceObject]
-             interface AttributeFilter : AbstractFilter"
+  <dl title="interface AttributeFilter : AbstractFilter"
       class="idl">
     <dt>attribute DOMString filterBy</dt>
     <dd>The attribute based on whose value the messages are filtered.</dd>
@@ -1586,8 +1574,7 @@ Style guide to contributors:
   <h2><a>AttributeRangeFilter</a> Interface</h2>
   <p>The <a>AttributeRangeFilter</a> interface represents a filter of messages
   with the value of a specific attribute within a range of values.
-  <dl title="[NoInterfaceObject]
-             interface AttributeRangeFilter : AbstractFilter"
+  <dl title="interface AttributeRangeFilter : AbstractFilter"
       class="idl">
     <dt>attribute DOMString filterBy</dt>
     <dd>The attribute based on whose value the messages are filtered.</dd>
