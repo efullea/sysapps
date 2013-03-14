@@ -498,8 +498,6 @@ Style guide to contributors:
       message
       <li>set the <code>state</code> of the <code>SmsMessage</code> to
       'received'
-      <li>set the <code>deliveryStatus</code> of the <code>SmsMessage</code>
-      to 'na'
       <li><a>queue a task</a> to <a>fire an event</a> named
       <code><a>received</a></code> with the <code>message</code> attribute set
       to the newly created <code>SmsMessage</code> instance.
@@ -552,9 +550,6 @@ Style guide to contributors:
       <li>set the <code>state</code> of the <code>MmsMessage</code> to
       'received' if the message has been downloaded or otherwise to
       'not-downloaded'
-      <li>add to the <code>deliveryStatus</code> array of the
-      <code>MmsMessage</code> associated many elements set to 'na' as the number
-      of recipients in the 'To', 'Cc' and 'Bcc' fields.
       <li><a>queue a task</a> to <a>fire an event</a> named
       <code><a>received</a></code> with the <code>message</code> attribute set
       to the newly created <code>MmsMessage</code> instance.
@@ -743,7 +738,7 @@ Style guide to contributors:
       <li>set the <code>state</code> of the <code>SmsMessage</code> to
       'sending'
       <li>set the <code>deliveryStatus</code> of the <code>SmsMessage</code> to
-      'pending' if a delivery report has been requested or to 'na' otherwise.
+      'pending' if a delivery report has been requested.
       <li>Make a request to the system to send an SMS message with text passed
       in the <code>text</code>
      parameter to the number of the recipient indicated in the <code>to</code>
@@ -753,10 +748,15 @@ Style guide to contributors:
       <li>return the <code>MessagingRequest</code> to the caller and <a>queue a
       task</a> to monitor SMS sending progress
      </ol>
-     <li>If there is an error set the <code>state</code> and the
-     <code>deliveryStatus</code> elements of the <code>SmsMessage</code> to
-     'error' and invoke the <code>onerror</code> <a>event handler</a> of the
-     <code>MessagingRequest</code> object
+     <li>If there is an error
+      <ol>
+        <li>set the <code>state</code> of the <code>SmsMessage</code> to
+        'error'
+        <li>if a delivery report had been requested set the
+        <code>deliveryStatus</code> of the <code>SmsMessage</code> to 'error'
+        <li>invoke the <code>onerror</code> <a>event handler</a> of the
+        <code>MessagingRequest</code> object
+     </ol>
      <li>When the requests has been completed:
      <ol>
       <li>set the <code>state</code> of the <code>SmsMessage</code> to 'sent'
@@ -972,7 +972,7 @@ Style guide to contributors:
       <li>add a new element in the <code>deliveryStatus</code> array of the
       <code>MmsMessage</code> for each of the addresses included in the
       <code>to</code>, <code>cc</code> and <code>bcc</code> parameters, with
-      value 'pending' if a delivery report has been requested or 'na' otherwise.
+      value 'pending' if a delivery report has been requested.
       <li>Make a request to the system to send an MMS message with the content
       passed in the <code>content</code>
      parameter to the number(s) of indicated in the <code>to</code> parameter.
@@ -981,10 +981,16 @@ Style guide to contributors:
       <li>return the <code>MessagingRequest</code> to the caller and <a>queue a
       task</a> to monitor MMS sending progress
      </ol>
-     <li>If there is an error set the <code>state</code> element and the
-     different elements in the <code>deliveryStatus</code> array of the
-     <code>MmsMessage</code> to 'error' and invoke the <code>onerror</code>
-     <a>event handler</a> of the <code>MessagingRequest</code> object
+     <li>If there is an error
+      <ol>
+        <li>set the <code>state</code> of the <code>MmsMessage</code> to
+        'error'
+        <li>if a delivery report had been requested set the different elements
+        in the <code>deliveryStatus</code> array of the <code>MmsMessage</code>
+        to 'error'
+        <li>invoke the <code>onerror</code> <a>event handler</a> of the
+        <code>MessagingRequest</code> object
+     </ol>
      <li>When the requests has been completed:
      <ol>
       <li>set the <code>state</code> of the <code>MmsMessage</code> to 'sent'
@@ -1165,12 +1171,12 @@ Style guide to contributors:
     <dd>MUST return the status of the SMS message, with the following possible
     values: 'received', 'draft', 'sending', 'sent' and 'failed'.</dd>
 
-    <dt>readonly attribute DOMString deliveryStatus</dt>
+    <dt>readonly attribute DOMString? deliveryStatus</dt>
     <dd>MUST return 'success' if the SMS message has been succesfully delivered
     to the recipient, 'pending' if it is pending delivery, 'error' if the
-    delivery has failed and 'na' if the delivery status is not applicable either
-    because a delivery report has not been requested or the message is an
-    inbound message.
+    delivery has failed. It MUST return null if the delivery status is not
+    applicable either because a delivery report has not been requested or the
+    message is an inbound message.
     </dd>
 
    <dt>readonly attribute DOMString? messageClass</dt>
@@ -1214,15 +1220,15 @@ Style guide to contributors:
     values: 'received', 'draft', 'sending', 'sent', 'failed' and
     'not-downloaded'.</dd>
 
-    <dt>readonly attribute DOMString deliveryStatus[]</dt>
+    <dt>readonly attribute DOMString? deliveryStatus[]</dt>
     <dd>MUST return an array with each of the elements indicating the delivery
     status to each of the recipients of the message, in order starting with the
     recipients in the 'To' field, followed by those in 'Cc' and ending with
     those in 'Bcc'. The possible values indicate whether the MMS message has
     been succesfully delivered to the recipient ('success'), it is pending
-    delivery ('pending'), the delivery has failed ('error') or this attribute is
-    not applicable either because a delivery report has not been requested or
-    the message is an inbound message ('na').</dd>
+    delivery ('pending'), the delivery has failed ('error'). It MUST return null
+    if a delivery report has not been requested or the message is an inbound
+    message.</dd>
 
   </dl>
 </section>
