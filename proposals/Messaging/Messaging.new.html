@@ -478,24 +478,29 @@ Style guide to contributors:
     <ol>
       <li>create a new instance of <code>SmsMessage</code>
       <li>generate a identifier for this message that is unique in the frame of
-      the user agent, i.e. there cannot be any other message or conversation
-      with the same identifier
+      the user agent, i.e. there cannot be any other message with the same
+      identifier
       <li>set the <code>id</code> of the <code>SmsMessage</code> to the
       generated identifier
       <li>set the <code>type</code> of the <code>SmsMessage</code> to 'sms'
       <li>set the <code>serviceId</code> of the <code>SmsMessage</code> to the
       identifier of the service at which the message has been received.
       <li>set the <code>sender</code> of the <code>SmsMessage</code> to the
-      sender of the SMS message
+      sender of the SMS message, i.e. the value of the TP Originating Address
+      (TP-OA) field of the SMS message
       <li>set the <code>timestamp</code> of the <code>SmsMessage</code> to the
-      timestamp of the SMS message
+      timestamp of the SMS message, i.e. the value if the TP Service Centre
+      Time Stamp (TP-SCTS) field of the SMS message
       <li>set the <code>read</code> of the <code>SmsMessage</code> to 'false'
       <li>set the <code>recipient</code> of the <code>SmsMessage</code> to the
-      recipient of the SMS message
-      <li>set the <code>messageClass</code> of the <code>SmsMessage</code>
-      to the message class of the SMS message
+      recipient of the SMS message, i.e. the value of the TP Destination
+      Address (TP-DA) field of the SMS message
+      <li>set the <code>messageClass</code> of the <code>SmsMessage</code> to
+      the message class indicated in the TP-Data-Coding-Scheme (TP-DCS) field of
+      the SMS
       <li>set the <code>body</code> element to the text of the received SMS
-      message
+      message, i.e. the value of the SM element contained within the TP User
+      Data (TP-UD) field of the SMS message
       <li>set the <code>state</code> of the <code>SmsMessage</code> to
       'received'
       <li><a>queue a task</a> to <a>fire an event</a> named
@@ -507,8 +512,8 @@ Style guide to contributors:
     <ol>
       <li>create a new instance of <code>MmsMessage</code>
       <li>generate a identifier for this message that is unique in the frame of
-      the user agent, i.e. there cannot be any other message or conversation
-      with the same identifier
+      the user agent, i.e. there cannot be any other message with the same
+      identifier
       <li>set the <code>id</code> of the <code>MmsMessage</code> to the
       generated identifier
       <li>set the <code>type</code> of the <code>MmsMessage</code> to 'mms'
@@ -719,8 +724,8 @@ Style guide to contributors:
      <code>MessagingRequest</code> and:
      <ol>
       <li>generate a identifier for this message that is unique in the frame of
-      the user agent, i.e. there cannot be any other message or conversation
-      with the same identifier
+      the user agent, i.e. there cannot be any other message with the same
+      identifier
       <li>set the <code>id</code> of the <code>SmsMessage</code> to the
       generated identifier
       <li>set the <code>type</code> of the <code>SmsMessage</code> to 'sms'
@@ -944,8 +949,8 @@ Style guide to contributors:
      of <code>MessagingRequest</code> and:
      <ol>
       <li>generate a identifier for this message that is unique in the frame of
-      the user agent, i.e. there cannot be any other message or conversation
-      with the same identifier
+      the user agent, i.e. there cannot be any other message with the same
+      identifier
       <li>set the <code>id</code> of the <code>MmsMessage</code> to the
       generated identifier
       <li>set the <code>type</code> of the <code>MmsMessage</code> to 'mms'
@@ -1130,8 +1135,8 @@ Style guide to contributors:
       class="idl">
     <dt>readonly attribute DOMString id</dt>
     <dd>MUST return the identifier of the message, which is unique in the frame
-    of the user agent, i.e. there cannot be two objects (of any type of message
-    or conversation) with the same identifier.</dd>
+    of the user agent, i.e. there cannot be two messages with the same
+    identifier.</dd>
 
     <dt>readonly attribute DOMString type</dt>
     <dd>MUST return the type of message ('sms' or 'mms').</dd>
@@ -1141,10 +1146,13 @@ Style guide to contributors:
     message.</dd>
 
     <dt>readonly attribute DOMString sender</dt>
-    <dd>MUST return the sender of the message.</dd>
+    <dd>MUST return the sender of the message, i.e. the TP Originating Address
+    (TP-OA) of the SMS message or the 'From' field of the MMS message.</dd>
 
     <dt>readonly attribute Date timestamp</dt>
-    <dd>MUST return the time the message was sent at.</dd>
+    <dd>MUST return the time the message was sent at, i.e. the TP Service Centre
+    Time Stamp (TP-SCTS) of the SMS message or the 'Date' field of the MMS
+    message.</dd>
 
     <dt>readonly attribute boolean read</dt>
     <dd>MUST return 'true' if the message has been marked as read, or 'false'
@@ -1155,17 +1163,20 @@ Style guide to contributors:
 <!------------------------ Interface SmsMessage ------------------------------>
 <section>
   <h2><a>SmsMessage</a> Interface</h2>
-  <p>The <a>SmsMessage</a> interface represents an SMS message. This interface
-  is not intended to represent binary SMS, which are out of the scope of this
-  API.
+  <p>The <a>SmsMessage</a> interface represents an SMS message as defined in the
+  <a href="http://www.3gpp.org/ftp/Specs/html-info/23040.htm">Technical
+  realization of the Short Message Service (SMS)</a>. This interface is not
+  intended to represent binary SMS, which are out of the scope of this API.
   <dl title="[NoInterfaceObject]
              interface SmsMessage : Message"
       class="idl">
     <dt>readonly attribute DOMString recipient</dt>
-    <dd>MUST return the recipient of the message.</dd>
+    <dd>MUST return the recipient of the message, i.e. the TP Destination
+    Address (TP-DA) of the SMS message.</dd>
 
     <dt>readonly attribute DOMString body</dt>
-    <dd>MUST return text of the SMS message.</dd>
+    <dd>MUST return text of the SMS message, i.e. the SM element contained
+    within the TP User Data (TP-UD) field of the SMS message.</dd>
 
     <dt>readonly attribute DOMString state</dt>
     <dd>MUST return the status of the SMS message, with the following possible
@@ -1181,7 +1192,9 @@ Style guide to contributors:
 
    <dt>readonly attribute DOMString? messageClass</dt>
     <dd>MUST return the SMS message class, with possible values: 'class-0',
-    'class-1', 'class-2', 'class-3' or 'normal' (same as 'class-1').</dd>
+    'class-1', 'class-2', 'class-3' or 'normal' (same as 'class-1'), according
+    to the value indicated in the TP-Data-Coding-Scheme (TP-DCS) field of the
+    SMS.</dd>
 
   </dl>
 </section>
@@ -1208,7 +1221,7 @@ Style guide to contributors:
     in the 'Bcc' field of the MMS message.</dd>
 
     <dt>readonly attribute DOMString? subject</dt>
-    <dd>MUST return the subject of the MMS message, corresponding with the
+    <dd>MUST return the subject of the MMS message, corresponding to the
     'Subject' field of the MMS message.</dd>
 
     <dt>readonly attribute Document? smil</dt>
@@ -1310,8 +1323,8 @@ Style guide to contributors:
       class="idl">
     <dt>readonly attribute DOMString id</dt>
     <dd>MUST return the identifier of the conversation, which is unique in the
-    frame of the user agent, i.e. there cannot be two objects (of any type of
-    message or conversation) with the same identifier.</dd>
+    frame of the user agent, i.e. there cannot be any other conversation with
+    the same identifier.</dd>
 
     <dt>readonly attribute DOMString type</dt>
     <dd>MUST return the type of conversation, with value 'participants' if the
