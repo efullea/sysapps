@@ -210,33 +210,58 @@ Style guide to contributors:
      </dl>
     </dd>
 
-    <dt> MessagingRequest delete ()</dt> <dd>This method requests the deletion
-    of the set of messages and/or conversations (i.e. all messages in the
-    conversations) with identifiers equal to the indicated in the
-    <code>id</code> array parameter. A new <code>MessagingRequest</code> is
-    returned in order to notify the request result (success or error) to the
-    caller.
+    <dt> MessagingRequest deleteMessage ()</dt> <dd>This method requests the
+    deletion of the message with identifier equal to the <code>id</code>
+    parameter. A new <code>MessagingRequest</code> is returned in order to
+    notify the request result (success or error) to the caller.
       <dl class='parameters'>
-         <dt>DOMString[] id</dt> <dd>
-           Array including unique identifiers of the messages and/or
-           conversations that are requested to be deleted
+         <dt>DOMString id</dt> <dd>
+           Unique identifier of the message that is requested to be deleted
          </dd>
      </dl>
     </dd>
 
-    <dt> MessagingRequest markAsRead ()</dt> <dd>This method requests to mark as
-    read or unread the set of messages and/or conversations (i.e. all messages
-    in the conversations) with identifier equal to the indicated in the
+    <dt> MessagingRequest deleteConversation ()</dt> <dd>This method requests
+    the deletion of all the messages in the conversation with identifier equal
+    to the <code>id</code> parameter. A new <code>MessagingRequest</code> is
+    returned in order to notify the request result (success or error) to the
+    caller.
+      <dl class='parameters'>
+         <dt>DOMString id</dt> <dd>
+           Unique identifier of the conversation whose messages are requested to
+           be deleted
+         </dd>
+     </dl>
+    </dd>
+
+    <dt> MessagingRequest markMessageRead ()</dt> <dd>This method requests to
+    mark as read or unread the message with identifier equal to the
     <code>id</code> parameter. The method returns a new
     <code>MessagingRequest</code> that will allow the caller to be notified
     about the result (success, error) of the operation.
       <dl class='parameters'>
-         <dt>DOMString[] id</dt> <dd>
-           Array including unique identifiers of the messages and/or
-           conversations that are requested to be marked as read or unread
+         <dt>DOMString id</dt> <dd>
+           Unique identifier of the message that is requested to be marked as
+           read or unread
          </dd> <dt>boolean value</dt> <dd>
-          Indicates whether the messages are to be marked as read (if 'true') or
+          Indicates whether the message is to be marked as read (if 'true') or
           unread (if 'false')
+         </dd>
+     </dl>
+    </dd>
+
+    <dt> MessagingRequest markConversationRead ()</dt> <dd>This method
+    requests to mark as read or unread all the messages in the conversation with
+    identifier equal to the <code>id</code> parameter. The method returns a new
+    <code>MessagingRequest</code> that will allow the caller to be notified
+    about the result (success, error) of the operation.
+      <dl class='parameters'>
+         <dt>DOMString id</dt> <dd>
+           Unique identifier of the conversation whose messages are requested to
+           be marked as read or unread
+         </dd> <dt>boolean value</dt> <dd>
+          Indicates whether the messages in the conversation are to be marked as
+          read (if 'true') or unread (if 'false')
          </dd>
      </dl>
     </dd>
@@ -317,12 +342,11 @@ Style guide to contributors:
     </ol>
    </ol>
 
-  <p> The <dfn><code>delete</code></dfn> method when invoked MUST run the
+  <p> The <dfn><code>deleteMessage</code></dfn> method when invoked MUST run the
   following steps:
     <ol>
-     <li>Make a request to the system to delete the set of messages and/or
-     conversations with identifiers equal to the identifiers included in the
-     <code>id</code> parameter passed in the request
+     <li>Make a request to the system to delete the message with identifier
+     equal to the <code>id</code> parameter passed in the request
      <li>Create a new <code>MessagingRequest</code> object and set
      <code>readyState</code> of the <code>MessagingRequest</code> object to
      'processing' and return the <code>MessagingRequest</code> to the caller
@@ -339,13 +363,35 @@ Style guide to contributors:
     </ol>
    </ol>
 
-  <p> The <dfn><code>markAsRead</code></dfn> method when invoked MUST run
+  <p> The <dfn><code>deleteConversation</code></dfn> method when invoked MUST
+  run the following steps:
+    <ol>
+     <li>Make a request to the system to delete the messages in the conversation
+     with identifier equal to the <code>id</code> parameter passed in the
+     request
+     <li>Create a new <code>MessagingRequest</code> object and set
+     <code>readyState</code> of the <code>MessagingRequest</code> object to
+     'processing' and return the <code>MessagingRequest</code> to the caller
+     <li>If there is an error invoke the <code>onerror</code> <a>event
+     handler</a> of the <code>MessagingRequest</code> object
+     <li>When the request has been completed:
+     <ol>
+      <li>set the <code>readyState</code> of the
+      <code>MessagingRequest</code> object to 'done'
+      <li>set the <code>result</code> of the <code>MessagingRequest</code>
+      object to 'true'
+      <li>invoke the <code>onsuccess</code> <a>event handler</a> of the
+      <code>MessagingRequest</code>
+    </ol>
+   </ol>
+
+  <p> The <dfn><code>markMessageRead</code></dfn> method when invoked MUST run
   the following steps:
     <ol>
      <li>Make a request to the system to mark as read/unread (depending on the
-     <code>value</code> parameter being respectively 'true' or 'false') the set
-     of messages and/or conversations with identifiers equal to the identifiers
-     included in the <code>id</code> parameter passed in the request.
+     <code>value</code> parameter being respectively 'true' or 'false') the
+     message with identifier equal to the <code>id</code> parameter passed in
+     the request.
      <li>Create a new <code>MessagingRequest</code> object and set
      <code>readyState</code> of the <code>MessagingRequest</code> object to
      'processing' and return the <code>MessagingRequest</code> to the caller
@@ -361,6 +407,30 @@ Style guide to contributors:
       <code>MessagingRequest</code>
     </ol>
    </ol>
+
+  <p> The <dfn><code>markConversationRead</code></dfn> method when invoked
+  MUST run the following steps:
+    <ol>
+     <li>Make a request to the system to mark as read/unread (depending on the
+     <code>value</code> parameter being respectively 'true' or 'false') the
+     messages in the conversation with identifier equal to the <code>id</code>
+     parameter passed in the request.
+     <li>Create a new <code>MessagingRequest</code> object and set
+     <code>readyState</code> of the <code>MessagingRequest</code> object to
+     'processing' and return the <code>MessagingRequest</code> to the caller
+     <li>If there is an error invoke the <code>onerror</code> <a>event
+     handler</a> of the <code>MessagingRequest</code> object
+     <li>When the request has been completed:
+     <ol>
+      <li>set the <code>readyState</code> of the <code>MessagingRequest</code>
+      object to 'done'
+      <li>set the <code>result</code> of the <code>MessagingRequest</code>
+      object to 'true'
+      <li>invoke the <code>onsuccess</code> <a>event handler</a> of the
+      <code>MessagingRequest</code>
+    </ol>
+   </ol>
+
   </section>
 </section>
 
@@ -794,7 +864,7 @@ Style guide to contributors:
     <dl class='parameters'>
          <dt>MmsContent mmsContent</dt>
          <dd>
-           Content and recipients of the MMS message to be sent
+           Content and recipients of the MMS message to be sent.
          </dd>
      </dl>
     </dd>
@@ -808,7 +878,7 @@ Style guide to contributors:
       <dl class='parameters'>
          <dt>DOMString id</dt>
          <dd>
-           Identifier of the MMS message that is requested to be download
+           Identifier of the MMS message that is requested to be download.
          </dd>
      </dl>
     </dd>
@@ -1062,7 +1132,7 @@ Style guide to contributors:
 
     <dt>readonly attribute DOMString serviceId</dt>
     <dd>MUST return the messaging service id</a> used to send / receive this
-    message</dd>
+    message.</dd>
 
     <dt>readonly attribute DOMString sender</dt>
     <dd>MUST return the sender of the message.</dd>
@@ -1093,7 +1163,7 @@ Style guide to contributors:
 
     <dt>readonly attribute DOMString state</dt>
     <dd>MUST return the status of the SMS message, with the following possible
-    values: 'received', 'draft', 'sending', 'sent' and 'failed'</dd>
+    values: 'received', 'draft', 'sending', 'sent' and 'failed'.</dd>
 
     <dt>readonly attribute DOMString deliveryStatus</dt>
     <dd>MUST return 'success' if the SMS message has been succesfully delivered
@@ -1142,7 +1212,7 @@ Style guide to contributors:
     <dt>readonly attribute DOMString state</dt>
     <dd>MUST return the status of the message, with the following possible
     values: 'received', 'draft', 'sending', 'sent', 'failed' and
-    'not-downloaded'</dd>
+    'not-downloaded'.</dd>
 
     <dt>readonly attribute DOMString deliveryStatus[]</dt>
     <dd>MUST return an array with each of the elements indicating the delivery
@@ -1212,7 +1282,7 @@ Style guide to contributors:
     <dt>attribute Blob content</dt>
     <dd>
     The Blob object containing the media type and the binary content of the
-    attachment
+    attachment.
     </dd>
   </dl>    
 </section>
@@ -1242,7 +1312,7 @@ Style guide to contributors:
     case the conversation is of type 'subject' and there are messages in the
     conversation with a different set of participants then this element MUST
     return the union of the participants of all the messages in the
-    conversation</dd>
+    conversation.</dd>
 
     <dt>readonly attribute DOMString? subject</dt>
     <dd>MUST return the subject of the conversation, if there is a single
@@ -1378,7 +1448,7 @@ Style guide to contributors:
     <dt>attribute DOMString? type</dt>
     <dd>Indicates whether just the SMS or MMS messages are to be provided in the
     results of this filter, respectively if it is set to string value 'SMS' or
-    'MMS'
+    'MMS'..
     </dd>
 
     <dt>attribute Date? startDate</dt>
@@ -1411,7 +1481,7 @@ Style guide to contributors:
 
     <dt>attribute boolean? read</dt>
     <dd>Indicates whether just read or unread messages are to be provided in the
-    results of this filter, respectively if it is set to 'true' or 'false'</dd>
+    results of this filter, respectively if it is set to 'true' or 'false'.</dd>
 
   </dl>
 </section>
@@ -1457,7 +1527,7 @@ Style guide to contributors:
 
     <dt>attribute CompositeFilterOperator operator</dt>
     <dd>Indicates the operator used to combined the different filters. It can
-    have the following possible values: 'and' and 'or'</dd>
+    have the following possible values: 'and' and 'or'.</dd>
   </dl>
 </section>
     
@@ -1514,7 +1584,7 @@ Style guide to contributors:
   <h2>Acknowledgements</h2>
   <p>The editors would like to express their gratitude to the Mozilla B2G Team
   and specially to Jonas Sicking, Mounir Lamouri and Vicamo Yang for their
-  technical guidance, implementation work and support</p>
+  technical guidance, implementation work and support.</p>
 </section>
 
   </body>
